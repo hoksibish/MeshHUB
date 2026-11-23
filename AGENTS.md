@@ -14,13 +14,14 @@ Build the MeshHUB Flutter application incrementally on Omarchy Linux using the p
 - Write code, tests, and developer documentation; run relevant checks.
 - Record exact commands, test outcomes, unverified assumptions, platform limitations and blockers.
 - Use mocks for UI and logic, but clearly distinguish mocks from working radio integrations.
-- Obtain owner approval before advancing to the next milestone or making breaking architectural changes.
+- Obtain owner approval before advancing to the next milestone or making breaking architectural changes. For M0, the owner authorized the feature-branch push/PR; M1 may begin only after that PR is reviewed and merged (never merge automatically). Stop at M1 acceptance for owner review.
 - Never claim radio transmission or background connectivity is validated without real hardware proof.
 
 ## Safety and privacy
 - Keep protocol identity and encrypted-channel boundaries intact.
 - Never silently bridge Meshtastic with MeshCore.
-- Do not commit message databases, private keys, device PINs, radio credentials, .env files or personal logs.
+- Do not commit message databases, private keys, device PINs, radio credentials, .env files or personal logs. The owner explicitly approved keeping the repository **public for now** for M0; this overrides the handoff's private-repo deliverable, not these data protections.
+- M0's in-memory repository is owner-approved. No real message history may be stored until encrypted on-disk persistence is implemented and tested; keep the messaging domain dependent on the `MessageRepository` port, not a fixture or database implementation.
 - Require explicit user approval for destructive device changes and credential exports.
 - Reconnection must not create duplicate sends.
 

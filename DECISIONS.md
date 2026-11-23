@@ -7,8 +7,9 @@
 - Use `material_ui` 1.11.1 for the Flutter 3.50 template rather than its deprecated `flutter/material.dart` import. Themes are light/dark/tactical token variants, not final design approval.
 - Suppress Flutter/Dart CLI analytics during development commands. No app telemetry is implemented.
 
-## Owner approval / future decisions
+## Owner-approved M0 exceptions and future decisions
 
-- **Persistence gap:** M0 has a repository boundary but deliberately writes no message content to disk. The handoff's "local persistence skeleton" is therefore only an interface + ephemeral fixture implementation. Before real history at M3, choose and test encrypted SQLite and desktop key custody; do not ship plaintext message history to claim this gate is complete.
+- **Repository visibility:** The owner explicitly approved keeping MeshHUB **public for now** and authorized pushing `feature/issue-1-handoff` and opening a PR against `main` referencing Issue #1. This supersedes the handoff's private-repository M0 deliverable. Do not merge automatically. Avoid publishing secrets or personal message data.
+- **Persistence:** The owner approved the in-memory fixture repository for M0 and deferred encrypted on-disk persistence. **Encryption is mandatory before storing real message history.** `MessageRepository` is a domain port; the fixture is separate in `testing.dart`. An encrypted store should implement the port and be injected at the app composition boundary without rewriting the existing messaging models or adapters. The current UI still uses static demo samples, not the repository: wire it to the port before real history. Design and test encrypted SQLite/key custody before claiming the M3 history gate complete.
+- **M1 gate:** Begin real Heltec V3 / MeshCore 1.18.0 Bluetooth work only after the M0 PR is reviewed and merged. Prioritize discovery, pairing/authentication, connection, real device metadata, receive, test send, and automatic reconnection. Simulated results are not hardware proof; stop at M1 acceptance review.
 - Choose a maintained BLE bridge only after device-level pairing/GATT/notification evidence. Linux `bluez` D-Bus is a feasible candidate, not an adopted production adapter.
-- Handoff says repository should be private; it was made public to allow cloning. Confirm visibility before pushing commits or opening a PR. Nothing has been pushed.

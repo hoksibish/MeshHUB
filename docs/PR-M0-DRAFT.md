@@ -1,6 +1,6 @@
 # Draft PR: Milestone 0 — MeshHub Omarchy foundation (Issue #1)
 
-**Not submitted.** The branch is local and the repository is public despite the handoff's private-first rule. Owner must confirm visibility and authorize the push/PR.
+**Owner-authorized for submission.** The repository may remain public for M0. Open against `main` from `feature/issue-1-handoff`; reference Issue #1, request review, and do not merge automatically.
 
 ## What changed
 
@@ -21,6 +21,6 @@
 
 ## Acceptance and known gaps
 
-See `PROGRESS.md` for the full M0 checklist. The local persistence **boundary** exists, but encrypted on-disk storage does not. A real Heltec GATT notification and send/receive test is M1, not proven here. Remote CI and PR status remain unverified until owner-authorized push.
+See `PROGRESS.md` for the full M0 checklist. The owner explicitly accepted the in-memory repository and public repository as M0 exceptions to the handoff. The `MessageRepository` port keeps the messaging domain independent of the fixture implementation; an encrypted store must replace it before real history is retained. The demo UI still uses static samples and will need repository wiring. A real Heltec GATT notification and send/receive test is M1, not proven here. Remote CI status must be checked after push.
 
-**Do not merge/advance to M1 without owner approval.**
+**M1 only after this PR is reviewed and merged:** discover Heltec V3 / MeshCore 1.18.0, pair/authenticate, connect, read real metadata, receive, test send, and reconnect. Stop at M1 acceptance; simulated events are not hardware evidence. **Do not merge automatically.**
