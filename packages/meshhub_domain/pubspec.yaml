@@ -1,0 +1,16 @@
+name: meshhub_domain
+description: Protocol-neutral MeshHub models and ports (M0 simulation only).
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

@@ -1,0 +1,22 @@
+name: meshhub_flutter
+description: "Offline-first MeshCore and Meshtastic client"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.11.1
+  meshhub_domain:
+    path: ../../packages/meshhub_domain
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
