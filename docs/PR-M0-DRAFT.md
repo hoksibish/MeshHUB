@@ -1,6 +1,6 @@
-# Draft PR: Milestone 0 — MeshHub Omarchy foundation (Issue #1)
+# M0 PR #2: MeshHub Omarchy foundation (Issue #1)
 
-**Owner-authorized for submission.** The repository may remain public for M0. Open against `main` from `feature/issue-1-handoff`; reference Issue #1, request review, and do not merge automatically.
+**Open for review against `main`.** The owner approved keeping the repository public for M0 and authorized the push/PR. Do not merge automatically.
 
 ## What changed
 

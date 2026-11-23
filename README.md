@@ -31,7 +31,7 @@ See [docs/handoff](docs/handoff) for the nine imported source documents. The ori
 - [Linux Flutter sample](apps/meshhub_flutter/README.md): simulated inbox, MeshCore/Meshtastic filters, radio status placeholder and three theme choices. No real radio integration or persistent message history yet.
 - [Domain package](packages/meshhub_domain): protocol-separated models and adapter/transport/repository interfaces, with clearly labeled mock fixtures and a fake byte transport.
 - [BLE feasibility report](docs/BLE-FEASIBILITY.md), [progress and test output](PROGRESS.md), and [decisions/open gaps](DECISIONS.md).
-- Repository CI runs format, analysis, tests and Linux release build without radio hardware. The local M0 build passed; remote CI status must be checked after the authorized push.
+- Repository CI runs format, analysis, tests and Linux release build without radio hardware. The local M0 build passed; PR #2 is open and its GitHub Actions status must be checked before review/merge.
 - The M0 in-memory `MessageRepository` fixture is owner-approved. The messaging domain depends only on the `MessageRepository` interface (`forProtocol`), not the fixture class or a database, so a future encrypted implementation can replace it at the composition boundary without rewriting the existing domain models or protocol-specific adapters. The demo UI still reads static samples directly and must be wired to the repository when real history is added. **Do not store real message history until encrypted at rest.**
 
 Follow the app README for exact Omarchy setup and run commands. Obtain owner approval at the M0 gate before starting M1.
