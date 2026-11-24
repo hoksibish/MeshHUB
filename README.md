@@ -27,11 +27,9 @@ Actual capabilities vary by firmware/transport and must be validated. Never sile
 ## Documents
 See [docs/handoff](docs/handoff) for the nine imported source documents. The original ZIP is kept locally at the repository root but is not committed.
 
-## Current implementation — Milestone 0 only
-- [Linux Flutter sample](apps/meshhub_flutter/README.md): simulated inbox, MeshCore/Meshtastic filters, radio status placeholder and three theme choices. No real radio integration or persistent message history yet.
-- [Domain package](packages/meshhub_domain): protocol-separated models and adapter/transport/repository interfaces, with clearly labeled mock fixtures and a fake byte transport.
-- [BLE feasibility report](docs/BLE-FEASIBILITY.md), [progress and test output](PROGRESS.md), and [decisions/open gaps](DECISIONS.md).
-- Repository CI runs format, analysis, tests and Linux release build without radio hardware. The local M0 build passed; PR #2 is open and its GitHub Actions status must be checked before review/merge.
-- The M0 in-memory `MessageRepository` fixture is owner-approved. The messaging domain depends only on the `MessageRepository` interface (`forProtocol`), not the fixture class or a database, so a future encrypted implementation can replace it at the composition boundary without rewriting the existing domain models or protocol-specific adapters. The demo UI still reads static samples directly and must be wired to the repository when real history is added. **Do not store real message history until encrypted at rest.**
-
-Follow the app README for exact Omarchy setup and run commands. Obtain owner approval at the M0 gate before starting M1.
+## Current implementation — M1 Field Test v0.1 checkpoint
+- [Linux Flutter app](apps/meshhub_flutter/README.md): the M0 simulated inbox remains opt-in, while the radio panel now integrates a real MeshCore BLE/Companion session, live volatile inbox, guarded send composer, diagnostics, and retry flow. [Field instructions](FIELD-TEST.md) describe the exact release launch and tomorrow's tests.
+- [Domain package](packages/meshhub_domain): protocol-separated models and adapter/transport/repository ports with a Companion v1.18.0 codec and synthetic fixture tests. Meshtastic remains simulated, isolated from MeshCore.
+- [BLE feasibility](docs/BLE-FEASIBILITY.md), [M1 hardware results](docs/M1-HARDWARE-RESULTS.md), [progress](PROGRESS.md), and [decisions](DECISIONS.md) separate real device evidence from unverified RF cases.
+- M0 PR #2 was merged; M1 is on `feature/m1-meshcore-ble` and has **not** been merged. Real peer send/receive proof remains blocked until a second endpoint is available.
+- The M0 in-memory `MessageRepository` fixture was owner-approved; the field-test real inbox is also volatile and intentionally **not persisted**. The messaging domain depends on the `MessageRepository` port so encrypted storage can replace the fixture without rewriting messaging models. Do not store real message history on disk until encryption is implemented and tested.

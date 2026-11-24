@@ -34,4 +34,12 @@
 - [x] PR #2 opened against `main`, referencing Issue #1; merge remains manual. Remote GitHub Actions checks were in progress at submission and must be checked before review/merge.
 - [ ] M0 PR review and merge required before starting M1. M1 real-hardware tests require the Heltec powered nearby and a second MeshCore endpoint/contact; stop at the M1 acceptance gate.
 
-No real radio message was sent or received. No device settings, keys, channels or firmware were changed. No M1 work has begun.
+No real radio message was sent or received. No device settings, keys, channels or firmware were changed. No M1 work had begun **at this M0 snapshot**.
+
+## M1 Field Test v0.1 checkpoint — 2026-11-24 UTC
+
+- M0 PR #2 was subsequently merged. M1 is on `feature/m1-meshcore-ble`, not merged. See `docs/M1-HARDWARE-RESULTS.md` and `FIELD-TEST.md` for chronological, sanitized evidence and the procedure.
+- The app now has explicit MeshCore BlueZ discovery/selection, authenticated GATT and Companion handshake, device-reported model/version/identity/RF readback, in-memory incoming-event pipeline and exact-frame dedupe, default live-only Inbox with labeled simulation toggle, guarded channel/direct send, count-only diagnostics, and bounded no-replay BLE reconnection. Meshtastic remains simulated and protocol-isolated. The radio queue is drained into volatile RAM only; no real history is persisted.
+- A physical Heltec V3 reported `v1.18.0-81dbae5`, protocol 14 and 910.525 MHz / 62.5 kHz / SF7 / CR5 via the same session class used by the UI. One deliberate local BLE disconnect recovered with one retry and fresh firmware readback; the initial OS connection was restored. No RF send, peer receive, radio reboot, out-of-range, or BlueZ restart was claimed.
+- Final local checks: domain **26 tests passed**, app **39 tests passed**, both format checks unchanged and analyzers clean, Linux release build passed. `run-field-test.sh --check` found the executable and actual launch created a mapped Hyprland window; the screenshot driver had no DISPLAY, so visual contents were not inspected through it. `git diff --check` passed before the final review.
+- Field Test v0.1 is a **readiness checkpoint, not M1 completion**. A second MeshCore endpoint plus operating-region/destination verification is required for RF send/receive evidence. No M1 merge without owner approval.
