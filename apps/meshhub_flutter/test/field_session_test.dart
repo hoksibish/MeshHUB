@@ -286,6 +286,40 @@ void main() {
     },
   );
 
+  test('exact duplicate is suppressed briefly but allowed later', () async {
+    await session.disconnect();
+    var now = DateTime.utc(2026, 11, 24);
+    session = MeshCoreFieldSession(
+      scan: (_) async => [candidate],
+      transportFactory: (_) => device,
+      clock: () => now,
+    );
+    await session.connect(candidate);
+    final message = [
+      17, 4, 0, 0, 1, 0, 0, 1, 0, 0, 0, ...'Repeated message'.codeUnits,
+    ];
+    device.incoming.add(message);
+    device.incoming.add(message);
+    expect(session.receiveCount, 1);
+    now = now.add(const Duration(seconds: 4));
+    device.incoming.add(message);
+    expect(session.receiveCount, 2);
+    expect(session.messages.length, 2);
+  });
+
+  test('dedupe cache is reset across explicit disconnect', () async {
+    await session.connect(candidate);
+    final message = [
+      17, 4, 0, 0, 1, 0, 0, 1, 0, 0, 0, ...'After reconnect'.codeUnits,
+    ];
+    device.incoming.add(message);
+    expect(session.receiveCount, 1);
+    await session.disconnect();
+    await session.connect(candidate);
+    device.incoming.add(message);
+    expect(session.receiveCount, 2);
+  });
+
   test(
     'send remains blocked until preset and destination are explicitly verified',
     () async {
