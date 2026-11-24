@@ -1,6 +1,7 @@
 #include "my_application.h"
 
 #include <flutter_linux/flutter_linux.h>
+#include <gtk/gtk.h>
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -22,18 +23,20 @@ static void my_application_activate(GApplication* application) {
 
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
-  gtk_window_set_default_size(window, 1280, 720);
+  gtk_window_set_default_size(window, 1000, 700);
+  gtk_window_set_resizable(window, TRUE);
+  gtk_window_set_decorated(window, TRUE);
 
-  // If you want to use a header bar, uncomment the following lines.
-  // Header bars are commonly used in GNOME based desktop environments and
-  // allow additional widgets to be added to the title bar.
-  // See https://docs.gtk.org/gtk3/class.HeaderBar.html
-  // GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
-  // gtk_widget_show(GTK_WIDGET(header_bar));
-  // gtk_header_bar_set_show_close_button(header_bar, TRUE);
-  // gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
+  // Hyprland does not draw a server-side title bar for this Wayland window.
+  // Give the field-test app native drag and window controls instead.
+  GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
+  gtk_header_bar_set_title(header_bar, "MeshHub");
+  gtk_header_bar_set_show_close_button(header_bar, TRUE);
+  gtk_header_bar_set_decoration_layout(header_bar, "menu:minimize,maximize,close");
+  gtk_widget_show(GTK_WIDGET(header_bar));
+  gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
 
-  gtk_window_set_title(window, "meshhub_flutter");
+  gtk_window_set_title(window, "MeshHub");
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(

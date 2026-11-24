@@ -15,7 +15,7 @@ cd ../..
 ./run-field-test.sh
 ```
 
-The script launches `apps/meshhub_flutter/build/linux/x64/release/bundle/meshhub_flutter` from its bundle directory. It does not install a system package or edit Omarchy configuration. Run it in your logged-in Omarchy graphical session; if the executable is missing, build first. No firmware update, radio configuration write, or RF command happens on launch.
+The script launches `apps/meshhub_flutter/build/linux/x64/release/bundle/meshhub_flutter` from its bundle directory. It does not install a system package or edit Omarchy configuration. Run it in your logged-in Omarchy graphical session; if the executable is missing, build first. The Linux runner now provides a draggable GTK title bar with minimize, maximize and close controls; the window remains resizable. No firmware update, radio configuration write, or RF command happens on launch.
 
 ## Before going into the field
 
@@ -45,7 +45,7 @@ The script launches `apps/meshhub_flutter/build/linux/x64/release/bundle/meshhub
 
 - Domain: `dart format --output=none --set-exit-if-changed lib test`, `flutter analyze`, `flutter test` — **26 passed**, no analysis issues.
 - App: `dart format --output=none --set-exit-if-changed lib test tool`, `flutter analyze`, `flutter test` — **39 passed**, no analysis issues. `flutter build linux --release` succeeded.
-- `./run-field-test.sh --check` found the release executable. Running the script in the logged-in Wayland session created a mapped, visible `meshhub_flutter` Hyprland window. The remote agent's screenshot driver lacked a `DISPLAY`, so the rendered window content was not visually inspected through that driver; widget tests cover the panel structure.
+- `./run-field-test.sh --check` found the release executable. Running the script in the logged-in Wayland session created a mapped `MeshHub` Hyprland window. The initial background launch landed on a hidden special workspace and lacked title-bar controls; after moving it to workspace 1, the Linux runner was updated and rebuilt with a GTK header bar. A cropped live Wayland capture of the new 900×650 floating window visually confirmed **minimize, maximize and close** buttons plus readable app content. The previous window remains open behind it to avoid discarding any volatile messages without permission.
 - The **same `MeshCoreFieldSession` used by the UI** completed a real read-only handshake via `dart run tool/meshcore_field_probe.dart <owner-confirmed-name>`. Its optional `--disconnect-test` deliberately dropped only the local BLE link, then reported one retry, Companion ready, and matching firmware readback. The pre-test OS connection was restored. This probe disables queue drain and never sends RF.
 
 ## Evidence sheet for tomorrow
