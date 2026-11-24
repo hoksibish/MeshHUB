@@ -1,6 +1,5 @@
-import 'dart:ui' show Size;
-
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:meshhub_flutter/main.dart';
 
 void main() {
@@ -16,10 +15,29 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Discover MeshCore radios'), findsOneWidget);
       expect(find.text('No radio selected'), findsOneWidget);
-      expect(find.text('Direct contact'), findsOneWidget);
+      expect(find.text('Direct test message'), findsOneWidget);
       expect(find.textContaining('SIMULATED DATA'), findsNothing);
     },
   );
+
+  testWidgets('inbox exposes a channel feed without invented radio channels', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MeshHubApp());
+    expect(find.text('Channels'), findsOneWidget);
+    expect(find.textContaining('Connect a MeshCore radio'), findsOneWidget);
+    expect(find.text('Public'), findsNothing);
+    expect(find.text('Send once (local radio acceptance only)'), findsNothing);
+  });
+
+  testWidgets('channel heading remains readable on the dark surface', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MeshHubApp());
+    final context = tester.element(find.text('Channels'));
+    final expected = Theme.of(context).colorScheme.onSurface;
+    expect(tester.widget<Text>(find.text('Channels')).style?.color, expected);
+  });
 
   testWidgets('inbox labels sample data and separates protocols', (
     tester,

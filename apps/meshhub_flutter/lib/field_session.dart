@@ -52,6 +52,10 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   MeshCoreBleCandidate? selected;
   MeshCoreDeviceInfo? deviceInfo;
   MeshCoreSelfIdentity? identity;
+  List<MeshCoreChannel> _channels = const [];
+  List<MeshCoreChannel> get channels => _channels;
+  bool channelsLoading = false;
+  String? channelsError;
   String status = 'No radio selected';
   String? error;
   int receiveCount = 0;
@@ -64,6 +68,8 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   bool _ready = false;
   bool _draining = false;
   bool _waiting = false;
+  Future<void> _exchangeTail = Future<void>.value();
+  Completer<List<int>?>? _pendingExchange;
   int _epoch = 0;
   MeshCoreBleTransport? _transport;
   StreamSubscription<bool>? _states;
@@ -120,12 +126,15 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       _transport = transport;
       _states = transport.readiness.listen((ready) {
         if (!ready && epoch == _epoch && _ready) {
+          _epoch++;
+          _abortExchange();
           _ready = false;
           identity = null;
           deviceInfo = null;
+          _clearChannels();
           status = 'Disconnected';
           notifyListeners();
-          _scheduleReconnect(candidate, epoch);
+          _scheduleReconnect(candidate, _epoch);
         }
       });
       _frames = transport.frames.listen((frame) => _onFrame(frame, epoch));
@@ -149,6 +158,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       _retryFailures = 0;
       status = 'Companion ready';
       notifyListeners();
+      await refreshChannels();
       if (_waiting && receiveMessages) unawaited(_drain(epoch));
     } catch (e) {
       error =
@@ -181,7 +191,29 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     List<int> command,
     bool Function(List<int>) matches,
   ) async {
+    final epoch = _epoch;
+    final previous = _exchangeTail;
+    final release = Completer<void>();
+    _exchangeTail = release.future;
+    try {
+      await previous;
+      if (epoch != _epoch || _transport != transport || !transport.ready) {
+        throw StateError('Session changed before command');
+      }
+      return await _performExchange(transport, command, matches, epoch);
+    } finally {
+      release.complete();
+    }
+  }
+
+  Future<List<int>> _performExchange(
+    MeshCoreBleTransport transport,
+    List<int> command,
+    bool Function(List<int>) matches,
+    int epoch,
+  ) async {
     final pending = Completer<List<int>?>();
+    _pendingExchange = pending;
     final subscription = transport.frames.listen(
       (frame) {
         if (!pending.isCompleted && frame.isNotEmpty && matches(frame)) {
@@ -200,12 +232,73 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     });
     try {
       await transport.writeFrame(command);
+      if (epoch != _epoch || _transport != transport || !transport.ready) {
+        throw StateError('Session changed during command');
+      }
       final reply = await pending.future;
+      if (epoch != _epoch || _transport != transport || !transport.ready) {
+        throw StateError('Session changed during response');
+      }
       if (reply == null) throw TimeoutException('Radio response unavailable');
       return reply;
     } finally {
       timeout.cancel();
+      if (identical(_pendingExchange, pending)) _pendingExchange = null;
       await subscription.cancel();
+    }
+  }
+
+  void _abortExchange() {
+    final pending = _pendingExchange;
+    if (pending != null && !pending.isCompleted) pending.complete(null);
+  }
+
+  void _clearChannels() {
+    _channels = const [];
+    channelsLoading = false;
+    channelsError = null;
+  }
+
+  /// Query every reported slot; publish only a complete, named snapshot.
+  Future<void> refreshChannels() async {
+    if (!connected || deviceInfo == null) {
+      channelsError = 'Connect to a MeshCore radio first';
+      notifyListeners();
+      return;
+    }
+    if (channelsLoading) return;
+    final epoch = _epoch;
+    final transport = _transport!;
+    final count = deviceInfo!.maxChannels;
+    channelsLoading = true;
+    channelsError = null;
+    _channels = const [];
+    notifyListeners();
+    try {
+      final found = <MeshCoreChannel>[];
+      for (var index = 0; index < count; index++) {
+        if (epoch != _epoch || !connected) return;
+        final response = await _exchange(
+          transport,
+          MeshCoreCompanionCodec.getChannel(index),
+          (f) => f.first == 0x12,
+        );
+        final channel = MeshCoreCompanionCodec.parseChannelInfo(
+          response,
+          requestedIndex: index,
+        );
+        if (channel.name.isNotEmpty) found.add(channel);
+      }
+      if (epoch == _epoch && connected) _channels = List.unmodifiable(found);
+    } catch (_) {
+      if (epoch == _epoch) {
+        channelsError = 'Channel discovery failed; retry refresh';
+      }
+    } finally {
+      if (epoch == _epoch) {
+        channelsLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -261,10 +354,12 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
         if (reply.first == 10) break;
       }
     } catch (_) {
-      status = 'Receive drain interrupted';
-      notifyListeners();
+      if (epoch == _epoch) {
+        status = 'Receive drain interrupted';
+        notifyListeners();
+      }
     } finally {
-      _draining = false;
+      if (epoch == _epoch) _draining = false;
       if (_waiting && connected && epoch == _epoch) unawaited(_drain(epoch));
     }
   }
@@ -324,6 +419,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   }) async {
     if (sending) throw StateError('Another send is already in progress');
     sending = true;
+    final epoch = _epoch;
     final transport = _transport!;
     status = 'Send outcome uncertain until radio responds';
     notifyListeners();
@@ -337,6 +433,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
         response,
         channel: channel,
       );
+      if (epoch != _epoch) throw StateError('Session changed during send');
       if (result == MeshCoreLocalSendResult.acceptedByRadio) sendCount++;
       status = result == MeshCoreLocalSendResult.acceptedByRadio
           ? 'Accepted by local radio — recipient delivery unverified'
@@ -344,12 +441,16 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       notifyListeners();
       return result;
     } catch (_) {
-      status = 'Send outcome uncertain — do not retry blindly';
-      notifyListeners();
+      if (epoch == _epoch) {
+        status = 'Send outcome uncertain — do not retry blindly';
+        notifyListeners();
+      }
       rethrow;
     } finally {
-      sending = false;
-      notifyListeners();
+      if (epoch == _epoch) {
+        sending = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -373,8 +474,12 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     _retry?.cancel();
     _retry = null;
     _epoch++;
+    _abortExchange();
     _ready = false;
     _waiting = false;
+    _draining = false;
+    sending = false;
+    _clearChannels();
     final transport = _transport;
     _transport = null;
     await _states?.cancel();

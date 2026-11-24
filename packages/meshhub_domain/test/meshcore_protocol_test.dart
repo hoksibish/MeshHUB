@@ -5,6 +5,75 @@ import 'package:meshhub_domain/meshhub_domain.dart';
 import 'package:meshhub_domain/meshcore_protocol.dart';
 
 void main() {
+  test(
+    'GET_CHANNEL requests a byte-sized slot and exposes only channel name',
+    () {
+      expect(MeshCoreCompanionCodec.getChannel(2), [0x1f, 2]);
+      expect(() => MeshCoreCompanionCodec.getChannel(-1), throwsRangeError);
+      expect(() => MeshCoreCompanionCodec.getChannel(256), throwsRangeError);
+      final frame = [
+        0x12,
+        2,
+        ..._fixed('Local chat', 32),
+        ...List<int>.filled(16, 0xa5),
+      ];
+      final channel = MeshCoreCompanionCodec.parseChannelInfo(
+        frame,
+        requestedIndex: 2,
+      );
+      expect(channel.index, 2);
+      expect(channel.name, 'Local chat');
+      expect(channel.toString(), isNot(contains('165')));
+      expect(channel.toString(), isNot(contains('a5')));
+      expect(channel.toString(), isNot(contains('secret')));
+    },
+  );
+
+  test('CHANNEL_INFO ignores bytes beyond the null-terminated name', () {
+    final name = [0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0];
+    final frame = [
+      0x12,
+      0,
+      ...name,
+      ...List<int>.filled(32 - name.length, 0x7f),
+      ...List<int>.filled(16, 0xa5),
+    ];
+    final channel = MeshCoreCompanionCodec.parseChannelInfo(
+      frame,
+      requestedIndex: 0,
+    );
+    expect(channel.name, 'Public');
+    expect(channel.toString(), isNot(contains('127')));
+  });
+
+  test('CHANNEL_INFO rejects bad length, index, bytes and invalid UTF-8', () {
+    final valid = [0x12, 1, ..._fixed('Name', 32), ...List<int>.filled(16, 0)];
+    for (final frame in [
+      valid.sublist(0, 49),
+      [...valid, 0],
+      [0x11, ...valid.skip(1)],
+      [0x12, 2, ...valid.skip(2)],
+      [0x12, 1, 0xff, ...valid.skip(3)],
+      [0x12, 1, -1, ...valid.skip(3)],
+    ]) {
+      expect(
+        () => MeshCoreCompanionCodec.parseChannelInfo(frame, requestedIndex: 1),
+        throwsFormatException,
+      );
+    }
+    expect(
+      () => MeshCoreCompanionCodec.parseChannelInfo(valid, requestedIndex: 256),
+      throwsRangeError,
+    );
+    expect(
+      MeshCoreCompanionCodec.parseChannelInfo([
+        0x12,
+        1,
+        ...List<int>.filled(48, 0),
+      ], requestedIndex: 1).name,
+      isEmpty,
+    );
+  });
   test('APP_START reserves seven bytes and DEVICE_QUERY negotiates v3', () {
     expect(MeshCoreCompanionCodec.appStart('MeshHub'), [
       1,

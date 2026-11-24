@@ -23,6 +23,10 @@ class FieldTransport extends MeshCoreBleTransport {
   bool online = false;
   bool failSend = false;
   Completer<void>? holdSend;
+  Completer<void>? holdChannel;
+  int maxChannels = 2;
+  final channelNames = <int, String>{};
+  List<int>? Function(int)? channelReply;
   @override
   bool get ready => online;
   @override
@@ -60,12 +64,30 @@ class FieldTransport extends MeshCoreBleTransport {
     } else if (frame[0] == 22) {
       final info = List<int>.filled(80, 0)..[0] = 13;
       info[1] = 14;
-      info[3] = 40;
+      info[3] = maxChannels;
       info.setRange(20, 29, 'Heltec V3'.codeUnits);
       info.setRange(60, 67, 'v1.18.0'.codeUnits);
       incoming.add(info);
     } else if (frame[0] == 10) {
       incoming.add([10]);
+    } else if (frame[0] == 0x1f) {
+      await holdChannel?.future;
+      if (online) {
+        final reply =
+            channelReply?.call(frame[1]) ??
+            [
+              0x12,
+              frame[1],
+              ...List<int>.generate(
+                32,
+                (i) => i < (channelNames[frame[1]] ?? '').codeUnits.length
+                    ? (channelNames[frame[1]] ?? '').codeUnits[i]
+                    : 0,
+              ),
+              ...List<int>.filled(16, 0xa5),
+            ];
+        incoming.add(reply);
+      }
     } else if (frame[0] == 3) {
       incoming.add([0]);
     } else if (frame[0] == 2) {
@@ -103,6 +125,124 @@ void main() {
   });
 
   test(
+    'automatic discovery reads sparse slots and never sends or exposes secrets',
+    () async {
+      device.maxChannels = 4;
+      device.channelNames.addAll({0: 'Town', 3: 'Field'});
+      await session.connect(candidate);
+      expect(device.writes, [
+        [1, ...List<int>.filled(7, 0), ...'MeshHub'.codeUnits],
+        [22, 3],
+        [0x1f, 0],
+        [0x1f, 1],
+        [0x1f, 2],
+        [0x1f, 3],
+      ]);
+      expect(session.channels.map((c) => '${c.index}:${c.name}'), [
+        '0:Town',
+        '3:Field',
+      ]);
+      expect(session.channelsLoading, false);
+      expect(session.channelsError, isNull);
+      expect(session.channels.toString(), isNot(contains('165')));
+      expect(() => session.channels.clear(), throwsUnsupportedError);
+    },
+  );
+
+  test('malformed or mismatched channel reply reports error and clears old snapshot', () async {
+    device.maxChannels = 2;
+    device.channelNames[0] = 'Old';
+    await session.connect(candidate);
+    expect(session.channels.single.name, 'Old');
+    device.channelReply = (index) => [
+      0x12,
+      index + 1,
+      ...List<int>.filled(48, 0),
+    ];
+    await session.refreshChannels();
+    expect(session.channels, isEmpty);
+    expect(session.channelsError, isNotNull);
+    expect(session.channelsError, isNot(contains('165')));
+    device.channelReply = (_) => [0x12, 0];
+    await session.refreshChannels();
+    expect(session.channelsError, isNotNull);
+  });
+
+  test('disconnect during refresh clears snapshot and prevents subsequent channel writes', () async {
+    device.maxChannels = 3;
+    device.channelNames[0] = 'Old';
+    await session.connect(candidate);
+    device.holdChannel = Completer<void>();
+    final refresh = session.refreshChannels();
+    await Future<void>.delayed(Duration.zero);
+    expect(session.channelsLoading, true);
+    final written = device.writes.length;
+    await session.disconnect();
+    device.holdChannel!.complete();
+    await refresh;
+    expect(device.writes.length, written);
+    expect(session.channels, isEmpty);
+    expect(session.channelsLoading, false);
+    expect(session.channelsError, isNull);
+  });
+
+  test('channel refresh serializes with send and does not replay queued send on disconnect', () async {
+    device.maxChannels = 1;
+    await session.connect(candidate);
+    device.holdChannel = Completer<void>();
+    final refresh = session.refreshChannels();
+    await Future<void>.delayed(Duration.zero);
+    final send = session.sendChannel(
+      channel: 0,
+      text: 'do not replay',
+      verified: true,
+    );
+    expect(device.writes.where((f) => f.first == 3), isEmpty);
+    await session.disconnect();
+    device.holdChannel!.complete();
+    await refresh;
+    await expectLater(send, throwsStateError);
+    expect(device.writes.where((f) => f.first == 3), isEmpty);
+  });
+
+  test('waiting drain queues behind channel refresh without consuming its response', () async {
+    device.maxChannels = 1;
+    device.holdChannel = Completer<void>();
+    final connection = session.connect(candidate);
+    await Future<void>.delayed(Duration.zero);
+    device.incoming.add([0x83]);
+    expect(device.writes.map((f) => f.first), [1, 22, 0x1f]);
+    device.holdChannel!.complete();
+    await connection;
+    await Future<void>.delayed(Duration.zero);
+    expect(device.writes.map((f) => f.first), [1, 22, 0x1f, 10]);
+    expect(session.channelsError, isNull);
+  });
+
+  test(
+    'physical drop clears channel names and never replays uncertain send',
+    () async {
+      device.maxChannels = 1;
+      device.channelNames[0] = 'Known';
+      await session.connect(candidate);
+      device.holdSend = Completer<void>();
+      final send = session.sendChannel(
+        channel: 0,
+        text: 'uncertain',
+        verified: true,
+      );
+      await Future<void>.delayed(Duration.zero);
+      device.drop();
+      expect(session.channels, isEmpty);
+      expect(session.channelsLoading, false);
+      device.holdSend!.complete();
+      await expectLater(send, throwsStateError);
+      expect(device.writes.where((f) => f.first == 3).length, 1);
+      expect(session.sendCount, 0);
+    },
+  );
+
+  test(
     'explicit discovery and connect read real metadata, never send RF',
     () async {
       await session.discover();
@@ -112,7 +252,7 @@ void main() {
       expect(session.deviceInfo?.model, 'Heltec V3');
       expect(session.deviceInfo?.version, 'v1.18.0');
       expect(session.identity?.radioPreset.frequencyKHz, 910525);
-      expect(device.writes.map((e) => e.first), [1, 22]);
+      expect(device.writes.map((e) => e.first), [1, 22, 0x1f, 0x1f]);
     },
   );
 
@@ -154,7 +294,7 @@ void main() {
         session.sendChannel(channel: 0, text: 'test', verified: false),
         throwsStateError,
       );
-      expect(device.writes.length, 2);
+      expect(device.writes.length, 4);
       final result = await session.sendChannel(
         channel: 0,
         text: 'test',
@@ -182,7 +322,7 @@ void main() {
         session.sendDirect(keyPrefix: 'INVALID', text: 'test', verified: true),
         throwsArgumentError,
       );
-      expect(device.writes.length, 2);
+      expect(device.writes.length, 4);
       final result = await session.sendDirect(
         keyPrefix: 'aabbccddeeff',
         text: 'test',
@@ -217,7 +357,16 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 30));
     expect(session.connected, true);
     expect(session.reconnectAttempts, 1);
-    expect(device.writes.map((e) => e.first), [1, 22, 1, 22]);
+    expect(device.writes.map((e) => e.first), [
+      1,
+      22,
+      0x1f,
+      0x1f,
+      1,
+      22,
+      0x1f,
+      0x1f,
+    ]);
   });
 
   test(
@@ -227,7 +376,7 @@ void main() {
       device.drop();
       await Future<void>.delayed(Duration.zero);
       expect(session.connected, false);
-      expect(device.writes.map((e) => e.first), [1, 22]);
+      expect(device.writes.map((e) => e.first), [1, 22, 0x1f, 0x1f]);
     },
   );
 
@@ -264,7 +413,7 @@ void main() {
       device.incoming.add([0x83]);
       await Future<void>.delayed(Duration.zero);
       expect(session.waitingCount, 1);
-      expect(device.writes.map((f) => f.first), [1, 22]);
+      expect(device.writes.map((f) => f.first), [1, 22, 0x1f, 0x1f]);
     },
   );
 

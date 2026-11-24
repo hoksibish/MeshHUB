@@ -15,6 +15,33 @@ abstract final class MeshCoreCompanionCodec {
 
   static List<int> deviceQuery() => [22, 3];
 
+  static List<int> getChannel(int index) {
+    RangeError.checkValueInInterval(index, 0, 255, 'index');
+    return [0x1f, index];
+  }
+
+  /// Discard secret bytes 34..49 without copying them into the result.
+  static MeshCoreChannel parseChannelInfo(
+    List<int> frame, {
+    required int requestedIndex,
+  }) {
+    RangeError.checkValueInInterval(requestedIndex, 0, 255, 'requestedIndex');
+    if (frame.length != 50 ||
+        frame[0] != 0x12 ||
+        frame[1] != requestedIndex ||
+        frame.any((byte) => byte < 0 || byte > 255)) {
+      throw const FormatException('Malformed CHANNEL_INFO response');
+    }
+    final bytes = frame.sublist(2, 34);
+    final end = bytes.indexOf(0);
+    // The protocol guarantees a terminator, not zero-filled tail bytes.
+    // The real Heltec can leave nonzero bytes after NUL; never decode them.
+    return MeshCoreChannel(
+      index: requestedIndex,
+      name: utf8.decode(end < 0 ? bytes : bytes.sublist(0, end)),
+    );
+  }
+
   /// Only the public identity is retained; location, node name and other
   /// SELF_INFO fields are deliberately omitted from this M1 read-only result.
   static MeshCoreSelfIdentity parseSelfInfo(List<int> frame) {
@@ -224,6 +251,16 @@ enum MeshCoreLocalSendResult { acceptedByRadio, rejectedByRadio }
 
 /// A channel slot is not an authenticated sender identity.
 enum MeshCoreTextOrigin { channel, direct }
+
+/// Public channel metadata only. Never retain the radio's channel secret.
+final class MeshCoreChannel {
+  const MeshCoreChannel({required this.index, required this.name});
+  final int index;
+  final String name;
+
+  @override
+  String toString() => 'MeshCoreChannel($index, $name)';
+}
 
 /// Radio-reported metadata from a dequeued v3 frame, not verified RF delivery.
 class MeshCoreIncomingText {
