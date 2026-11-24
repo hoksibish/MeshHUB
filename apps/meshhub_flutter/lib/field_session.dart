@@ -33,11 +33,16 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     FieldRetryScheduler? scheduleRetry,
     this.responseTimeout = const Duration(seconds: 8),
     this.receiveMessages = true,
-  }) : _scan = scan ?? MeshCoreBleScanner(scanBlueZ).scan,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now,
+       _scan = scan ?? MeshCoreBleScanner(scanBlueZ).scan,
        _scheduleRetry = scheduleRetry ?? Timer.new,
        _transportFactory =
            transportFactory ?? ((id) => MeshCoreBleTransport(selectedId: id));
 
+  static const _duplicateWindow = Duration(seconds: 3);
+  static const _maximumRecentFrames = 256;
+  final DateTime Function() _clock;
   final FieldScan _scan;
   final Duration responseTimeout;
   final bool receiveMessages;
@@ -47,7 +52,8 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   int reconnectAttempts = 0;
   final MeshCoreBleTransport Function(String) _transportFactory;
   final List<RadioMessage> messages = [];
-  final Set<String> _seenFrames = {};
+  // Only suppress repeated notifications briefly; bounded for long sessions.
+  final Map<String, DateTime> _recentFrames = {};
   List<MeshCoreBleCandidate> candidates = [];
   MeshCoreBleCandidate? selected;
   MeshCoreDeviceInfo? deviceInfo;
@@ -318,7 +324,15 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
         maxChannels: deviceInfo?.maxChannels ?? 40,
       );
       final key = frame.map((v) => v.toRadixString(16).padLeft(2, '0')).join();
-      if (!_seenFrames.add(key)) return;
+      final now = _clock();
+      _recentFrames.removeWhere(
+        (_, firstSeen) => now.difference(firstSeen) >= _duplicateWindow,
+      );
+      if (_recentFrames.containsKey(key)) return;
+      if (_recentFrames.length >= _maximumRecentFrames) {
+        _recentFrames.remove(_recentFrames.keys.first);
+      }
+      _recentFrames[key] = now;
       receiveCount++;
       messages.add(
         RadioMessage(
@@ -476,6 +490,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     _epoch++;
     _abortExchange();
     _ready = false;
+    _recentFrames.clear();
     _waiting = false;
     _draining = false;
     sending = false;
