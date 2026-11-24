@@ -296,7 +296,18 @@ void main() {
     );
     await session.connect(candidate);
     final message = [
-      17, 4, 0, 0, 1, 0, 0, 1, 0, 0, 0, ...'Repeated message'.codeUnits,
+      17,
+      4,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      ...'Repeated message'.codeUnits,
     ];
     device.incoming.add(message);
     device.incoming.add(message);
@@ -310,7 +321,18 @@ void main() {
   test('dedupe cache is reset across explicit disconnect', () async {
     await session.connect(candidate);
     final message = [
-      17, 4, 0, 0, 1, 0, 0, 1, 0, 0, 0, ...'After reconnect'.codeUnits,
+      17,
+      4,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      ...'After reconnect'.codeUnits,
     ];
     device.incoming.add(message);
     expect(session.receiveCount, 1);
