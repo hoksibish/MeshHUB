@@ -113,8 +113,10 @@ class FirmwareManagerService {
         role: variant.role,
         version: version,
         format: switch (variant.format) {
-          'merged' => 'Merged ESP32 full image',
-          'factory' => 'Factory ESP32 full image',
+          'merged' => board.chip == 'esp32s3'
+              ? 'Merged ESP32-S3 image' : 'Merged ESP32 full image',
+          'factory' => board.chip == 'esp32s3'
+              ? 'Factory ESP32-S3 image' : 'Factory ESP32 full image',
           'uf2' => 'UF2 bootloader image',
           _ => 'nRF52 DFU archive',
         },
