@@ -210,6 +210,17 @@ class FirmwareManagerService {
 
   /// Copies firmware bytes only; no radio keys, identity or message contents.
   Future<OfflineFirmwareImage> saveOffline(OfflineFirmwareImage image) async {
+    final cachedPath = '$libraryPath/${image.sha256}.bin';
+    // Selecting an already-cached image is idempotent. Cache entries are
+    // digest named, so they cannot pass a filename-based importer again.
+    if (File(image.path).absolute.path == File(cachedPath).absolute.path) {
+      return _verifyStoredImage(
+        cachedPath,
+        image.sourceName,
+        image.sha256,
+        image.bytes,
+      );
+    }
     final checked = await inspectFile(
       image.path,
       expectedSha256: image.sha256,
