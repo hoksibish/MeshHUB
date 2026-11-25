@@ -1809,6 +1809,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _readout(context, 'Connection', field.status),
+              _readout(context, 'Last local send', field.lastSendOutcome),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -1822,6 +1823,21 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   ),
                   _diagnosticMetric(context, 'Malformed', field.rejectedFrames),
                   _diagnosticMetric(context, 'Local accepts', field.sendCount),
+                  _diagnosticMetric(
+                    context,
+                    'Send requests',
+                    field.sendRequestCount,
+                  ),
+                  _diagnosticMetric(
+                    context,
+                    'Rejected sends',
+                    field.rejectedSendCount,
+                  ),
+                  _diagnosticMetric(
+                    context,
+                    'Uncertain sends',
+                    field.uncertainSendCount,
+                  ),
                   _diagnosticMetric(
                     context,
                     'Reconnects',
