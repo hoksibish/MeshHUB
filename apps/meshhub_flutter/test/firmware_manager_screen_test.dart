@@ -6,6 +6,32 @@ import 'package:meshhub_flutter/firmware_manager_screen.dart';
 import 'package:meshhub_flutter/firmware_manager_service.dart';
 import 'package:meshhub_flutter/firmware_hardware_catalog.dart';
 
+FirmwareBoardCatalog fixtureCatalog() => FirmwareBoardCatalog.parse('''
+{
+  "schema": 1,
+  "boards": [
+    {
+      "id": "meshcore-heltec-v3",
+      "family": "meshCore",
+      "name": "Heltec v3",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [{"role": "Companion BLE", "pattern": "Heltec_v3", "format": "merged"}]
+    },
+    {
+      "id": "meshtastic-heltec-v3",
+      "family": "meshtastic",
+      "name": "Heltec V3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [{"role": "Meshtastic node", "pattern": "firmware-heltec-v3", "format": "factory"}]
+    }
+  ]
+}
+''');
+
 void main() {
   late Directory scratch;
   setUp(() async {
@@ -23,7 +49,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final catalog = await FirmwareBoardCatalog.load();
+    final catalog = fixtureCatalog();
     final commands = <List<String>>[];
     final service = FirmwareManagerService(
       libraryPath: scratch.path,
@@ -72,7 +98,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final catalog = await FirmwareBoardCatalog.load();
+    final catalog = fixtureCatalog();
     await tester.pumpWidget(
       MaterialApp(
         home: FirmwareManagerScreen(
