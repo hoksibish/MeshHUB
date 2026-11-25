@@ -99,8 +99,10 @@ void main() {
     await tester.pumpAndSettle();
     final light = background();
     expect(light, isNot(dark));
-    expect(Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
-        Brightness.light);
+    expect(
+      Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
+      Brightness.light,
+    );
 
     await tester.tap(find.byTooltip('Theme'));
     await tester.pumpAndSettle();
@@ -153,5 +155,4 @@ void main() {
     expect(find.text('CHANNEL ARRAY'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
 }
