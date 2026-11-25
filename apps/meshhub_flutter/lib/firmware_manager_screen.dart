@@ -673,8 +673,9 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              CheckboxListTile(
+              if (selectedBoard?.supportsUsbFlash == true) ...[
+                const SizedBox(height: 12),
+                CheckboxListTile(
                 key: const Key('firmware-erase-first'),
                 contentPadding: EdgeInsets.zero,
                 value: eraseFirst,
@@ -690,6 +691,32 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                   'Requires separate ERASE confirmation.',
                 ),
               ),
+                const SizedBox(height: 9),
+              ],
+              if (selectedBoard != null && !selectedBoard!.supportsUsbFlash) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'GUIDED OFFLINE INSTALL · No automatic write for this board.',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  selectedBoard!.offersUf2
+                      ? 'Select a board-matched UF2 file. Enter the board\'s '
+                        'documented USB bootloader mode, then copy the UF2 '
+                        'file to its BOOT volume using your file manager. '
+                        'The board may restart and unmount automatically.'
+                      : 'This target requires its vendor-specific bootloader, '
+                        'DFU ZIP utility or recovery instructions. A full '
+                        'esptool flash is not safe for this board. Use the '
+                        'project\'s published offline procedure.',
+                ),
+                if (selectedImage != null) ...[
+                  const SizedBox(height: 6),
+                  const Text('Selected offline image path:'),
+                  SelectableText(selectedImage!.path),
+                ],
+              ],
               const SizedBox(height: 9),
               Text(
                 'Requires the esptool CLI on this Linux computer. '
