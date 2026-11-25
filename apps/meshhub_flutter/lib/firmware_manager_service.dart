@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'firmware_hardware_catalog.dart';
+
 /// Offline USB flashing is currently verified for Heltec V3 ESP32-S3 only.
 /// Full MeshCore merged and Meshtastic factory images can be used; release
 /// versions are parsed, not restricted to a fixed list.
@@ -17,12 +19,23 @@ class FirmwarePackage {
     required this.role,
     required this.version,
     required this.format,
+    this.boardId = 'meshcore-heltec-v3',
+    this.chip = 'esp32s3',
+    this.method = 'esptool',
+    this.imageKind = 'merged',
   });
 
   final FirmwareFamily family;
   final String role;
   final String version;
   final String format;
+  final String boardId;
+  final String? chip;
+  final String method;
+  final String imageKind;
+
+  bool get supportsDirectUsb => method == 'esptool' && chip != null &&
+      (imageKind == 'merged' || imageKind == 'factory');
 
   String get flashOffset => '0x0';
   String get displayName => '${family.label} · $role · $version';
@@ -83,7 +96,37 @@ class FirmwareManagerService {
 
   /// Match only supported Heltec V3 firmware formats. The filename itself is
   /// NOT proof of authenticity or of the board/role encoded in the image.
-  static FirmwarePackage? recognizePackage(String filename) {
+  static FirmwarePackage? recognizePackage(
+    String filename, {
+    FirmwareBoard? board,
+  }) {
+    if (board != null) {
+      final variant = board.match(filename);
+      if (variant == null) return null;
+      final family = board.family == 'meshCore'
+          ? FirmwareFamily.meshCore
+          : FirmwareFamily.meshtastic;
+      final versionMatch = RegExp(
+        r'v?\\d+(?:[._-]\\d+)*(?:[._+-][a-zA-Z0-9]+)*',
+      ).firstMatch(filename);
+      final version = versionMatch?.group(0) ?? 'release file';
+      return FirmwarePackage(
+        family: family,
+        role: variant.role,
+        version: version,
+        format: switch (variant.format) {
+          'merged' => 'Merged ESP32 full image',
+          'factory' => 'Factory ESP32 full image',
+          'uf2' => 'UF2 bootloader image',
+          _ => 'nRF52 DFU archive',
+        },
+        boardId: board.id,
+        chip: board.chip,
+        method: board.method,
+        imageKind: variant.format,
+      );
+    }
+
     final name = filename.toLowerCase();
     final meshtastic = RegExp(
       r'^firmware[-_]heltec[-_]v3[-_](.+)\.factory\.bin$',
@@ -144,10 +187,12 @@ class FirmwareManagerService {
     String path, {
     String? expectedSha256,
     FirmwareFamily? expectedFamily,
+    FirmwareBoard? board,
   }) async {
     final input = path.trim();
-    final package =
-        input.isEmpty ? null : recognizePackage(input.split('/').last);
+    final package = input.isEmpty
+        ? null
+        : recognizePackage(input.split('/').last, board: board);
     if (package == null ||
         (expectedFamily != null && package.family != expectedFamily)) {
       throw const FormatException(
@@ -171,13 +216,12 @@ class FirmwareManagerService {
     } finally {
       await handle.close();
     }
-    // ESP32-S3 image format header. This is NOT a cryptographic signature or
-    // complete validation of the firmware's declared board or application.
-    if (prefix.length < 8 ||
-        prefix[0] != 0xe9 ||
-        prefix[1] < 1 ||
-        prefix[1] > 16) {
-      throw const FormatException('No valid ESP32 image header at offset 0.');
+    // These checks are structural, not cryptographic signatures or proof
+    // that an image matches the connected board's wiring or bootloader.
+    if (!_validFirmwareHeader(package.imageKind, prefix)) {
+      throw FormatException(
+        'Invalid ${package.imageKind.toUpperCase()} firmware header.',
+      );
     }
     final checksum = await _calculateSha256(file.path);
     if (expectedSha256 != null && expectedSha256.trim().isNotEmpty) {
@@ -195,6 +239,25 @@ class FirmwareManagerService {
       bytes: stat.size,
       package: package,
     );
+  }
+
+  static bool _validFirmwareHeader(String kind, List<int> prefix) {
+    if (kind == 'merged' || kind == 'factory') {
+      return prefix.length >= 8 && prefix[0] == 0xe9 &&
+          prefix[1] >= 1 && prefix[1] <= 16;
+    }
+    if (kind == 'uf2') {
+      return prefix.length >= 8 &&
+          prefix[0] == 0x55 && prefix[1] == 0x46 &&
+          prefix[2] == 0x32 && prefix[3] == 0x0a &&
+          prefix[4] == 0x57 && prefix[5] == 0x51 &&
+          prefix[6] == 0x5d && prefix[7] == 0x9e;
+    }
+    if (kind == 'dfu-zip') {
+      return prefix.length >= 4 && prefix[0] == 0x50 &&
+          prefix[1] == 0x4b && prefix[2] == 3 && prefix[3] == 4;
+    }
+    return false;
   }
 
   Future<String> _calculateSha256(String path) async {
