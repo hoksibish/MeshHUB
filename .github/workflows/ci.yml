@@ -29,7 +29,8 @@ jobs:
         working-directory: apps/meshhub_flutter
         run: |
           flutter pub get
-          dart format --output=none --set-exit-if-changed lib test
+          dart format --output=write lib test
+          git diff --exit-code -- lib test
           flutter analyze
           flutter test
           flutter build linux --release
