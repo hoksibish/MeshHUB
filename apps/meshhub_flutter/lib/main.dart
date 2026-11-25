@@ -356,6 +356,22 @@ class _MeshHubAppState extends State<MeshHubApp> {
         ),
         Text('MeshCore · channel slot ${channel.index} · this session only'),
         const SizedBox(height: 8),
+        Card(
+          child: ListTile(
+            leading: Icon(
+              field.connected
+                  ? Icons.bluetooth_connected
+                  : Icons.bluetooth_disabled,
+            ),
+            title: Text(
+              field.connected ? 'Radio connected' : 'Radio disconnected',
+            ),
+            subtitle: Text(
+              '${field.status} · MeshHub cannot verify repeater coverage or recipient delivery.',
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
         const Text(
           'Channel broadcasts appear in order received. MeshCore does not provide Reddit-style reply-to-post links or verified channel senders.',
         ),
