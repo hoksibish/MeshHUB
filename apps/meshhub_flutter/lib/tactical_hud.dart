@@ -21,9 +21,7 @@ class TacticalHudBackdrop extends StatelessWidget {
   Widget build(BuildContext context) => Stack(
     children: [
       const Positioned.fill(
-        child: IgnorePointer(
-          child: CustomPaint(painter: _HudGridPainter()),
-        ),
+        child: IgnorePointer(child: CustomPaint(painter: _HudGridPainter())),
       ),
       Positioned.fill(child: child),
     ],
@@ -60,7 +58,9 @@ class TacticalHudStatusStrip extends StatelessWidget {
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                compact ? section.toUpperCase() : 'MESHHUB / ${section.toUpperCase()}',
+                compact
+                    ? section.toUpperCase()
+                    : 'MESHHUB / ${section.toUpperCase()}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -328,9 +328,7 @@ class _HudReticlePainter extends CustomPainter {
       center,
       6,
       Paint()
-        ..color = connected
-            ? TacticalHudColors.teal
-            : TacticalHudColors.orange,
+        ..color = connected ? TacticalHudColors.teal : TacticalHudColors.orange,
     );
   }
 
