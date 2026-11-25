@@ -157,7 +157,7 @@ void main() {
     expect(find.text('Trail'), findsOneWidget);
   });
 
-  testWidgets('inline channel post requires a fresh destination confirmation', (
+  testWidgets('inline channel send works without a manual RF checkbox', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1200, 900);
@@ -170,23 +170,9 @@ void main() {
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
     final send = find.text('Send');
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.ancestor(of: send, matching: find.byType(FilledButton)).first,
-          )
-          .onPressed,
-      isNull,
-    );
+    expect(find.textContaining('I verified RF region'), findsNothing);
+    expect(find.text('RF settings & send confirmation'), findsNothing);
     await tester.enterText(find.byType(TextField).last, 'Test post');
-    await tester.tap(find.text('RF settings & send confirmation'));
-    await tester.pumpAndSettle();
-    final confirmation = find.textContaining('I verified RF region');
-    await tester.ensureVisible(confirmation);
-    await tester.tap(confirmation);
-    await tester.pumpAndSettle();
-    expect(radio.writes.where((w) => w.first == 3), isEmpty);
-    await tester.ensureVisible(send);
     expect(
       tester
           .widget<FilledButton>(
@@ -200,27 +186,10 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
     await tester.pumpAndSettle();
-    expect(
-      radio.writes.where((w) => w.first == 3).length,
-      1,
-      reason:
-          'status=${session.status}, commands=${radio.writes.map((w) => w.first).toList()}',
-    );
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
-    await tester.pumpAndSettle();
+    expect(radio.writes.where((w) => w.first == 3).length, 1);
     expect(radio.writes.where((w) => w.first == 3).single[2], 2);
     expect(find.text('Test post'), findsOneWidget);
     expect(find.textContaining('peer delivery unverified'), findsOneWidget);
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.ancestor(of: send, matching: find.byType(FilledButton)).first,
-          )
-          .onPressed,
-      isNull,
-    );
   });
 
   testWidgets('rejected channel text leaves the draft and reports an error', (
@@ -236,12 +205,6 @@ void main() {
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'é' * 67);
-    await tester.tap(find.text('RF settings & send confirmation'));
-    await tester.pumpAndSettle();
-    final confirmation = find.textContaining('I verified RF region');
-    await tester.ensureVisible(confirmation);
-    await tester.tap(confirmation);
-    await tester.pumpAndSettle();
     final send = find.text('Send');
     await tester.ensureVisible(send);
     expect(
