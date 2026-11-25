@@ -33,12 +33,12 @@ In **Radios → Firmware Manager → Open**, MeshHub can inspect a previously do
 Linux host prerequisites:
 
 ```bash
-python3 -m pip install --user esptool
-python3 -m esptool version
+uv tool install esptool
+esptool version
 ls /dev/ttyACM* /dev/ttyUSB* 2>/dev/null
 ```
 
-Depending on Omarchy's Python packaging, install esptool in a managed environment (for example with `pipx` or `uv tool`), but ensure `python3 -m esptool` is runnable by MeshHub. The UI optionally opens `zenity` for file selection; otherwise paste the absolute file path. Do not add permissive udev rules or use `sudo` on the application as a shortcut to USB permissions. You may need the normal serial-port group/session permissions.
+The executable `esptool` must be on MeshHub's PATH (such as `$HOME/.local/bin` from `uv tool install esptool`). Use a supported package manager; do not run MeshHub with `sudo`. The UI optionally opens `zenity` for file selection; otherwise paste the absolute file path. Do not add permissive udev rules or use `sudo` on the application as a shortcut to USB permissions. You may need the normal serial-port group/session permissions.
 
 Supported in this initial implementation:
 
@@ -46,7 +46,7 @@ Supported in this initial implementation:
 - **Package:** matching filename containing `Heltec_v3`, `companion`, and `merged.bin`; an ESP32 image header at `0x0`, minimum/maximum size and local SHA-256 are checked. **Filename and file header are not cryptographic proof of target, role or publisher.** Independently compare the SHA-256 against a trusted release value when available.
 - **Offline library:** copies firmware bytes and nonsecret metadata to `~/.local/share/meshhub/firmware`. The copied bytes are rehashed before use; invalid cache files are not shown. Firmware data does not include chat history or radio identity.
 - **USB preflight:** requires a Linux serial device (`/dev/ttyACM*`, `/dev/ttyUSB*` or `/dev/serial/by-id/*`), uses read-only `esptool --chip esp32s3 --port PORT flash-id` and requires an ESP32-S3 response.
-- **Flashing:** only after selecting an image, a passed preflight, explicit acknowledgment of verified backups and target, and typing **FLASH** in the confirmation dialog. The app rechecks the file digest and USB chip and invokes `python3 -m esptool --chip esp32s3 --port PORT --baud 115200 write-flash 0x0 IMAGE` once. It deliberately does **not** invoke `erase-flash`, automatically back up identity, or retry uncertain writes.
+- **Flashing:** only after selecting an image, a passed preflight, explicit acknowledgment of verified backups and target, and typing **FLASH** in the confirmation dialog. The app rechecks the file digest and USB chip and invokes `esptool --chip esp32s3 --port PORT --baud 115200 write-flash 0x0 IMAGE` once. It deliberately does **not** invoke `erase-flash`, automatically back up identity, or retry uncertain writes.
 
 **Important:** Writing a merged image at `0x0` can still rewrite bootloader/partitions and overwrite device identity, Bluetooth pairing information, RF settings or other data. The lack of a separate `erase-flash` command does **not** guarantee configuration preservation. Back up first using a supported trusted method and verify after flashing. Disconnect the MeshHub BLE session before using USB. A successful esptool exit means a local USB operation completed; it is not proof that the node firmware or saved identity works. Do not flash an existing operational node without accepting these risks.
 
