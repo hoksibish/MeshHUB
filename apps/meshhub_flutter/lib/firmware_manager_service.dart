@@ -259,6 +259,7 @@ class FirmwareManagerService {
     required OfflineFirmwareImage image,
     required String port,
     required bool userConfirmed,
+    bool Function()? mayWrite,
   }) async {
     if (!userConfirmed) {
       throw StateError('Explicit firmware flashing confirmation is required.');
@@ -287,6 +288,9 @@ class FirmwareManagerService {
       await handle.close();
     }
     await checkUsb(port);
+    if (mayWrite != null && !mayWrite()) {
+      throw StateError('Bluetooth session became active. No flash attempted.');
+    }
     final result = await _runTool(
       [
         '--chip', 'esp32s3',
