@@ -126,6 +126,7 @@ void main() {
 
     expect(find.byType(TacticalHudBackdrop), findsOneWidget);
     expect(find.byType(TacticalHudMetric), findsNWidgets(3));
+    expect(find.byType(TacticalHudLinkScope), findsOneWidget);
     expect(find.text('OPERATIONS // OVERVIEW'), findsOneWidget);
     expect(find.text('MESHHUB / MESSAGES'), findsOneWidget);
 
