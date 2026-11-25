@@ -66,6 +66,10 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   String? error;
   int receiveCount = 0;
   int sendCount = 0;
+  int sendRequestCount = 0;
+  int rejectedSendCount = 0;
+  int uncertainSendCount = 0;
+  String lastSendOutcome = 'No local sends attempted';
   int rejectedFrames = 0;
   int waitingCount = 0;
   bool scanning = false;
@@ -449,6 +453,8 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   }) async {
     if (sending) throw StateError('Another send is already in progress');
     sending = true;
+    sendRequestCount++;
+    lastSendOutcome = 'Waiting for local radio response';
     final epoch = _epoch;
     final transport = _transport!;
     status = 'Send outcome uncertain until radio responds';
@@ -464,13 +470,21 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
         channel: channel,
       );
       if (epoch != _epoch) throw StateError('Session changed during send');
-      if (result == MeshCoreLocalSendResult.acceptedByRadio) sendCount++;
+      if (result == MeshCoreLocalSendResult.acceptedByRadio) {
+        sendCount++;
+        lastSendOutcome = 'Accepted locally · peer delivery unverified';
+      } else {
+        rejectedSendCount++;
+        lastSendOutcome = 'Rejected by local radio';
+      }
       status = result == MeshCoreLocalSendResult.acceptedByRadio
           ? 'Accepted by local radio — recipient delivery unverified'
           : 'Rejected by local radio';
       notifyListeners();
       return result;
     } catch (_) {
+      uncertainSendCount++;
+      lastSendOutcome = 'Uncertain · do not retransmit without peer check';
       if (epoch == _epoch) {
         status = 'Send outcome uncertain — do not retry blindly';
         notifyListeners();
