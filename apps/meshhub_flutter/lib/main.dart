@@ -879,56 +879,81 @@ class _MeshHubAppState extends State<MeshHubApp> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: channelMessageInput,
-                  minLines: 1,
-                  maxLines: 3,
-                  maxLength: 133,
-                  decoration: InputDecoration(
-                    hintText: 'Message ${channel.name}',
-                    labelText: 'Message (UTF-8, max 133 bytes)',
-                    prefixIcon: const Icon(Icons.chat_bubble_outline),
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: const EdgeInsets.only(bottom: 8),
+                  leading: Icon(
+                    verifiedChannel
+                        ? Icons.verified_outlined
+                        : Icons.tune_outlined,
+                    color: verifiedChannel ? _meshCoreAccent : null,
                   ),
-                ),
-                if (field.identity?.radioPreset case final rf?)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'RF: ${rf.frequencyKHz} kHz · ${rf.bandwidthHz} Hz · SF${rf.spreadingFactor} · CR${rf.codingRate}',
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                  ),
-                CheckboxListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.trailing,
                   title: Text(
-                    'I verified RF region, displayed preset, ${channel.name} (slot ${channel.index}) and a reachable peer',
+                    verifiedChannel
+                        ? 'Send settings confirmed'
+                        : 'RF settings & send confirmation',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  value: verifiedChannel,
-                  onChanged: field.connected
-                      ? (value) => setState(() => verifiedChannel = value ?? false)
-                      : null,
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed:
-                        field.connected &&
-                            !field.channelsLoading &&
-                            !field.sending &&
-                            verifiedChannel
-                        ? () => _sendChannelPost(context)
-                        : null,
-                    icon: const Icon(Icons.send_outlined),
-                    label: const Text('Post once to selected channel'),
+                  subtitle: Text(
+                    'Local acceptance does not confirm delivery',
+                    style: Theme.of(context).textTheme.labelSmall,
                   ),
+                  children: [
+                    if (field.identity?.radioPreset case final rf?)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'RF: ${rf.frequencyKHz} kHz · ${rf.bandwidthHz} Hz · SF${rf.spreadingFactor} · CR${rf.codingRate}',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ),
+                    CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'I verified RF region, displayed preset, ${channel.name} (slot ${channel.index}) and a reachable peer',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      value: verifiedChannel,
+                      onChanged: field.connected
+                          ? (value) => setState(() => verifiedChannel = value ?? false)
+                          : null,
+                    ),
+                  ],
                 ),
-                Text(
-                  'Local acceptance is not delivery · do not blindly retry',
-                  style: Theme.of(context).textTheme.labelSmall,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: channelMessageInput,
+                        minLines: 1,
+                        maxLines: 3,
+                        maxLength: 133,
+                        decoration: InputDecoration(
+                          hintText: 'Message ${channel.name}',
+                          prefixIcon: const Icon(Icons.chat_bubble_outline),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: FilledButton.icon(
+                        onPressed:
+                            field.connected &&
+                                !field.channelsLoading &&
+                                !field.sending &&
+                                verifiedChannel
+                            ? () => _sendChannelPost(context)
+                            : null,
+                        icon: const Icon(Icons.send_outlined),
+                        label: const Text('Send'),
+                      ),
+                    ),
+                  ],
                 ),
+
               ],
             ),
           ),
