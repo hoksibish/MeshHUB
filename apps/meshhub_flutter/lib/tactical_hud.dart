@@ -218,16 +218,20 @@ class TacticalHudLinkScope extends StatelessWidget {
   final VoidCallback onOpenRadios;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 344,
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 380;
+    final width = math.min(344.0, MediaQuery.sizeOf(context).width - 40);
+    final reticleSize = compact ? 84.0 : 122.0;
+    return SizedBox(
+    width: width,
     child: TacticalHudPanel(
       padding: const EdgeInsets.fromLTRB(14, 14, 16, 14),
       active: connected,
       child: Row(
         children: [
           SizedBox(
-            width: 122,
-            height: 122,
+            width: reticleSize,
+            height: reticleSize,
             child: IgnorePointer(
               child: CustomPaint(
                 painter: _HudReticlePainter(connected: connected),
@@ -282,7 +286,7 @@ class TacticalHudLinkScope extends StatelessWidget {
       ),
     ),
   );
-}
+  }
 
 class _HudReticlePainter extends CustomPainter {
   const _HudReticlePainter({required this.connected});
