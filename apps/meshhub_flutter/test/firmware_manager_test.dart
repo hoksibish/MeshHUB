@@ -5,6 +5,7 @@ import 'package:meshhub_flutter/firmware_manager_service.dart';
 import 'package:meshhub_flutter/firmware_hardware_catalog.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late Directory temp;
   late File firmware;
   late List<List<String>> commands;
