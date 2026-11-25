@@ -157,9 +157,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     color: TacticalHudColors.cyan.withValues(alpha: 0.55),
                   ),
                 )
-              : RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
+              : RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
@@ -212,31 +210,35 @@ class _MeshHubAppState extends State<MeshHubApp> {
           actions: [
             if (MediaQuery.sizeOf(context).width >= 500)
               Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: field.connected
-                      ? _accent.withValues(alpha: 0.12)
-                      : scheme.onSurface.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      field.connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
-                      color: field.connected ? _accent : scheme.onSurfaceVariant,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      field.connected ? 'Radio online' : 'Offline',
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: field.connected
+                        ? _accent.withValues(alpha: 0.12)
+                        : scheme.onSurface.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        field.connected
+                            ? Icons.bluetooth_connected
+                            : Icons.bluetooth_disabled,
+                        color: field.connected
+                            ? _accent
+                            : scheme.onSurfaceVariant,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        field.connected ? 'Radio online' : 'Offline',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
             PopupMenuButton<MeshHubTheme>(
               tooltip: 'Theme',
               icon: const Icon(Icons.palette_outlined),
@@ -303,7 +305,11 @@ class _MeshHubAppState extends State<MeshHubApp> {
         bottomNavigationBar: MediaQuery.sizeOf(context).width < 760
             ? NavigationBar(
                 height: 68,
-                selectedIndex: destination == 4 ? 4 : destination == 5 ? 4 : destination,
+                selectedIndex: destination == 4
+                    ? 4
+                    : destination == 5
+                    ? 4
+                    : destination,
                 onDestinationSelected: (index) => setState(() {
                   destination = index == 4 ? 5 : index;
                 }),
@@ -365,7 +371,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
           TacticalHudStatusStrip(
             section: section,
             connected: field.connected,
-            preset: rf == null ? null : '${rf.frequencyKHz} kHz / SF${rf.spreadingFactor}',
+            preset: rf == null
+                ? null
+                : '${rf.frequencyKHz} kHz / SF${rf.spreadingFactor}',
           ),
           Expanded(child: content),
         ],
@@ -386,9 +394,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
         else ...[
           Text(
             'Your mesh, one place.',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
@@ -433,9 +440,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
             Expanded(
               child: Text(
                 'Recent activity',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
             ),
             TextButton.icon(
@@ -464,9 +470,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   ),
                   const SizedBox(height: 12),
                   FilledButton.tonalIcon(
-                    onPressed: () => setState(() => destination = field.connected ? 1 : 4),
+                    onPressed: () =>
+                        setState(() => destination = field.connected ? 1 : 4),
                     icon: Icon(field.connected ? Icons.tag : Icons.bluetooth),
-                    label: Text(field.connected ? 'Browse channels' : 'Connect a radio'),
+                    label: Text(
+                      field.connected ? 'Browse channels' : 'Connect a radio',
+                    ),
                   ),
                 ],
               ),
@@ -493,7 +502,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 overflow: TextOverflow.ellipsis,
               ),
               trailing: Text(
-                message.protocol == MeshProtocol.meshCore ? 'MeshCore' : 'Meshtastic',
+                message.protocol == MeshProtocol.meshCore
+                    ? 'MeshCore'
+                    : 'Meshtastic',
                 style: Theme.of(context).textTheme.labelSmall,
               ),
               onTap: () {
@@ -506,7 +517,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     final matching = field.channels.where(
                       (c) => c.index == selectedChannel,
                     );
-                    _selectedChannelName = matching.isEmpty ? null : matching.first.name;
+                    _selectedChannelName = matching.isEmpty
+                        ? null
+                        : matching.first.name;
                   });
                 }
               },
@@ -591,9 +604,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   const SizedBox(height: 18),
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 12),
                   Text(description, textAlign: TextAlign.center),
@@ -623,9 +635,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
     children: [
       Text(
         'Settings',
-        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(context).textTheme.headlineMedium
+            ?.copyWith(fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 18),
       Card(
@@ -656,7 +667,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
         child: ListTile(
           leading: const Icon(Icons.router_outlined, color: _meshCoreAccent),
           title: const Text('Radios & Bluetooth'),
-          subtitle: Text(field.connected ? 'Radio connected' : 'Connect your radio'),
+          subtitle: Text(
+            field.connected ? 'Radio connected' : 'Connect your radio',
+          ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => setState(() => destination = 4),
         ),
@@ -666,7 +679,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
         child: ListTile(
           leading: Icon(Icons.shield_outlined),
           title: Text('Privacy'),
-          subtitle: Text('Message history is session-only; encrypted persistence is not yet implemented.'),
+          subtitle: Text(
+            'Message history is session-only; encrypted persistence is not yet implemented.',
+          ),
         ),
       ),
     ],
@@ -691,7 +706,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
       return Row(
         children: [
           SizedBox(
-            width: wide ? (constraints.maxWidth >= 1150 ? 340 : 280) : constraints.maxWidth,
+            width: wide
+                ? (constraints.maxWidth >= 1150 ? 340 : 280)
+                : constraints.maxWidth,
             child: _channelList(context),
           ),
           if (wide) ...[
@@ -800,11 +817,13 @@ class _MeshHubAppState extends State<MeshHubApp> {
 
   Widget _channelTile(MeshCoreChannel channel) {
     final selected = selectedChannel == channel.index;
-    final count = field.messages.where(
-      (message) =>
-          message.protocol == MeshProtocol.meshCore &&
-          message.conversationId == 'meshcore-channel-${channel.index}',
-    ).length;
+    final count = field.messages
+        .where(
+          (message) =>
+              message.protocol == MeshProtocol.meshCore &&
+              message.conversationId == 'meshcore-channel-${channel.index}',
+        )
+        .length;
     final item = ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       leading: CircleAvatar(
@@ -867,11 +886,13 @@ class _MeshHubAppState extends State<MeshHubApp> {
       );
     }
     final channel = matching.first;
-    final posts = field.messages.where(
-      (m) =>
-          m.protocol == MeshProtocol.meshCore &&
-          m.conversationId == 'meshcore-channel-${channel.index}',
-    ).toList();
+    final posts = field.messages
+        .where(
+          (m) =>
+              m.protocol == MeshProtocol.meshCore &&
+              m.conversationId == 'meshcore-channel-${channel.index}',
+        )
+        .toList();
     final colors = Theme.of(context).colorScheme;
     return Column(
       children: [
@@ -936,7 +957,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 ),
               ),
               Icon(
-                field.connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+                field.connected
+                    ? Icons.bluetooth_connected
+                    : Icons.bluetooth_disabled,
                 color: field.connected ? _meshCoreAccent : colors.error,
               ),
             ],
@@ -968,7 +991,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 45),
                   child: Center(
-                    child: Text('No posts in this channel during this session yet.'),
+                    child: Text(
+                      'No posts in this channel during this session yet.',
+                    ),
                   ),
                 ),
               for (final post in posts)
@@ -1011,7 +1036,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                                     post.sender,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontWeight: FontWeight.w700),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1023,7 +1050,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
                               post.isSimulated
                                   ? 'SIMULATED'
                                   : post.deliveryState ==
-                                        MessageDeliveryState.acceptedByLocalRadio
+                                        MessageDeliveryState
+                                            .acceptedByLocalRadio
                                   ? 'Accepted locally · peer delivery unverified'
                                   : 'LIVE · received by this radio',
                               style: Theme.of(context).textTheme.labelSmall,
@@ -1088,7 +1116,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                                 !field.channelsLoading &&
                                 !field.sending &&
                                 field.identity?.radioPreset != null &&
-                                field.channels.any((c) => c.index == channel.index)
+                                field.channels.any(
+                                  (c) => c.index == channel.index,
+                                )
                             ? () => _sendChannelPost(context)
                             : null,
                         icon: const Icon(Icons.send_outlined),
@@ -1097,7 +1127,6 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     ),
                   ],
                 ),
-
               ],
             ),
           ),
@@ -1147,10 +1176,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
           )
         else
           Text(
-          'Radios',
-          style: Theme.of(context).textTheme.headlineMedium
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-        ),
+            'Radios',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
+          ),
         const SizedBox(height: 8),
         FilledButton.icon(
           onPressed: field.scanning ? null : () => unawaited(field.discover()),
