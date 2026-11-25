@@ -32,6 +32,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Discover MeshCore radios'), findsOneWidget);
       expect(find.text('No radio selected'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Direct test message'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
       expect(find.text('Direct test message'), findsOneWidget);
       expect(find.textContaining('SIMULATED DATA'), findsNothing);
     },
@@ -155,4 +160,91 @@ void main() {
     expect(find.text('CHANNEL ARRAY'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('nodes screen shows verified-state placeholders without fake telemetry', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MeshHubApp());
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Nodes'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Node inventory'), findsOneWidget);
+    expect(find.textContaining('No live node inventory source'), findsOneWidget);
+    expect(find.text('Verified node inventory'), findsOneWidget);
+    expect(find.textContaining('empty inventory here does not mean'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tactical Nodes and Radios retain compact console navigation', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MeshHubApp());
+    await tester.tap(find.byTooltip('Theme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('tactical').last);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Nodes'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('NODE MONITOR'), findsOneWidget);
+    expect(find.byType(TacticalHudPanel), findsWidgets);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Radios'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('COMMUNICATIONS CONSOLE'), findsOneWidget);
+    expect(find.text('Discover MeshCore radios'), findsOneWidget);
+    expect(find.text('Connection', skipOffstage: false), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('light and dark maintain readable radio chrome', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MeshHubApp());
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Radios'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Radios & Bluetooth'), findsOneWidget);
+    final darkTheme = Theme.of(tester.element(find.byType(Scaffold).first));
+    expect(darkTheme.brightness, Brightness.dark);
+    expect(darkTheme.colorScheme.onSurface, isNot(darkTheme.colorScheme.surface));
+
+    await tester.tap(find.byTooltip('Theme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('light').last);
+    await tester.pumpAndSettle();
+    final lightTheme = Theme.of(tester.element(find.byType(Scaffold).first));
+    expect(lightTheme.brightness, Brightness.light);
+    expect(lightTheme.colorScheme.onSurface, isNot(lightTheme.colorScheme.surface));
+    expect(find.text('Discover MeshCore radios'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
 }
