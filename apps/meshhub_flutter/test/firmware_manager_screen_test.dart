@@ -38,13 +38,13 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('Heltec WiFi LoRa 32 V3 · ESP32-S3 USB'), findsOneWidget);
+    expect(find.text('Heltec v3'), findsWidgets);
     expect(find.text('MeshCore'), findsOneWidget);
     expect(find.text('Meshtastic'), findsOneWidget);
-    expect(find.textContaining('full -merged.bin'), findsOneWidget);
+    expect(find.textContaining('USB esptool supported'), findsOneWidget);
     await tester.tap(find.text('Meshtastic'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('full .factory.bin'), findsOneWidget);
+    expect(find.text('Heltec V3'), findsWidgets);
     expect(find.text('Inspect image'), findsOneWidget);
     expect(commands, isEmpty);
     await tester.scrollUntilVisible(
