@@ -120,8 +120,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
     try {
       final result = await Process.run('zenity', [
         '--file-selection',
-        '--title=Select offline Heltec V3 firmware',
-        '--file-filter=Firmware images | *.bin',
+        '--title=Select offline firmware for the selected board',
+        '--file-filter=Firmware files | *.bin *.uf2 *.zip',
       ]);
       if (result.exitCode != 0) return;
       final path = result.stdout.toString().trim();
@@ -232,7 +232,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Target: Heltec V3 / ESP32-S3\n'
+                          'Target: ${selectedBoard?.name ?? image.package.boardId} / '
+                          '${selectedBoard?.architecture ?? 'unknown'}\n'
                           'Firmware: ${image.package.displayName}\n'
                           'Image: ${image.package.format} @ ${image.package.flashOffset}',
                         ),
@@ -435,13 +436,11 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         const SizedBox(height: 14),
         _section(
           context,
-          title: 'Target device / firmware family',
+          title: 'Hardware and firmware',
           icon: Icons.memory_outlined,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Heltec WiFi LoRa 32 V3 · ESP32-S3 USB'),
-              const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -450,39 +449,79 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                     ChoiceChip(
                       label: Text(family.label),
                       selected: selectedFamily == family,
-                      onSelected: busy
-                          ? null
-                          : (_) => setState(() {
-                                selectedFamily = family;
-                                selectedImage = null;
-                                checkedPort = null;
-                                eraseFirst = false;
-                              }),
+                      onSelected: busy ? null : (_) => setState(() {
+                        selectedFamily = family;
+                        selectedBoardId = family == FirmwareFamily.meshCore
+                            ? 'meshcore-heltec-v3' : 'meshtastic-heltec-v3';
+                        selectedImage = null;
+                        checkedPort = null;
+                        boardSearch = '';
+                        eraseFirst = false;
+                      }),
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                selectedFamily == FirmwareFamily.meshCore
-                    ? 'Companion BLE/USB, Repeater, Room Server or Sensor · '
-                      'any release version · full -merged.bin'
-                    : 'Meshtastic node · any release version · '
-                      'full .factory.bin from the ESP32-S3 release',
+              const SizedBox(height: 12),
+              TextField(
+                enabled: !busy,
+                decoration: const InputDecoration(
+                  labelText: 'Filter supported hardware',
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Heltec, T-Beam, RAK, T114…',
+                ),
+                onChanged: (text) => setState(() => boardSearch = text),
               ),
-              if (selectedFamily == FirmwareFamily.meshtastic) ...[
-                const SizedBox(height: 8),
+              const SizedBox(height: 8),
+              if (catalog == null)
+                const Text('Loading offline hardware catalog…')
+              else
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: currentBoards.any((b) => b.id == selectedBoardId)
+                      ? selectedBoardId : null,
+                  hint: const Text('Choose an exact board model'),
+                  items: currentBoards
+                      .where((board) =>
+                          board.id == selectedBoardId ||
+                          boardSearch.isEmpty ||
+                          board.name.toLowerCase().contains(
+                              boardSearch.toLowerCase()))
+                      .map((board) => DropdownMenuItem<String>(
+                        value: board.id,
+                        child: Text(
+                          board.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ))
+                      .toList(),
+                  onChanged: busy ? null : (id) => setState(() {
+                    selectedBoardId = id;
+                    selectedImage = null;
+                    checkedPort = null;
+                    eraseFirst = false;
+                  }),
+                ),
+              const SizedBox(height: 6),
+              if (selectedBoard != null) ...[
                 Text(
-                  'Firmware installation only: MeshHub does not yet have '
-                  'a live Meshtastic messaging transport. Configure the '
-                  'flashed node with the official Meshtastic app.',
+                  '${selectedBoard!.architecture.toUpperCase()} · '
+                  '${selectedBoard!.supportsUsbFlash
+                      ? 'USB esptool supported'
+                      : 'Guided UF2 / DFU or vendor installation'}',
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Select the exact hardware revision and a firmware image '
+                  'published for it. Chip detection alone cannot distinguish '
+                  'boards with different pins or radio modules.',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
-                'Download or extract the matching Heltec V3 image first. '
-                'Non-merged/update-only BINs, other boards, ZIPs, nRF52 '
-                'and OTA are not supported in this USB workflow.',
+                'Catalog snapshot: official MeshCore and Meshtastic flasher '
+                'targets; works offline. Additional hardware/flash methods '
+                'require independent verification.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -504,13 +543,10 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                   checkedPort = null;
                 }),
                 decoration: InputDecoration(
-                  labelText: 'Local firmware .bin path',
-                  hintText:
-                      selectedFamily == FirmwareFamily.meshCore
-                          ? '/home/user/Downloads/Heltec_v3_repeater-vX.Y-merged.bin'
-                          : '/home/user/Downloads/firmware-heltec-v3-X.Y.factory.bin',
+                  labelText: 'Local firmware file (.bin / .uf2 / .zip)',
+                  hintText: '/home/user/Downloads/board-specific-firmware.bin',
                   helperText:
-                      'Official source recommended · no online downloads',
+                      'Use official board-matched release; no online downloads',
                 ),
               ),
               const SizedBox(height: 9),
