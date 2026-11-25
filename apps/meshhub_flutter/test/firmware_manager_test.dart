@@ -327,6 +327,7 @@ void main() {
     expect(inspected.package.supportsDirectUsb, false);
     final cached = await manager.saveOffline(inspected);
     expect(cached.package.boardId, rak.id);
+    expect(cached.path.endsWith('.uf2'), true);
     expect((await manager.savedImages()).single.package.boardId, rak.id);
     await expectLater(
       manager.flashMergedImage(
