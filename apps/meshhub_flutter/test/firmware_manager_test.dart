@@ -105,14 +105,10 @@ void main() {
     final fixtures = <String, String>{
       'Heltec_v3_companion_radio_ble-v1.18.0-81dbae5-merged.bin':
           'Companion BLE',
-      'Heltec_v3_companion_radio_usb-v1.21.7-merged.bin':
-          'Companion USB',
-      'Heltec_v3_repeater-v2.5.0-abcd123-merged.bin':
-          'Repeater',
-      'Heltec_v3_room_server-v1.19.7-merged.bin':
-          'Room Server',
-      'Heltec_v3_sensor-v1.20.0-alpha-merged.bin':
-          'Sensor',
+      'Heltec_v3_companion_radio_usb-v1.21.7-merged.bin': 'Companion USB',
+      'Heltec_v3_repeater-v2.5.0-abcd123-merged.bin': 'Repeater',
+      'Heltec_v3_room_server-v1.19.7-merged.bin': 'Room Server',
+      'Heltec_v3_sensor-v1.20.0-alpha-merged.bin': 'Sensor',
     };
     for (final item in fixtures.entries) {
       final parsed = FirmwareManagerService.recognizePackage(item.key);
@@ -142,8 +138,11 @@ void main() {
       'Heltec_v4_repeater-v1.20.0-merged.bin',
       'Heltec_v3_mystery_role-v1.20.0-merged.bin',
     ]) {
-      expect(FirmwareManagerService.recognizePackage(name), isNull,
-          reason: name);
+      expect(
+        FirmwareManagerService.recognizePackage(name),
+        isNull,
+        reason: name,
+      );
     }
   });
 
@@ -188,10 +187,14 @@ void main() {
     await manager.saveOffline(meshtastic);
     final images = await manager.savedImages();
     expect(images, hasLength(2));
-    expect(images.map((i) => i.package.family).toSet(),
-        {FirmwareFamily.meshCore, FirmwareFamily.meshtastic});
-    expect(images.map((i) => i.package.role).toSet(),
-        {'Companion BLE', 'Meshtastic node'});
+    expect(images.map((i) => i.package.family).toSet(), {
+      FirmwareFamily.meshCore,
+      FirmwareFamily.meshtastic,
+    });
+    expect(images.map((i) => i.package.role).toSet(), {
+      'Companion BLE',
+      'Meshtastic node',
+    });
   });
 
   test('Meshtastic factory flash uses full image offset 0x0', () async {
@@ -206,11 +209,10 @@ void main() {
       userConfirmed: true,
     );
     expect(commands, hasLength(2));
-    expect(commands.last, containsAllInOrder([
-      'write-flash',
-      '0x0',
-      factory.absolute.path,
-    ]));
+    expect(
+      commands.last,
+      containsAllInOrder(['write-flash', '0x0', factory.absolute.path]),
+    );
     expect(commands.where((args) => args.contains('erase-flash')), isEmpty);
   });
 
@@ -239,7 +241,10 @@ void main() {
       'erase-flash',
       firmware.absolute.path,
     ]);
-    expect(commands.where((args) => args.contains('erase-flash')), hasLength(1));
+    expect(
+      commands.where((args) => args.contains('erase-flash')),
+      hasLength(1),
+    );
   });
 
   test('BLE activation after erase prevents any firmware write', () async {
@@ -261,24 +266,28 @@ void main() {
     expect(commands.where((args) => args.contains('write-flash')), isEmpty);
   });
 
-  test('offline catalog includes both firmware ecosystems and exact models', () async {
-    final catalog = await FirmwareBoardCatalog.load();
-    expect(catalog.forFamily('meshCore').length, greaterThan(50));
-    expect(catalog.forFamily('meshtastic').length, greaterThan(90));
-    expect(catalog.byId('meshcore-heltec-v3')?.chip, 'esp32s3');
-    expect(catalog.byId('meshtastic-heltec-v3')?.chip, 'esp32s3');
-    expect(catalog.byId('meshtastic-tbeam')?.chip, 'esp32');
-    expect(catalog.byId('meshtastic-rak4631')?.offersUf2, true);
-    expect(catalog.byId('meshtastic-rak4631')?.supportsUsbFlash, false);
-    expect(catalog.byId('meshcore-heltec-t114')?.supportsUsbFlash, false);
-  });
+  test(
+    'offline catalog includes both firmware ecosystems and exact models',
+    () async {
+      final catalog = await FirmwareBoardCatalog.load();
+      expect(catalog.forFamily('meshCore').length, greaterThan(50));
+      expect(catalog.forFamily('meshtastic').length, greaterThan(90));
+      expect(catalog.byId('meshcore-heltec-v3')?.chip, 'esp32s3');
+      expect(catalog.byId('meshtastic-heltec-v3')?.chip, 'esp32s3');
+      expect(catalog.byId('meshtastic-tbeam')?.chip, 'esp32');
+      expect(catalog.byId('meshtastic-rak4631')?.offersUf2, true);
+      expect(catalog.byId('meshtastic-rak4631')?.supportsUsbFlash, false);
+      expect(catalog.byId('meshcore-heltec-t114')?.supportsUsbFlash, false);
+    },
+  );
 
   test('board profile controls allowed firmware and MCU preflight', () async {
     final catalog = await FirmwareBoardCatalog.load();
     final heltec3 = catalog.byId('meshcore-heltec-v3')!;
     final heltec4 = catalog.byId('meshcore-heltec-v4')!;
     final image = await manager.inspectFile(
-      firmware.path, board: heltec3,
+      firmware.path,
+      board: heltec3,
       expectedFamily: FirmwareFamily.meshCore,
     );
     expect(image.package.boardId, heltec3.id);
@@ -293,7 +302,13 @@ void main() {
       port: '/dev/ttyACM0',
       userConfirmed: true,
     );
-    expect(commands.first, ['--chip', 'esp32s3', '--port', '/dev/ttyACM0', 'flash-id']);
+    expect(commands.first, [
+      '--chip',
+      'esp32s3',
+      '--port',
+      '/dev/ttyACM0',
+      'flash-id',
+    ]);
   });
 
   test('nRF UF2 images can be saved for guided offline installation', () async {
@@ -301,11 +316,12 @@ void main() {
     final rak = catalog.byId('meshtastic-rak4631')!;
     final uf2 = File('${temp.path}/firmware-rak4631-2.8.3.d0f4096.uf2');
     final blocks = List<int>.filled(128 * 1024, 0);
-    blocks.setRange(0, 8, [0x55, 0x46, 0x32, 0x0a,
-                            0x57, 0x51, 0x5d, 0x9e]);
+    blocks.setRange(0, 8, [0x55, 0x46, 0x32, 0x0a, 0x57, 0x51, 0x5d, 0x9e]);
     await uf2.writeAsBytes(blocks);
     final inspected = await manager.inspectFile(
-      uf2.path, board: rak, expectedFamily: FirmwareFamily.meshtastic,
+      uf2.path,
+      board: rak,
+      expectedFamily: FirmwareFamily.meshtastic,
     );
     expect(inspected.package.imageKind, 'uf2');
     expect(inspected.package.supportsDirectUsb, false);
@@ -314,7 +330,9 @@ void main() {
     expect((await manager.savedImages()).single.package.boardId, rak.id);
     await expectLater(
       manager.flashMergedImage(
-        image: inspected, port: '/dev/ttyACM0', userConfirmed: true,
+        image: inspected,
+        port: '/dev/ttyACM0',
+        userConfirmed: true,
       ),
       throwsFormatException,
     );
