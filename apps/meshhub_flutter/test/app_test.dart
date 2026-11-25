@@ -2,6 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:meshhub_flutter/main.dart';
 
+/// Tap the Channels destination, not the identically named page heading.
+Future<void> openChannels(WidgetTester tester) async {
+  final navigation = find.byType(NavigationRail).evaluate().isNotEmpty
+      ? find.byType(NavigationRail)
+      : find.byType(NavigationBar);
+  final destination = find.descendant(
+    of: navigation,
+    matching: find.text('Channels'),
+  );
+  expect(destination, findsOneWidget);
+  await tester.tap(destination);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets(
     'radio panel offers explicit discovery without implicit RF send',
@@ -26,8 +40,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const MeshHubApp());
-    await tester.tap(find.text('Channels'));
-    await tester.pumpAndSettle();
+    await openChannels(tester);
     expect(find.text('Channels'), findsWidgets);
     expect(find.textContaining('Connect a MeshCore radio'), findsOneWidget);
     expect(find.text('Public'), findsNothing);
@@ -38,8 +51,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const MeshHubApp());
-    await tester.tap(find.text('Channels'));
-    await tester.pumpAndSettle();
+    await openChannels(tester);
     final heading = find.text('Channels').last;
     final context = tester.element(heading);
     final expected = Theme.of(context).colorScheme.onSurface;
@@ -51,8 +63,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const MeshHubApp());
     expect(find.text('MeshHub'), findsOneWidget);
-    await tester.tap(find.text('Channels'));
-    await tester.pumpAndSettle();
+    await openChannels(tester);
     expect(find.text('MeshCore example'), findsNothing);
     await tester.tap(find.text('Show simulated examples'));
     await tester.pumpAndSettle();
