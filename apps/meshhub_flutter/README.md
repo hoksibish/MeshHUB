@@ -1,6 +1,6 @@
-# MeshHub Linux M0 sample
+# MeshHub Linux M1 field-test build
 
-This is a **simulated** Flutter shell. The inbox and radios are fixtures. It does not scan or connect to a MeshCore/Meshtastic radio, send RF, store messages on disk, or deliver notifications. The Heltec V3 / MeshCore 1.18.0 is the intended M1 device, not an M0 validation claim.
+The **Radios** panel can discover/select a paired MeshCore device, perform an authenticated GATT/Companion handshake, display read-only device metadata, receive messages into volatile memory, and prepare guarded channel/direct test sends. The **Inbox** has a simulation toggle and labels live versus sample data. No real history is written to disk; MeshCore RF receipt/delivery still needs a second endpoint. See `../../FIELD-TEST.md` before field use.
 
 ## Omarchy setup
 
@@ -19,7 +19,9 @@ dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
 flutter build linux --release
-flutter run -d linux
+cd ~/MeshHUB
+./run-field-test.sh --check
+./run-field-test.sh
 ```
 
 The built binary is at `build/linux/x64/release/bundle/meshhub_flutter`. The `bundle/` directory (not only the executable) is required to run the release app. For a noninteractive shell on this Omarchy session, `WAYLAND_DISPLAY=wayland-1` and `DISPLAY=:0` were needed to launch a window; normal graphical terminals inherit those automatically.
@@ -28,7 +30,8 @@ The built binary is at `build/linux/x64/release/bundle/meshhub_flutter`. The `bu
 
 - `packages/meshhub_domain`: protocol identifiers, radio and message models, adapter/transport/repository ports.
 - `packages/meshhub_domain/lib/testing.dart`: explicitly simulated adapters, fake byte transport and in-memory sample data.
-- `apps/meshhub_flutter`: adaptive Linux shell with theme choices, sidebar/bottom navigation, network filters, radios placeholder and fixed-code redacted diagnostics helper.
-- `docs/BLE-FEASIBILITY.md`: evidence and limitations of the Linux Bluetooth preflight.
+- `apps/meshhub_flutter`: adaptive Linux UI with theme choices; explicit BLE scan/selection, live read-only firmware/RF panel, guarded send composer, volatile real inbox and simulated examples toggle.
+- `apps/meshhub_flutter/lib/field_session.dart`: selected-device Companion handshake, in-memory receive/diagnostics, bounded reconnect, no outbound replay. `meshcore_ble_transport.dart` owns BlueZ GATT, while the domain codec owns Companion frames.
+- `docs/BLE-FEASIBILITY.md` and `docs/M1-HARDWARE-RESULTS.md`: Bluetooth baseline and actual hardware evidence.
 
-Never treat the mock send result as actual radio acceptance or network delivery. The app does not yet have encrypted persistence or a working BLE adapter.
+The mock inbox remains clearly marked. Local radio acceptance is not recipient delivery. Do not store real history until encrypted persistence exists; this build intentionally loses its live inbox on exit.
