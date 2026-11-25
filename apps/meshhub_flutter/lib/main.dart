@@ -873,8 +873,16 @@ class _MeshHubAppState extends State<MeshHubApp> {
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           decoration: BoxDecoration(
+            color: theme == MeshHubTheme.tactical
+                ? TacticalHudColors.panel.withValues(alpha: 0.93)
+                : null,
             border: Border(
-              bottom: BorderSide(color: colors.outlineVariant),
+              bottom: BorderSide(
+                color: theme == MeshHubTheme.tactical
+                    ? TacticalHudColors.orange
+                    : colors.outlineVariant,
+                width: theme == MeshHubTheme.tactical ? 2 : 1,
+              ),
             ),
           ),
           child: Row(
@@ -903,7 +911,13 @@ class _MeshHubAppState extends State<MeshHubApp> {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: colors.onSurface,
+                        fontFamily: theme == MeshHubTheme.tactical
+                            ? 'monospace'
+                            : null,
+                        letterSpacing: theme == MeshHubTheme.tactical ? 1.1 : 0,
+                        color: theme == MeshHubTheme.tactical
+                            ? TacticalHudColors.cyan
+                            : colors.onSurface,
                       ),
                     ),
                     Text(
@@ -1022,7 +1036,16 @@ class _MeshHubAppState extends State<MeshHubApp> {
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: colors.outlineVariant)),
+              color: theme == MeshHubTheme.tactical
+                  ? TacticalHudColors.panel.withValues(alpha: 0.98)
+                  : null,
+              border: Border(
+                top: BorderSide(
+                  color: theme == MeshHubTheme.tactical
+                      ? TacticalHudColors.cyan
+                      : colors.outlineVariant,
+                ),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1111,7 +1134,13 @@ class _MeshHubAppState extends State<MeshHubApp> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(
+        if (theme == MeshHubTheme.tactical)
+          const TacticalHudHeading(
+            'Communications Console',
+            subtitle: 'LIVE BLE TRANSPORT / CONFIGURATION READBACK',
+          )
+        else
+          Text(
           'Radios',
           style: Theme.of(context).textTheme.headlineMedium
               ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
