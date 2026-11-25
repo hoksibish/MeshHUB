@@ -311,8 +311,8 @@ class FirmwareManagerService {
     Process process;
     try {
       process = await Process.start(
-        'python3',
-        ['-m', 'esptool', ...arguments],
+        'esptool',
+        arguments,
       );
     } on ProcessException {
       throw StateError(
