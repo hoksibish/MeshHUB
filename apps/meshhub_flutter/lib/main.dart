@@ -512,13 +512,16 @@ class _MeshHubAppState extends State<MeshHubApp> {
               subtitle: Text('Choose your display theme'),
             ),
             for (final choice in MeshHubTheme.values)
-              RadioListTile<MeshHubTheme>(
+              ListTile(
+                leading: Icon(
+                  choice == theme
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: choice == theme ? _meshCoreAccent : null,
+                ),
                 title: Text(choice.name),
-                value: choice,
-                groupValue: theme,
-                onChanged: (value) {
-                  if (value != null) setState(() => theme = value);
-                },
+                selected: choice == theme,
+                onTap: () => setState(() => theme = choice),
               ),
           ],
         ),
