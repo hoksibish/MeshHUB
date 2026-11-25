@@ -118,8 +118,45 @@ class _MeshHubAppState extends State<MeshHubApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('MeshHub', style: TextStyle(fontWeight: FontWeight.w700)),
+          backgroundColor: _surface,
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.hub_outlined, color: _meshCoreAccent),
+              const SizedBox(width: 10),
+              const Text(
+                'MeshHub',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ],
+          ),
           actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: field.connected
+                      ? _meshCoreAccent.withValues(alpha: 0.12)
+                      : Colors.white.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      field.connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+                      color: field.connected ? _meshCoreAccent : Colors.grey,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      field.connected ? 'Radio online' : 'Offline',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             PopupMenuButton<MeshHubTheme>(
               tooltip: 'Theme',
               icon: const Icon(Icons.palette_outlined),
@@ -136,44 +173,94 @@ class _MeshHubAppState extends State<MeshHubApp> {
         body: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
-              if (constraints.maxWidth >= 700)
+              if (constraints.maxWidth >= 760)
                 NavigationRail(
+                  backgroundColor: _surface,
                   selectedIndex: destination,
-                  extended: constraints.maxWidth >= 1280,
+                  extended: constraints.maxWidth >= 1220,
+                  labelType: constraints.maxWidth >= 1220
+                      ? NavigationRailLabelType.none
+                      : NavigationRailLabelType.all,
                   onDestinationSelected: (index) =>
                       setState(() => destination = index),
                   destinations: const [
                     NavigationRailDestination(
                       icon: Icon(Icons.chat_bubble_outline),
-                      label: Text('Inbox'),
+                      selectedIcon: Icon(Icons.chat_bubble),
+                      label: Text('Messages'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.tag_outlined),
+                      selectedIcon: Icon(Icons.tag),
+                      label: Text('Channels'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.hub_outlined),
+                      selectedIcon: Icon(Icons.hub),
+                      label: Text('Nodes'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.map_outlined),
+                      selectedIcon: Icon(Icons.map),
+                      label: Text('Map'),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.router_outlined),
+                      selectedIcon: Icon(Icons.router),
                       label: Text('Radios'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.settings_outlined),
+                      selectedIcon: Icon(Icons.settings),
+                      label: Text('Settings'),
                     ),
                   ],
                 ),
               Expanded(
-                child: destination == 0
-                    ? _inbox()
-                    : Builder(builder: (innerContext) => _radios(innerContext)),
+                child: switch (destination) {
+                  0 => _messagesHome(context),
+                  1 => _inbox(),
+                  2 => _nodesView(context),
+                  3 => _mapView(context),
+                  4 => _radios(context),
+                  _ => _settingsView(context),
+                },
               ),
             ],
           ),
         ),
-        bottomNavigationBar: MediaQuery.sizeOf(context).width < 700
+        bottomNavigationBar: MediaQuery.sizeOf(context).width < 760
             ? NavigationBar(
-                selectedIndex: destination,
-                onDestinationSelected: (index) =>
-                    setState(() => destination = index),
+                height: 68,
+                selectedIndex: destination == 4 ? 4 : destination == 5 ? 4 : destination,
+                onDestinationSelected: (index) => setState(() {
+                  destination = index == 4 ? 5 : index;
+                }),
                 destinations: const [
                   NavigationDestination(
                     icon: Icon(Icons.chat_bubble_outline),
-                    label: 'Inbox',
+                    selectedIcon: Icon(Icons.chat_bubble),
+                    label: 'Messages',
                   ),
                   NavigationDestination(
-                    icon: Icon(Icons.router_outlined),
-                    label: 'Radios',
+                    icon: Icon(Icons.tag_outlined),
+                    selectedIcon: Icon(Icons.tag),
+                    label: 'Channels',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.hub_outlined),
+                    selectedIcon: Icon(Icons.hub),
+                    label: 'Nodes',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.map_outlined),
+                    selectedIcon: Icon(Icons.map),
+                    label: 'Map',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.settings_outlined),
+                    selectedIcon: Icon(Icons.settings),
+                    label: 'More',
                   ),
                 ],
               )
@@ -181,6 +268,281 @@ class _MeshHubAppState extends State<MeshHubApp> {
       ),
     );
   }
+
+  Widget _messagesHome(BuildContext context) {
+    final recent = field.messages.reversed.toList();
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        Text(
+          'Your mesh, one place.',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'MeshCore and Meshtastic messaging, without mixing networks.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _metricCard(
+              Icons.bluetooth,
+              field.connected ? 'Connected' : 'Offline',
+              'MeshCore radio',
+              _meshCoreAccent,
+            ),
+            _metricCard(
+              Icons.tag,
+              '${field.channels.length}',
+              'Configured channels',
+              _meshCoreAccent,
+            ),
+            _metricCard(
+              Icons.forum_outlined,
+              '${field.messages.length}',
+              'Messages this session',
+              _meshtasticAccent,
+            ),
+          ],
+        ),
+        const SizedBox(height: 26),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Recent activity',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => setState(() => destination = 1),
+              icon: const Icon(Icons.arrow_forward),
+              label: const Text('Channels'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (recent.isEmpty)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const Icon(Icons.mark_chat_unread_outlined, size: 42),
+                  const SizedBox(height: 12),
+                  const Text('No messages in this session yet'),
+                  const SizedBox(height: 8),
+                  Text(
+                    field.connected
+                        ? 'Open Channels to follow live conversations.'
+                        : 'Connect a radio to discover channels and receive messages.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.tonalIcon(
+                    onPressed: () => setState(() => destination = field.connected ? 1 : 4),
+                    icon: Icon(field.connected ? Icons.tag : Icons.bluetooth),
+                    label: Text(field.connected ? 'Browse channels' : 'Connect a radio'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        for (final message in recent.take(20))
+          Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: message.protocol == MeshProtocol.meshCore
+                    ? _meshCoreAccent.withValues(alpha: 0.18)
+                    : _meshtasticAccent.withValues(alpha: 0.18),
+                child: Icon(
+                  message.isOutgoing ? Icons.north_east : Icons.south_west,
+                  color: message.protocol == MeshProtocol.meshCore
+                      ? _meshCoreAccent
+                      : _meshtasticAccent,
+                ),
+              ),
+              title: Text(message.sender),
+              subtitle: Text(
+                message.text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: Text(
+                message.protocol == MeshProtocol.meshCore ? 'MeshCore' : 'Meshtastic',
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              onTap: () {
+                final match = RegExp(r'^meshcore-channel-(\d+)$')
+                    .firstMatch(message.conversationId);
+                if (match != null) {
+                  setState(() {
+                    destination = 1;
+                    selectedChannel = int.parse(match.group(1)!);
+                    final matching = field.channels.where(
+                      (c) => c.index == selectedChannel,
+                    );
+                    _selectedChannelName = matching.isEmpty ? null : matching.first.name;
+                  });
+                }
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _metricCard(IconData icon, String value, String label, Color accent) {
+    return Container(
+      width: 195,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: accent.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: accent, size: 26),
+          const SizedBox(height: 14),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _nodesView(BuildContext context) => _featurePlaceholder(
+    context,
+    'Nodes',
+    Icons.hub_outlined,
+    'Node discovery and live telemetry will appear here as protocol adapters are completed.',
+    'No verified node inventory is available yet. MeshHub will not invent battery levels, hops, or signal quality.',
+  );
+
+  Widget _mapView(BuildContext context) => _featurePlaceholder(
+    context,
+    'Map',
+    Icons.map_outlined,
+    'Your mesh network, locations, and eventual RF coverage planning.',
+    'Live node positions and offline terrain regions have not been connected yet.',
+  );
+
+  Widget _featurePlaceholder(
+    BuildContext context,
+    String title,
+    IconData icon,
+    String description,
+    String detail,
+  ) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 620),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 34,
+                    backgroundColor: _meshCoreAccent.withValues(alpha: 0.15),
+                    child: Icon(icon, color: _meshCoreAccent, size: 34),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(description, textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Text(
+                    detail,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () => setState(() => destination = 4),
+                    icon: const Icon(Icons.router_outlined),
+                    label: const Text('View radios'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _settingsView(BuildContext context) => ListView(
+    padding: const EdgeInsets.all(22),
+    children: [
+      Text(
+        'Settings',
+        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      const SizedBox(height: 18),
+      Card(
+        child: Column(
+          children: [
+            const ListTile(
+              leading: Icon(Icons.palette_outlined, color: _meshCoreAccent),
+              title: Text('Appearance'),
+              subtitle: Text('Choose your display theme'),
+            ),
+            for (final choice in MeshHubTheme.values)
+              RadioListTile<MeshHubTheme>(
+                title: Text(choice.name),
+                value: choice,
+                groupValue: theme,
+                onChanged: (value) {
+                  if (value != null) setState(() => theme = value);
+                },
+              ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 14),
+      Card(
+        child: ListTile(
+          leading: const Icon(Icons.router_outlined, color: _meshCoreAccent),
+          title: const Text('Radios & Bluetooth'),
+          subtitle: Text(field.connected ? 'Radio connected' : 'Connect your radio'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => setState(() => destination = 4),
+        ),
+      ),
+      const SizedBox(height: 14),
+      const Card(
+        child: ListTile(
+          leading: Icon(Icons.shield_outlined),
+          title: Text('Privacy'),
+          subtitle: Text('Message history is session-only; encrypted persistence is not yet implemented.'),
+        ),
+      ),
+    ],
+  );
 
   Widget _banner() => const Card(
     child: ListTile(
