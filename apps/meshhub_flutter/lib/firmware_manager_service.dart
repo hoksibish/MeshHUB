@@ -2,14 +2,30 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-/// Deliberately narrow first release: the exact Heltec V3 + MeshCore
-/// Companion merged ESP32-S3 image. Other boards need independent validation.
-enum FirmwareTarget { heltecV3MeshCoreCompanion }
+/// Offline USB flashing is currently verified for Heltec V3 ESP32-S3 only.
+/// Full MeshCore merged and Meshtastic factory images can be used; release
+/// versions are parsed, not restricted to a fixed list.
+enum FirmwareFamily { meshCore, meshtastic }
 
-extension FirmwareTargetInfo on FirmwareTarget {
-  String get label => 'Heltec WiFi LoRa 32 V3 · MeshCore Companion';
-  String get chip => 'esp32s3';
+extension FirmwareFamilyLabel on FirmwareFamily {
+  String get label => this == FirmwareFamily.meshCore ? 'MeshCore' : 'Meshtastic';
+}
+
+class FirmwarePackage {
+  const FirmwarePackage({
+    required this.family,
+    required this.role,
+    required this.version,
+    required this.format,
+  });
+
+  final FirmwareFamily family;
+  final String role;
+  final String version;
+  final String format;
+
   String get flashOffset => '0x0';
+  String get displayName => '${family.label} · $role · $version';
 }
 
 class OfflineFirmwareImage {
@@ -18,12 +34,14 @@ class OfflineFirmwareImage {
     required this.sourceName,
     required this.sha256,
     required this.bytes,
+    required this.package,
   });
 
   final String path;
   final String sourceName;
   final String sha256;
   final int bytes;
+  final FirmwarePackage package;
 }
 
 class FirmwareToolResult {
