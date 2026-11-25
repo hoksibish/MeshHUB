@@ -204,6 +204,140 @@ class TacticalHudMetric extends StatelessWidget {
   );
 }
 
+/// Decorative target rings, labeled with the real link state (not RF range).
+class TacticalHudLinkScope extends StatelessWidget {
+  const TacticalHudLinkScope({
+    required this.connected,
+    required this.channelCount,
+    required this.onOpenRadios,
+    super.key,
+  });
+
+  final bool connected;
+  final int channelCount;
+  final VoidCallback onOpenRadios;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 344,
+    child: TacticalHudPanel(
+      padding: const EdgeInsets.fromLTRB(14, 14, 16, 14),
+      active: connected,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 122,
+            height: 122,
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _HudReticlePainter(connected: connected),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'RADIO / LINK',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    letterSpacing: 1.4,
+                    fontSize: 10,
+                    color: TacticalHudColors.muted,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  connected ? 'ONLINE' : 'OFFLINE',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 21,
+                    fontWeight: FontWeight.w700,
+                    color: connected
+                        ? TacticalHudColors.teal
+                        : TacticalHudColors.orange,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '$channelCount CH / CONFIGURED',
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 10,
+                    color: TacticalHudColors.muted,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: onOpenRadios,
+                  child: const Text('RADIOS >'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _HudReticlePainter extends CustomPainter {
+  const _HudReticlePainter({required this.connected});
+  final bool connected;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final cyan = Paint()
+      ..color = TacticalHudColors.cyan.withValues(alpha: 0.65)
+      ..strokeWidth = 1.3
+      ..style = PaintingStyle.stroke;
+    final orange = Paint()
+      ..color = TacticalHudColors.orange
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    for (final radius in [24.0, 40.0, 53.0]) {
+      canvas.drawCircle(center, radius, cyan);
+    }
+    for (var step = 0; step < 12; step++) {
+      final angle = step * math.pi / 6;
+      final outer = Offset(
+        center.dx + 57 * math.cos(angle),
+        center.dy + 57 * math.sin(angle),
+      );
+      final inner = Offset(
+        center.dx + 51 * math.cos(angle),
+        center.dy + 51 * math.sin(angle),
+      );
+      canvas.drawLine(inner, outer, step.isEven ? orange : cyan);
+    }
+    canvas.drawLine(
+      Offset(center.dx - 30, center.dy),
+      Offset(center.dx + 30, center.dy),
+      cyan,
+    );
+    canvas.drawLine(
+      Offset(center.dx, center.dy - 30),
+      Offset(center.dx, center.dy + 30),
+      cyan,
+    );
+    canvas.drawCircle(
+      center,
+      6,
+      Paint()
+        ..color = connected
+            ? TacticalHudColors.teal
+            : TacticalHudColors.orange,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_HudReticlePainter old) => connected != old.connected;
+}
+
 class TacticalHudHeading extends StatelessWidget {
   const TacticalHudHeading(this.title, {this.subtitle, super.key});
   final String title;
