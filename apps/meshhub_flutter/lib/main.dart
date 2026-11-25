@@ -991,57 +991,64 @@ class _MeshHubAppState extends State<MeshHubApp> {
   }
 
   Widget _settingsView(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(22),
+    padding: EdgeInsets.all(theme == MeshHubTheme.tactical ? 14 : 20),
     children: [
-      Text(
+      _screenHeading(
+        context,
         'Settings',
-        style: Theme.of(context).textTheme.headlineMedium
-            ?.copyWith(fontWeight: FontWeight.w800),
+        'Appearance, radio access and data handling',
+        Icons.settings_outlined,
       ),
-      const SizedBox(height: 18),
-      Card(
+      const SizedBox(height: 14),
+      _sectionPanel(
+        context,
+        title: 'Appearance',
+        subtitle: 'Choose the same information in your preferred visual style',
+        icon: Icons.palette_outlined,
         child: Column(
           children: [
-            const ListTile(
-              leading: Icon(Icons.palette_outlined, color: _meshCoreAccent),
-              title: Text('Appearance'),
-              subtitle: Text('Choose your display theme'),
-            ),
             for (final choice in MeshHubTheme.values)
               ListTile(
+                dense: true,
                 leading: Icon(
                   choice == theme
                       ? Icons.radio_button_checked
                       : Icons.radio_button_unchecked,
-                  color: choice == theme ? _meshCoreAccent : null,
+                  color: choice == theme ? _accent : null,
                 ),
-                title: Text(choice.name),
+                title: Text(
+                  choice.name[0].toUpperCase() + choice.name.substring(1),
+                ),
                 selected: choice == theme,
                 onTap: () => setState(() => theme = choice),
               ),
           ],
         ),
       ),
-      const SizedBox(height: 14),
-      Card(
+      const SizedBox(height: 12),
+      _sectionPanel(
+        context,
+        title: 'Radios & Bluetooth',
+        icon: Icons.router_outlined,
         child: ListTile(
-          leading: const Icon(Icons.router_outlined, color: _meshCoreAccent),
-          title: const Text('Radios & Bluetooth'),
-          subtitle: Text(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(
             field.connected ? 'Radio connected' : 'Connect your radio',
           ),
+          subtitle: const Text('Discovery, pairing status and diagnostics'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => setState(() => destination = 4),
         ),
       ),
-      const SizedBox(height: 14),
-      const Card(
-        child: ListTile(
-          leading: Icon(Icons.shield_outlined),
-          title: Text('Privacy'),
-          subtitle: Text(
-            'Message history is session-only; encrypted persistence is not yet implemented.',
-          ),
+      const SizedBox(height: 12),
+      _sectionPanel(
+        context,
+        title: 'Privacy',
+        icon: Icons.shield_outlined,
+        child: const Text(
+          'Message history is session-only. Encrypted on-disk persistence '
+          'is not yet implemented.',
         ),
       ),
     ],
