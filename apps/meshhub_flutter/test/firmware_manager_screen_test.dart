@@ -30,13 +30,15 @@ void main() {
         return const FirmwareToolResult(0, 'Chip is ESP32-S3');
       },
     );
-    await tester.pumpWidget(MaterialApp(
-      home: FirmwareManagerScreen(
-        tactical: false,
-        radioConnected: () => false,
-        service: service,
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FirmwareManagerScreen(
+          tactical: false,
+          radioConnected: () => false,
+          service: service,
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     expect(find.text('Heltec v3'), findsWidgets);
     expect(find.text('MeshCore'), findsOneWidget);
@@ -67,13 +69,15 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(MaterialApp(
-      home: FirmwareManagerScreen(
-        tactical: true,
-        radioConnected: () => false,
-        service: FirmwareManagerService(libraryPath: scratch.path),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FirmwareManagerScreen(
+          tactical: true,
+          radioConnected: () => false,
+          service: FirmwareManagerService(libraryPath: scratch.path),
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     final erase = find.byKey(const Key('firmware-erase-first'));
     await tester.scrollUntilVisible(
@@ -85,7 +89,9 @@ void main() {
     await tester.tap(erase);
     await tester.pumpAndSettle();
     expect(tester.widget<CheckboxListTile>(erase).value, true);
-    expect(find.textContaining('Requires separate ERASE confirmation.'),
-        findsOneWidget);
+    expect(
+      find.textContaining('Requires separate ERASE confirmation.'),
+      findsOneWidget,
+    );
   });
 }
