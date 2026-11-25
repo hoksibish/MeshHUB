@@ -143,11 +143,16 @@ class FirmwareManagerService {
   Future<OfflineFirmwareImage> inspectFile(
     String path, {
     String? expectedSha256,
+    FirmwareFamily? expectedFamily,
   }) async {
     final input = path.trim();
-    if (input.isEmpty || !_firmwareNameMatches(input.split('/').last)) {
+    final package =
+        input.isEmpty ? null : recognizePackage(input.split('/').last);
+    if (package == null ||
+        (expectedFamily != null && package.family != expectedFamily)) {
       throw const FormatException(
-        'Choose a Heltec V3 MeshCore Companion -merged.bin firmware image.',
+        'Choose a matching Heltec V3 MeshCore -merged.bin or '
+        'Meshtastic .factory.bin for the selected firmware family.',
       );
     }
     final file = File(input);
@@ -188,6 +193,7 @@ class FirmwareManagerService {
       sourceName: file.uri.pathSegments.last,
       sha256: checksum,
       bytes: stat.size,
+      package: package,
     );
   }
 
