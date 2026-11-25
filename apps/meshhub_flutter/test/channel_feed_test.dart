@@ -200,7 +200,7 @@ void main() {
     expect(
       session.sendCount,
       1,
-      reason: 'Local radio status: ${session.status}; sending: ${session.sending}',
+      reason: 'status=${session.status}, sending=${session.sending}',
     );
     expect(session.messages, hasLength(1));
     expect(session.messages.single.isOutgoing, isTrue);
