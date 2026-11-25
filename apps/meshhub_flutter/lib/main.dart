@@ -126,12 +126,22 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 backgroundColor: TacticalHudColors.panel,
                 indicatorColor: TacticalHudColors.cyan.withValues(alpha: 0.14),
                 selectedIconTheme: const IconThemeData(
+                  size: 20,
                   color: TacticalHudColors.orange,
+                ),
+                unselectedIconTheme: const IconThemeData(
+                  size: 20,
+                  color: TacticalHudColors.muted,
                 ),
                 selectedLabelTextStyle: const TextStyle(
                   fontFamily: 'monospace',
                   fontWeight: FontWeight.w700,
+                  fontSize: 11,
                   color: TacticalHudColors.orange,
+                ),
+                unselectedLabelTextStyle: const TextStyle(
+                  fontSize: 11,
+                  color: TacticalHudColors.muted,
                 ),
               )
             : null,
@@ -152,9 +162,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
           elevation: 0,
           shape: theme == MeshHubTheme.tactical
               ? BeveledRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(9),
                   side: BorderSide(
-                    color: TacticalHudColors.cyan.withValues(alpha: 0.55),
+                    color: TacticalHudColors.cyan.withValues(alpha: 0.4),
                   ),
                 )
               : RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -176,6 +186,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
+          toolbarHeight: theme == MeshHubTheme.tactical ? 48 : null,
           backgroundColor: panel,
           title: Text(
             theme == MeshHubTheme.tactical ? 'MESHHUB // HUD' : 'MeshHub',
@@ -183,7 +194,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontFamily: theme == MeshHubTheme.tactical ? 'monospace' : null,
-              letterSpacing: theme == MeshHubTheme.tactical ? 1.3 : 0,
+              fontSize: theme == MeshHubTheme.tactical ? 18 : null,
+              letterSpacing: theme == MeshHubTheme.tactical ? 1.0 : 0,
               color: theme == MeshHubTheme.tactical
                   ? TacticalHudColors.cyan
                   : null,
@@ -192,9 +204,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
           ),
           bottom: theme == MeshHubTheme.tactical
               ? PreferredSize(
-                  preferredSize: const Size.fromHeight(2),
+                  preferredSize: const Size.fromHeight(1),
                   child: Container(
-                    height: 2,
+                    height: 1,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -228,12 +240,14 @@ class _MeshHubAppState extends State<MeshHubApp> {
                         color: field.connected
                             ? _accent
                             : scheme.onSurfaceVariant,
-                        size: 18,
+                        size: theme == MeshHubTheme.tactical ? 16 : 18,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         field.connected ? 'Radio online' : 'Offline',
-                        style: const TextStyle(fontSize: 13),
+                        style: TextStyle(
+                          fontSize: theme == MeshHubTheme.tactical ? 11 : 13,
+                        ),
                       ),
                     ],
                   ),
@@ -257,6 +271,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
             children: [
               if (constraints.maxWidth >= 760)
                 NavigationRail(
+                  minWidth: theme == MeshHubTheme.tactical ? 68 : 72,
                   backgroundColor: panel,
                   selectedIndex: destination,
                   extended: constraints.maxWidth >= 1220,
@@ -384,7 +399,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
   Widget _messagesHome(BuildContext context) {
     final recent = field.messages.reversed.toList();
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(theme == MeshHubTheme.tactical ? 14 : 20),
       children: [
         if (theme == MeshHubTheme.tactical)
           const TacticalHudHeading(
@@ -403,10 +418,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
-        const SizedBox(height: 18),
+        SizedBox(height: theme == MeshHubTheme.tactical ? 12 : 18),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: theme == MeshHubTheme.tactical ? 8 : 12,
+          runSpacing: theme == MeshHubTheme.tactical ? 8 : 12,
           children: [
             _metricCard(
               Icons.bluetooth,
@@ -434,7 +449,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
               ),
           ],
         ),
-        const SizedBox(height: 26),
+        SizedBox(height: theme == MeshHubTheme.tactical ? 18 : 26),
         Row(
           children: [
             Expanded(
@@ -728,12 +743,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
       if (showExamples) ...MockRadioAdapter.sampleInbox(),
     ].where((m) => filter == null || m.protocol == filter).toList();
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(theme == MeshHubTheme.tactical ? 12 : 16),
       children: [
         if (theme == MeshHubTheme.tactical)
           const TacticalHudHeading(
             'Channel Array',
-            subtitle: 'RADIO-REPORTED CHANNELS / SESSION-ONLY MESSAGES',
+            subtitle: 'RADIO CHANNELS / SESSION ONLY',
           )
         else ...[
           Text(
@@ -744,7 +759,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
           const SizedBox(height: 4),
           const Text('Your radio channels · session-only conversations'),
         ],
-        const SizedBox(height: 8),
+        SizedBox(height: theme == MeshHubTheme.tactical ? 6 : 8),
         Wrap(
           spacing: 8,
           children: [
@@ -785,7 +800,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
           ),
         if (filter != MeshProtocol.meshtastic)
           for (final channel in field.channels) _channelTile(channel),
-        const Divider(height: 32),
+        Divider(height: theme == MeshHubTheme.tactical ? 20 : 32),
         Text(
           'Other messages',
           style: Theme.of(context).textTheme.titleLarge
@@ -803,7 +818,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
               ),
             ),
           ),
-        const Divider(height: 32),
+        Divider(height: theme == MeshHubTheme.tactical ? 20 : 32),
         SwitchListTile(
           title: const Text('Show simulated examples'),
           subtitle: const Text('Off = live in-memory messages only'),
@@ -825,22 +840,39 @@ class _MeshHubAppState extends State<MeshHubApp> {
         )
         .length;
     final item = ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      dense: theme == MeshHubTheme.tactical,
+      horizontalTitleGap: theme == MeshHubTheme.tactical ? 10 : null,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: theme == MeshHubTheme.tactical ? 10 : 12,
+        vertical: theme == MeshHubTheme.tactical ? 0 : 6,
+      ),
       leading: CircleAvatar(
-        radius: 23,
+        radius: theme == MeshHubTheme.tactical ? 17 : 23,
         backgroundColor: _accent.withValues(alpha: 0.18),
-        child: Icon(Icons.tag, color: _accent),
+        child: Icon(
+          Icons.tag,
+          color: _accent,
+          size: theme == MeshHubTheme.tactical ? 19 : 24,
+        ),
       ),
       title: Text(
         channel.name,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontWeight: FontWeight.w700),
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: theme == MeshHubTheme.tactical ? 15 : null,
+        ),
       ),
       subtitle: Text(
-        'MeshCore · $count messages · slot ${channel.index}',
-        maxLines: 2,
+        theme == MeshHubTheme.tactical
+            ? 'MeshCore · $count msgs · slot ${channel.index}'
+            : 'MeshCore · $count messages · slot ${channel.index}',
+        maxLines: theme == MeshHubTheme.tactical ? 1 : 2,
         overflow: TextOverflow.ellipsis,
+        style: theme == MeshHubTheme.tactical
+            ? const TextStyle(fontSize: 11)
+            : null,
       ),
       trailing: Icon(
         selected && theme == MeshHubTheme.tactical
@@ -849,6 +881,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
         color: selected && theme == MeshHubTheme.tactical
             ? TacticalHudColors.orange
             : null,
+        size: theme == MeshHubTheme.tactical ? 19 : 24,
       ),
       selected: selected,
       selectedTileColor: _accent.withValues(alpha: 0.10),
@@ -860,7 +893,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
     );
     if (theme == MeshHubTheme.tactical) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(vertical: 3),
         child: TacticalHudPanel(
           active: selected,
           padding: EdgeInsets.zero,
