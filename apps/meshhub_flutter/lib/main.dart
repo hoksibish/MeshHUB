@@ -1736,7 +1736,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                             children: [
                               _readout(context, 'Model', info.model),
                               _readout(context, 'Firmware', info.version),
-                              _readout(context, 'Build', '${info.build}'),
+                              _readout(context, 'Build', info.build),
                               _readout(
                                 context,
                                 'Protocol',
