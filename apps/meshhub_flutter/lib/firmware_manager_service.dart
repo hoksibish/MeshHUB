@@ -81,10 +81,61 @@ class FirmwareManagerService {
     return RegExp(r'^/dev/serial/by-id/[A-Za-z0-9._:+-]+$').hasMatch(port);
   }
 
-  static bool _firmwareNameMatches(String name) {
-    final normalized = name.toLowerCase();
-    return RegExp(r'^.*heltec[_-]?v3.*companion.*merged\.bin$')
-        .hasMatch(normalized);
+  /// Match only supported Heltec V3 firmware formats. The filename itself is
+  /// NOT proof of authenticity or of the board/role encoded in the image.
+  static FirmwarePackage? recognizePackage(String filename) {
+    final name = filename.toLowerCase();
+    final meshtastic = RegExp(
+      r'^firmware[-_]heltec[-_]v3[-_](.+)\.factory\.bin$',
+    ).firstMatch(name);
+    if (meshtastic != null) {
+      final version = meshtastic.group(1)!;
+      if (!RegExp(r'^[a-z0-9][a-z0-9._+-]{0,95}$').hasMatch(version)) {
+        return null;
+      }
+      return FirmwarePackage(
+        family: FirmwareFamily.meshtastic,
+        role: 'Meshtastic node',
+        version: version,
+        format: 'Factory ESP32-S3 image',
+      );
+    }
+
+    final core = RegExp(
+      r'^heltec[-_]v3[-_](.+)-merged\.bin$',
+    ).firstMatch(name);
+    if (core == null) return null;
+    final stem = core.group(1)!;
+    final separator = RegExp(r'-v[0-9]').firstMatch(stem);
+    final roleToken = (separator == null
+            ? stem
+            : stem.substring(0, separator.start))
+        .replaceAll('-', '_');
+    final version = separator == null
+        ? 'unspecified'
+        : stem.substring(separator.start + 1);
+    if (!RegExp(r'^[a-z0-9][a-z0-9._+-]{0,95}$').hasMatch(version)) {
+      return null;
+    }
+    const roles = <String, String>{
+      'companion_radio_ble': 'Companion BLE',
+      'companion_radio_usb': 'Companion USB',
+      'companion_radio_wifi': 'Companion Wi-Fi',
+      'companion_ble': 'Companion BLE',
+      'companion_usb': 'Companion USB',
+      'repeater': 'Repeater',
+      'room_server': 'Room Server',
+      'roomserver': 'Room Server',
+      'sensor': 'Sensor',
+    };
+    final role = roles[roleToken];
+    if (role == null) return null;
+    return FirmwarePackage(
+      family: FirmwareFamily.meshCore,
+      role: role,
+      version: version,
+      format: 'Merged ESP32-S3 image',
+    );
   }
 
   /// Filename matching is only a first guard, not proof of publisher origin.
