@@ -44,17 +44,17 @@ class TacticalHudStatusStrip extends StatelessWidget {
     builder: (context, bounds) {
       final compact = bounds.maxWidth < 590;
       return Container(
-        height: compact ? 44 : 55,
-        padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 22),
+        height: compact ? 38 : 44,
+        padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 16),
         decoration: const BoxDecoration(
           color: Color(0xee0b1b2b),
           border: Border(
-            bottom: BorderSide(color: TacticalHudColors.cyan, width: 0.8),
+            bottom: BorderSide(color: TacticalHudColors.cyan, width: 0.6),
           ),
         ),
         child: Row(
           children: [
-            const Icon(Icons.radar, color: TacticalHudColors.orange, size: 18),
+            const Icon(Icons.radar, color: TacticalHudColors.orange, size: 16),
             const SizedBox(width: 10),
             Flexible(
               child: Text(
@@ -65,8 +65,8 @@ class TacticalHudStatusStrip extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 13,
-                  letterSpacing: 1.7,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
                   fontWeight: FontWeight.w700,
                   color: TacticalHudColors.cyan,
                 ),
@@ -78,15 +78,15 @@ class TacticalHudStatusStrip extends StatelessWidget {
                 preset!,
                 style: const TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 11,
+                  fontSize: 10,
                   color: TacticalHudColors.muted,
                 ),
               ),
               const SizedBox(width: 18),
             ],
             Container(
-              width: 7,
-              height: 7,
+              width: 6,
+              height: 6,
               decoration: BoxDecoration(
                 color: connected
                     ? TacticalHudColors.teal
@@ -99,8 +99,8 @@ class TacticalHudStatusStrip extends StatelessWidget {
               connected ? 'LINK UP' : 'NO LINK',
               style: const TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 11,
-                letterSpacing: 1,
+                fontSize: 10,
+                letterSpacing: 0.7,
                 color: TacticalHudColors.text,
               ),
             ),
@@ -145,10 +145,10 @@ class TacticalHudMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 212,
+    width: 186,
     child: TacticalHudPanel(
       active: highlight,
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 13),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -156,14 +156,14 @@ class TacticalHudMetric extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 21,
+                size: 18,
                 color: highlight
                     ? TacticalHudColors.orange
                     : TacticalHudColors.cyan,
               ),
               const Spacer(),
               const Text(
-                'SYS // LIVE',
+                'SYS / LOCAL',
                 style: TextStyle(
                   color: TacticalHudColors.muted,
                   fontFamily: 'monospace',
@@ -173,29 +173,29 @@ class TacticalHudMetric extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 28,
+              fontSize: 23,
               fontWeight: FontWeight.w700,
               color: highlight
                   ? TacticalHudColors.orange
                   : TacticalHudColors.text,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             label.toUpperCase(),
             maxLines: 2,
             style: const TextStyle(
               fontFamily: 'monospace',
               color: TacticalHudColors.muted,
-              fontSize: 11,
-              letterSpacing: 0.7,
+              fontSize: 10,
+              letterSpacing: 0.6,
             ),
           ),
         ],
@@ -220,12 +220,12 @@ class TacticalHudLinkScope extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 380;
-    final width = math.min(344.0, MediaQuery.sizeOf(context).width - 40);
-    final reticleSize = compact ? 84.0 : 122.0;
+    final width = math.min(304.0, MediaQuery.sizeOf(context).width - 40);
+    final reticleSize = compact ? 74.0 : 96.0;
     return SizedBox(
       width: width,
       child: TacticalHudPanel(
-        padding: const EdgeInsets.fromLTRB(14, 14, 16, 14),
+        padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
         active: connected,
         child: Row(
           children: [
@@ -258,7 +258,7 @@ class TacticalHudLinkScope extends StatelessWidget {
                     connected ? 'ONLINE' : 'OFFLINE',
                     style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 21,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: connected
                           ? TacticalHudColors.teal
@@ -353,7 +353,7 @@ class TacticalHudHeading extends StatelessWidget {
     children: [
       Row(
         children: [
-          Container(width: 4, height: 27, color: TacticalHudColors.orange),
+          Container(width: 3, height: 22, color: TacticalHudColors.orange),
           const SizedBox(width: 12),
           Flexible(
             child: Text(
@@ -363,9 +363,9 @@ class TacticalHudHeading extends StatelessWidget {
               style: const TextStyle(
                 color: TacticalHudColors.cyan,
                 fontFamily: 'monospace',
-                fontSize: 22,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 1,
+                letterSpacing: 0.7,
               ),
             ),
           ),
@@ -382,7 +382,7 @@ class TacticalHudHeading extends StatelessWidget {
           ),
         ),
       ],
-      const SizedBox(height: 12),
+      const SizedBox(height: 8),
       Container(
         height: 1,
         decoration: BoxDecoration(
@@ -406,7 +406,7 @@ class _HudFramePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
-    final bevel = math.min(13.0, math.min(size.width, size.height) / 5);
+    final bevel = math.min(10.0, math.min(size.width, size.height) / 5);
     final path = Path()
       ..moveTo(bevel, 0)
       ..lineTo(size.width - bevel, 0)
@@ -427,14 +427,14 @@ class _HudFramePainter extends CustomPainter {
       path,
       Paint()
         ..color = (active ? TacticalHudColors.orange : TacticalHudColors.cyan)
-            .withValues(alpha: active ? 0.88 : 0.52)
+            .withValues(alpha: active ? 0.82 : 0.45)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = active ? 1.5 : 0.9,
+        ..strokeWidth = active ? 1.0 : 0.7,
     );
     final corner = Paint()
       ..color = active ? TacticalHudColors.orange : TacticalHudColors.teal
-      ..strokeWidth = 2;
-    final length = math.min(28.0, size.width / 5);
+      ..strokeWidth = 1.5;
+    final length = math.min(20.0, size.width / 5);
     canvas.drawLine(Offset(bevel, 0), Offset(bevel + length, 0), corner);
     canvas.drawLine(
       Offset(size.width, size.height - bevel - length),
@@ -458,16 +458,16 @@ class _HudGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final grid = Paint()
-      ..color = TacticalHudColors.cyan.withValues(alpha: 0.055)
+      ..color = TacticalHudColors.cyan.withValues(alpha: 0.035)
       ..strokeWidth = 0.6;
-    for (var x = 0.0; x <= size.width; x += 36) {
+    for (var x = 0.0; x <= size.width; x += 44) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), grid);
     }
-    for (var y = 0.0; y <= size.height; y += 36) {
+    for (var y = 0.0; y <= size.height; y += 44) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
     }
     final arc = Paint()
-      ..color = TacticalHudColors.orange.withValues(alpha: 0.13)
+      ..color = TacticalHudColors.orange.withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
     final center = Offset(size.width - 80, 92);
