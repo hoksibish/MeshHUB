@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 
 import 'firmware_manager_service.dart';
+import 'firmware_hardware_catalog.dart';
 import 'tactical_hud.dart';
 
 /// Offline-first, Linux-only firmware manager. No firmware is downloaded, and
@@ -37,11 +38,15 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   bool success = false;
   FirmwareFamily selectedFamily = FirmwareFamily.meshCore;
   bool eraseFirst = false;
+  FirmwareBoardCatalog? catalog;
+  String? selectedBoardId;
+  String boardSearch = '';
 
   @override
   void initState() {
     super.initState();
     service = widget.service ?? FirmwareManagerService();
+    unawaited(_loadCatalog());
     unawaited(_loadSaved());
   }
 
@@ -51,6 +56,26 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
     portPath.dispose();
     publishedDigest.dispose();
     super.dispose();
+  }
+
+  FirmwareBoard? get selectedBoard => catalog?.byId(selectedBoardId);
+
+  List<FirmwareBoard> get currentBoards =>
+      catalog?.forFamily(selectedFamily.name) ?? <FirmwareBoard>[];
+
+  Future<void> _loadCatalog() async {
+    try {
+      final loaded = await FirmwareBoardCatalog.load();
+      if (!mounted) return;
+      setState(() {
+        catalog = loaded;
+        selectedBoardId = selectedFamily == FirmwareFamily.meshCore
+            ? 'meshcore-heltec-v3' : 'meshtastic-heltec-v3';
+      });
+    } catch (_) {
+      if (mounted) setState(() => status =
+          'Offline board catalog could not be loaded. USB flashing disabled.');
+    }
   }
 
   Future<void> _loadSaved() async {
@@ -121,10 +146,15 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
     await _run(
       'Inspecting firmware file and computing SHA-256...',
       () async {
+        final board = selectedBoard;
+        if (board == null) {
+          throw StateError('Choose a supported board before importing.');
+        }
         final image = await service.inspectFile(
           filePath.text,
           expectedSha256: publishedDigest.text,
           expectedFamily: selectedFamily,
+          board: board,
         );
         if (!mounted) return;
         setState(() {
@@ -159,11 +189,17 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       );
       return;
     }
+    final board = selectedBoard;
+    if (board == null || !board.supportsUsbFlash) {
+      setState(() => status =
+          'This board needs the guided UF2/DFU method; USB esptool is disabled.');
+      return;
+    }
     await _run(
       'Checking USB chip (read-only)...',
       () async {
         checkedPort = null;
-        await service.checkUsb(portPath.text.trim());
+        await service.checkUsb(portPath.text.trim(), chip: board.chip!);
         if (mounted) setState(() => checkedPort = portPath.text.trim());
       },
       completedStatus: 'USB preflight confirmed ESP32-S3. No flash performed.',
@@ -269,6 +305,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   Future<void> _flash() async {
     final image = selectedImage;
     if (image == null ||
+        !image.package.supportsDirectUsb ||
+        selectedBoard?.id != image.package.boardId ||
         widget.radioConnected() ||
         checkedPort != portPath.text.trim() ||
         busy) {
@@ -377,7 +415,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         Platform.isLinux &&
         !busy &&
         !widget.radioConnected() &&
-        selectedImage != null &&
+        selectedImage?.package.supportsDirectUsb == true &&
+        selectedImage?.package.boardId == selectedBoardId &&
         checkedPort == portPath.text.trim();
     final page = ListView(
       padding: const EdgeInsets.all(16),
@@ -544,6 +583,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                             : () => setState(() {
                                 selectedImage = image;
                                 selectedFamily = image.package.family;
+                                selectedBoardId = image.package.boardId;
                                 filePath.text = image.path;
                                 publishedDigest.clear();
                                 checkedPort = null;
