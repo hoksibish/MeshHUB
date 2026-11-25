@@ -75,7 +75,7 @@ class ChannelRadio extends MeshCoreBleTransport {
 }
 
 /// UI harness: exercise the composer without a fake-async BLE timeout.
- /// Other tests continue through the real session send path.
+/// Other tests continue through the real session send path.
 class ChannelUiSession extends MeshCoreFieldSession {
   ChannelUiSession({required super.transportFactory});
 
@@ -92,7 +92,11 @@ class ChannelUiSession extends MeshCoreFieldSession {
     required bool verified,
   }) async {
     if (!interceptChannelSend) {
-      return super.sendChannel(channel: channel, text: text, verified: verified);
+      return super.sendChannel(
+        channel: channel,
+        text: text,
+        verified: verified,
+      );
     }
     sendRequests++;
     requestedSlot = channel;
@@ -204,48 +208,53 @@ void main() {
     expect(find.text('Trail'), findsOneWidget);
   });
 
-  testWidgets('inline Send starts a verified channel operation without a checkbox', (
-    tester,
-  ) async {
-    session.interceptChannelSend = true;
-    tester.view.physicalSize = const Size(1200, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(MeshHubApp(fieldSession: session));
-    await tester.pumpAndSettle();
-    await openChannels(tester);
-    await tester.tap(find.text('Trail'));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'inline Send starts a verified channel operation without a checkbox',
+    (tester) async {
+      session.interceptChannelSend = true;
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MeshHubApp(fieldSession: session));
+      await tester.pumpAndSettle();
+      await openChannels(tester);
+      await tester.tap(find.text('Trail'));
+      await tester.pumpAndSettle();
 
-    final send = find.text('Send');
-    expect(find.textContaining('I verified RF region'), findsNothing);
-    expect(find.text('RF settings & send confirmation'), findsNothing);
-    await tester.enterText(find.byType(TextField).last, 'Test post');
-    await tester.ensureVisible(send);
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.ancestor(of: send, matching: find.byType(FilledButton)).first,
-          )
-          .onPressed,
-      isNotNull,
-    );
-    await tester.tap(send);
-    await tester.pumpAndSettle();
+      final send = find.text('Send');
+      expect(find.textContaining('I verified RF region'), findsNothing);
+      expect(find.text('RF settings & send confirmation'), findsNothing);
+      await tester.enterText(find.byType(TextField).last, 'Test post');
+      await tester.ensureVisible(send);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<FilledButton>(
+              find
+                  .ancestor(of: send, matching: find.byType(FilledButton))
+                  .first,
+            )
+            .onPressed,
+        isNotNull,
+      );
+      await tester.tap(send);
+      await tester.pumpAndSettle();
 
-    expect(session.sendRequests, 1);
-    expect(session.requestedSlot, 2);
-    expect(session.requestedText, 'Test post');
-    expect(session.requestedVerified, isTrue);
-    expect(radio.writes.where((w) => w.first == 3), isEmpty);
-    expect(session.messages.single.isOutgoing, isTrue);
-    expect(session.messages.single.deliveryState,
-        MessageDeliveryState.acceptedByLocalRadio);
-    expect(find.text('Test post'), findsOneWidget);
-    expect(find.textContaining('peer delivery unverified'), findsOneWidget);
-  });
+      expect(session.sendRequests, 1);
+      expect(session.requestedSlot, 2);
+      expect(session.requestedText, 'Test post');
+      expect(session.requestedVerified, isTrue);
+      expect(radio.writes.where((w) => w.first == 3), isEmpty);
+      expect(session.messages.single.isOutgoing, isTrue);
+      expect(
+        session.messages.single.deliveryState,
+        MessageDeliveryState.acceptedByLocalRadio,
+      );
+      expect(find.text('Test post'), findsOneWidget);
+      expect(find.textContaining('peer delivery unverified'), findsOneWidget);
+    },
+  );
 
   testWidgets('accepted outgoing channel post labels delivery as unverified', (
     tester,
