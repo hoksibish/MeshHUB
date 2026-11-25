@@ -7,6 +7,7 @@ import 'package:meshhub_domain/testing.dart';
 
 import 'field_session.dart';
 import 'linux_meshcore_ble.dart';
+import 'tactical_hud.dart';
 
 void main() => runApp(const MeshHubApp());
 
@@ -28,21 +29,21 @@ class _MeshHubAppState extends State<MeshHubApp> {
   static const _surface = Color(0xff19222c);
   static const _meshCoreAccent = Color(0xff55d6cb);
   static const _meshtasticAccent = Color(0xffb6df62);
-  static const _tacticalAccent = Color(0xffe2b76b);
+  static const _tacticalAccent = TacticalHudColors.cyan;
   Color get _pageBackground => switch (theme) {
     MeshHubTheme.light => const Color(0xfff6f9fc),
     MeshHubTheme.dark => _canvas,
-    MeshHubTheme.tactical => const Color(0xff101710),
+    MeshHubTheme.tactical => TacticalHudColors.background,
   };
   Color get _panelBackground => switch (theme) {
     MeshHubTheme.light => const Color(0xffffffff),
     MeshHubTheme.dark => _surface,
-    MeshHubTheme.tactical => const Color(0xff202b20),
+    MeshHubTheme.tactical => TacticalHudColors.panel,
   };
   Color get _accent => switch (theme) {
     MeshHubTheme.light => const Color(0xff087e83),
     MeshHubTheme.dark => _meshCoreAccent,
-    MeshHubTheme.tactical => _tacticalAccent,
+    MeshHubTheme.tactical => TacticalHudColors.cyan,
   };
   MeshProtocol? filter;
   int destination = 0;
@@ -100,22 +101,65 @@ class _MeshHubAppState extends State<MeshHubApp> {
         ? Brightness.light
         : Brightness.dark;
     final scheme = ColorScheme.fromSeed(seedColor: color, brightness: mode);
+    final themedScheme = theme == MeshHubTheme.tactical
+        ? scheme.copyWith(
+            primary: TacticalHudColors.cyan,
+            onPrimary: TacticalHudColors.background,
+            secondary: TacticalHudColors.orange,
+            onSecondary: TacticalHudColors.background,
+            surface: TacticalHudColors.panel,
+            onSurface: TacticalHudColors.text,
+            onSurfaceVariant: TacticalHudColors.muted,
+            outline: TacticalHudColors.cyan.withValues(alpha: 0.5),
+            outlineVariant: TacticalHudColors.cyan.withValues(alpha: 0.25),
+          )
+        : scheme;
     final panel = _panelBackground;
     return MaterialApp(
       title: 'MeshHub',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: scheme,
+        colorScheme: themedScheme,
         useMaterial3: true,
+        navigationRailTheme: theme == MeshHubTheme.tactical
+            ? NavigationRailThemeData(
+                backgroundColor: TacticalHudColors.panel,
+                indicatorColor: TacticalHudColors.cyan.withValues(alpha: 0.14),
+                selectedIconTheme: const IconThemeData(
+                  color: TacticalHudColors.orange,
+                ),
+                selectedLabelTextStyle: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w700,
+                  color: TacticalHudColors.orange,
+                ),
+              )
+            : null,
+        filledButtonTheme: theme == MeshHubTheme.tactical
+            ? FilledButtonThemeData(
+                style: FilledButton.styleFrom(
+                  backgroundColor: TacticalHudColors.orange,
+                  foregroundColor: TacticalHudColors.background,
+                  shape: BeveledRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              )
+            : null,
         scaffoldBackgroundColor: _pageBackground,
         cardTheme: CardThemeData(
           color: panel,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              theme == MeshHubTheme.tactical ? 6 : 18,
-            ),
-          ),
+          shape: theme == MeshHubTheme.tactical
+              ? BeveledRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: TacticalHudColors.cyan.withValues(alpha: 0.55),
+                  ),
+                )
+              : RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
@@ -124,21 +168,47 @@ class _MeshHubAppState extends State<MeshHubApp> {
               : panel,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
-              theme == MeshHubTheme.tactical ? 6 : 20,
+              theme == MeshHubTheme.tactical ? 4 : 20,
             ),
-            borderSide: BorderSide.none,
+            borderSide: theme == MeshHubTheme.tactical
+                ? const BorderSide(color: TacticalHudColors.cyan)
+                : BorderSide.none,
           ),
         ),
       ),
       home: Scaffold(
         appBar: AppBar(
           backgroundColor: panel,
-          title: const Text(
-            'MeshHub',
+          title: Text(
+            theme == MeshHubTheme.tactical ? 'MESHHUB // HUD' : 'MeshHub',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontFamily: theme == MeshHubTheme.tactical ? 'monospace' : null,
+              letterSpacing: theme == MeshHubTheme.tactical ? 1.3 : 0,
+              color: theme == MeshHubTheme.tactical
+                  ? TacticalHudColors.cyan
+                  : null,
+              fontWeight: FontWeight.w800,
+            ),
           ),
+          bottom: theme == MeshHubTheme.tactical
+              ? PreferredSize(
+                  preferredSize: const Size.fromHeight(2),
+                  child: Container(
+                    height: 2,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          TacticalHudColors.orange,
+                          TacticalHudColors.cyan,
+                          TacticalHudColors.background,
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              : null,
           actions: [
             if (MediaQuery.sizeOf(context).width >= 500)
               Padding(
@@ -226,16 +296,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     ),
                   ],
                 ),
-              Expanded(
-                child: switch (destination) {
-                  0 => _messagesHome(context),
-                  1 => _inbox(),
-                  2 => _nodesView(context),
-                  3 => _mapView(context),
-                  4 => _radios(context),
-                  _ => _settingsView(context),
-                },
-              ),
+              Expanded(child: _workspace(context)),
             ],
           ),
         ),
@@ -275,6 +336,39 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 ],
               )
             : null,
+      ),
+    );
+  }
+
+  Widget _workspace(BuildContext context) {
+    final content = switch (destination) {
+      0 => _messagesHome(context),
+      1 => _inbox(),
+      2 => _nodesView(context),
+      3 => _mapView(context),
+      4 => _radios(context),
+      _ => _settingsView(context),
+    };
+    if (theme != MeshHubTheme.tactical) return content;
+    final section = switch (destination) {
+      0 => 'Messages',
+      1 => 'Channels',
+      2 => 'Nodes',
+      3 => 'Map',
+      4 => 'Radios',
+      _ => 'Settings',
+    };
+    final rf = field.identity?.radioPreset;
+    return TacticalHudBackdrop(
+      child: Column(
+        children: [
+          TacticalHudStatusStrip(
+            section: section,
+            connected: field.connected,
+            preset: rf == null ? null : '${rf.frequencyKHz} kHz / SF${rf.spreadingFactor}',
+          ),
+          Expanded(child: content),
+        ],
       ),
     );
   }
