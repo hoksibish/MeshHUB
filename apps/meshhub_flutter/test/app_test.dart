@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:meshhub_flutter/main.dart';
+import 'package:meshhub_flutter/tactical_hud.dart';
 
 /// Tap the Channels destination, not the identically named page heading.
 Future<void> openChannels(WidgetTester tester) async {
@@ -108,6 +109,48 @@ void main() {
     final tactical = background();
     expect(tactical, isNot(dark));
     expect(tactical, isNot(light));
+  });
+
+  testWidgets('tactical HUD renders command panels and channel modules', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MeshHubApp());
+    await tester.tap(find.byTooltip('Theme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('tactical').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TacticalHudBackdrop), findsOneWidget);
+    expect(find.byType(TacticalHudMetric), findsNWidgets(3));
+    expect(find.text('OPERATIONS // OVERVIEW'), findsOneWidget);
+    expect(find.text('MESHHUB / MESSAGES'), findsOneWidget);
+
+    await openChannels(tester);
+    expect(find.text('CHANNEL ARRAY'), findsOneWidget);
+    expect(find.byType(TacticalHudBackdrop), findsOneWidget);
+  });
+
+  testWidgets('tactical status strip fits a narrow phone', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MeshHubApp());
+    await tester.tap(find.byTooltip('Theme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('tactical').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TacticalHudBackdrop), findsOneWidget);
+    expect(find.text('MESSAGES'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await openChannels(tester);
+    expect(find.text('CHANNEL ARRAY'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
 }
