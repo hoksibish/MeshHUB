@@ -428,8 +428,12 @@ class FirmwareManagerService {
     return results;
   }
 
-  /// Read-only connection proof against an actual ESP32-S3 over USB.
-  Future<void> checkUsb(String port) async {
+  /// USB chip-ID preflight validates the MCU family, not the board's pinout.
+  /// A board's identity is still explicitly verified by its owner.
+  Future<void> checkUsb(
+    String port, {
+    String chip = 'esp32s3',
+  }) async {
     if (!Platform.isLinux) {
       throw UnsupportedError('USB flashing is currently Linux-only.');
     }
@@ -438,17 +442,28 @@ class FirmwareManagerService {
         'Use /dev/ttyACM*, /dev/ttyUSB* or /dev/serial/by-id/…',
       );
     }
+    if (!const {'esp32', 'esp32s3', 'esp32s2', 'esp32c3', 'esp32c6'}
+        .contains(chip)) {
+      throw const FormatException('Unsupported or unverified ESP32 chip.');
+    }
     final result = await _runTool([
-      '--chip',
-      'esp32s3',
-      '--port',
-      port,
-      'flash-id',
+      '--chip', chip, '--port', port, 'flash-id',
     ], const Duration(seconds: 40));
-    if (result.exitCode != 0 ||
-        !result.output.toUpperCase().contains('ESP32-S3')) {
+    final display = switch (chip) {
+      'esp32' => 'ESP32',
+      'esp32s2' => 'ESP32-S2',
+      'esp32s3' => 'ESP32-S3',
+      'esp32c3' => 'ESP32-C3',
+      'esp32c6' => 'ESP32-C6',
+      _ => '',
+    };
+    final output = result.output.toUpperCase();
+    final match = chip == 'esp32'
+        ? RegExp(r'\\bESP32\\b(?![-A-Z0-9])').hasMatch(output)
+        : output.contains(display);
+    if (result.exitCode != 0 || !match) {
       throw StateError(
-        'USB preflight did not confirm an ESP32-S3. No flash attempted.',
+        'USB preflight did not confirm $display. No flash attempted.',
       );
     }
   }
@@ -469,12 +484,17 @@ class FirmwareManagerService {
         'Explicit flash and optional full-erase approvals are required.',
       );
     }
-    final package = recognizePackage(image.sourceName);
+    final catalog = await FirmwareBoardCatalog.load();
+    final board = catalog.byId(image.package.boardId);
+    final package = recognizePackage(image.sourceName, board: board);
     if (package == null ||
+        !package.supportsDirectUsb ||
+        package.boardId != image.package.boardId ||
         package.family != image.package.family ||
         package.role != image.package.role ||
         package.version != image.package.version ||
-        package.format != image.package.format) {
+        package.format != image.package.format ||
+        package.chip != image.package.chip) {
       throw const FormatException('Unsupported or changed firmware target.');
     }
     final file = File(image.path);
@@ -486,23 +506,20 @@ class FirmwareManagerService {
     final handle = await file.open();
     try {
       final prefix = await handle.read(8);
-      if (prefix.length < 8 ||
-          prefix[0] != 0xe9 ||
-          prefix[1] < 1 ||
-          prefix[1] > 16) {
-        throw const FormatException('Invalid ESP32 image header.');
+      if (!_validFirmwareHeader(package.imageKind, prefix)) {
+        throw const FormatException('Invalid ESP32 full-image header.');
       }
     } finally {
       await handle.close();
     }
-    await checkUsb(port);
+    await checkUsb(port, chip: package.chip!);
     if (mayWrite != null && !mayWrite()) {
       throw StateError('Bluetooth session became active. No flash attempted.');
     }
     if (eraseFirst) {
       final erased = await _runTool([
         '--chip',
-        'esp32s3',
+        package.chip!,
         '--port',
         port,
         'erase-flash',
