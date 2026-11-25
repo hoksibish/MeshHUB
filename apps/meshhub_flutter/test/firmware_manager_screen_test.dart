@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:meshhub_flutter/firmware_manager_screen.dart';
 import 'package:meshhub_flutter/firmware_manager_service.dart';
+import 'package:meshhub_flutter/firmware_hardware_catalog.dart';
 
 void main() {
   late Directory scratch;
@@ -22,6 +23,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final catalog = await FirmwareBoardCatalog.load();
     final commands = <List<String>>[];
     final service = FirmwareManagerService(
       libraryPath: scratch.path,
@@ -36,6 +38,7 @@ void main() {
           tactical: false,
           radioConnected: () => false,
           service: service,
+          boardCatalog: catalog,
         ),
       ),
     );
@@ -69,12 +72,14 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final catalog = await FirmwareBoardCatalog.load();
     await tester.pumpWidget(
       MaterialApp(
         home: FirmwareManagerScreen(
           tactical: true,
           radioConnected: () => false,
           service: FirmwareManagerService(libraryPath: scratch.path),
+          boardCatalog: catalog,
         ),
       ),
     );
