@@ -348,33 +348,40 @@ class FirmwareManagerService {
     }
   }
 
-  /// Destructive device write: caller must obtain explicit user confirmation.
-  /// Rechecks the selected image and the USB chip immediately before writing.
-  /// Deliberately never runs erase-flash, changes RF settings, or auto-retries.
+  /// A full-image USB write is always explicit. A whole-chip erase is a
+  /// separate, destructive opt-in that deletes identities and stored keys.
+  /// Neither write nor erase is replayed after an interrupted operation.
   Future<void> flashMergedImage({
     required OfflineFirmwareImage image,
     required String port,
     required bool userConfirmed,
+    bool eraseFirst = false,
+    bool eraseConfirmed = false,
     bool Function()? mayWrite,
   }) async {
-    if (!userConfirmed) {
-      throw StateError('Explicit firmware flashing confirmation is required.');
+    if (!userConfirmed || (eraseFirst && !eraseConfirmed)) {
+      throw StateError(
+        'Explicit flash and optional full-erase approvals are required.',
+      );
     }
-    // Offline cache uses digest-named files; imported files use board names.
-    // Revalidate the expected digest and, for cached images, the manifest.
+    final package = recognizePackage(image.sourceName);
+    if (package == null ||
+        package.family != image.package.family ||
+        package.role != image.package.role ||
+        package.version != image.package.version ||
+        package.format != image.package.format) {
+      throw const FormatException('Unsupported or changed firmware target.');
+    }
     final file = File(image.path);
     if (!await file.exists() ||
         (await file.length()) != image.bytes ||
         await _calculateSha256(file.path) != image.sha256) {
       throw const FormatException('Firmware file changed since inspection.');
     }
-    if (!_firmwareNameMatches(image.sourceName)) {
-      throw const FormatException('Unsupported firmware filename or target.');
-    }
     final handle = await file.open();
     try {
-      final prefix = await handle.read(2);
-      if (prefix.length < 2 ||
+      final prefix = await handle.read(8);
+      if (prefix.length < 8 ||
           prefix[0] != 0xe9 ||
           prefix[1] < 1 ||
           prefix[1] > 16) {
@@ -387,6 +394,26 @@ class FirmwareManagerService {
     if (mayWrite != null && !mayWrite()) {
       throw StateError('Bluetooth session became active. No flash attempted.');
     }
+    if (eraseFirst) {
+      final erased = await _runTool([
+        '--chip',
+        'esp32s3',
+        '--port',
+        port,
+        'erase-flash',
+      ], const Duration(minutes: 2));
+      if (erased.exitCode != 0) {
+        throw StateError(
+          'Full erase failed. Inspect the device before recovery.',
+        );
+      }
+      if (mayWrite != null && !mayWrite()) {
+        throw StateError(
+          'Bluetooth session became active after erase. '
+          'No firmware write attempted; recover the node manually.',
+        );
+      }
+    }
     final result = await _runTool([
       '--chip',
       'esp32s3',
@@ -395,7 +422,7 @@ class FirmwareManagerService {
       '--baud',
       '115200',
       'write-flash',
-      '0x0',
+      package.flashOffset,
       file.absolute.path,
     ], Duration(seconds: 120 + (image.bytes ~/ 8000)));
     if (result.exitCode != 0) {
