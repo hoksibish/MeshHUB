@@ -71,7 +71,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
       if (matching.isEmpty || matching.first.name != _selectedChannelName) {
         selectedChannel = null;
         _selectedChannelName = null;
-          channelMessageInput.clear();
+        channelMessageInput.clear();
       }
     }
     if (mounted) setState(() {});
@@ -747,7 +747,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   tooltip: 'All channels',
                   onPressed: () => setState(() {
                     selectedChannel = null;
-                                }),
+                  }),
                   icon: const Icon(Icons.arrow_back),
                 ),
               CircleAvatar(
