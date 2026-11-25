@@ -109,6 +109,8 @@ void main() {
       await tester.tap(find.text('Trail'));
       await tester.pumpAndSettle();
       expect(find.text('Post to Trail'), findsOneWidget);
+      expect(find.text('Radio connected'), findsOneWidget);
+      expect(find.textContaining('cannot verify repeater coverage'), findsOneWidget);
       expect(find.textContaining('slot 2'), findsWidgets);
       radio.receive(channel: 2, text: 'Peer hello');
       await tester.pump();
