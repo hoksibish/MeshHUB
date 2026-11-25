@@ -4,9 +4,7 @@ import 'dart:io';
 
 /// Deliberately narrow first release: the exact Heltec V3 + MeshCore
 /// Companion merged ESP32-S3 image. Other boards need independent validation.
-enum FirmwareTarget {
-  heltecV3MeshCoreCompanion,
-}
+enum FirmwareTarget { heltecV3MeshCoreCompanion }
 
 extension FirmwareTargetInfo on FirmwareTarget {
   String get label => 'Heltec WiFi LoRa 32 V3 · MeshCore Companion';
@@ -34,15 +32,17 @@ class FirmwareToolResult {
   final String output;
 }
 
-typedef FirmwareToolRunner =
-    Future<FirmwareToolResult> Function(List<String> arguments, Duration limit);
+typedef FirmwareToolRunner = Future<FirmwareToolResult> Function(
+  List<String> arguments,
+  Duration limit,
+);
 
 /// No web access, automatic downloads or device writes occur on construction.
 /// The default runner invokes esptool using an argument array (never a shell).
 class FirmwareManagerService {
   FirmwareManagerService({String? libraryPath, FirmwareToolRunner? runTool})
-      : libraryPath = libraryPath ?? _defaultLibraryPath(),
-        _runTool = runTool ?? _runEsptool;
+    : libraryPath = libraryPath ?? _defaultLibraryPath(),
+      _runTool = runTool ?? _runEsptool;
 
   static const maxImageSize = 16 * 1024 * 1024;
   static const minImageSize = 64 * 1024;
@@ -65,9 +65,8 @@ class FirmwareManagerService {
 
   static bool _firmwareNameMatches(String name) {
     final normalized = name.toLowerCase();
-    return RegExp(
-      r'^.*heltec[_-]?v3.*companion.*merged\.bin$',
-    ).hasMatch(normalized);
+    return RegExp(r'^.*heltec[_-]?v3.*companion.*merged\.bin$')
+        .hasMatch(normalized);
   }
 
   /// Filename matching is only a first guard, not proof of publisher origin.
@@ -109,8 +108,7 @@ class FirmwareManagerService {
     final checksum = await _calculateSha256(file.path);
     if (expectedSha256 != null && expectedSha256.trim().isNotEmpty) {
       final wanted = expectedSha256.trim().toLowerCase();
-      if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(wanted) ||
-          wanted != checksum) {
+      if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(wanted) || wanted != checksum) {
         throw const FormatException(
           'SHA-256 does not match the independently provided checksum.',
         );
@@ -136,13 +134,8 @@ class FirmwareManagerService {
   }
 
   /// Copies firmware bytes only; no radio keys, identity or message contents.
-  Future<OfflineFirmwareImage> saveOffline(
-    OfflineFirmwareImage image,
-  ) async {
-    final checked = await inspectFile(
-      image.path,
-      expectedSha256: image.sha256,
-    );
+  Future<OfflineFirmwareImage> saveOffline(OfflineFirmwareImage image) async {
+    final checked = await inspectFile(image.path, expectedSha256: image.sha256);
     final directory = Directory(libraryPath);
     await directory.create(recursive: true);
     final filePath = '${directory.path}/${checked.sha256}.bin';
@@ -179,7 +172,9 @@ class FirmwareManagerService {
     if (stat.type != FileSystemEntityType.file ||
         stat.size != expectedBytes ||
         await _calculateSha256(path) != checksum) {
-      throw const FormatException('Stored image failed integrity verification.');
+      throw const FormatException(
+        'Stored image failed integrity verification.',
+      );
     }
     return OfflineFirmwareImage(
       path: file.absolute.path,
@@ -240,10 +235,13 @@ class FirmwareManagerService {
         'Use /dev/ttyACM*, /dev/ttyUSB* or /dev/serial/by-id/…',
       );
     }
-    final result = await _runTool(
-      ['--chip', 'esp32s3', '--port', port, 'flash-id'],
-      const Duration(seconds: 40),
-    );
+    final result = await _runTool([
+      '--chip',
+      'esp32s3',
+      '--port',
+      port,
+      'flash-id',
+    ], const Duration(seconds: 40));
     if (result.exitCode != 0 ||
         !result.output.toUpperCase().contains('ESP32-S3')) {
       throw StateError(
@@ -291,15 +289,17 @@ class FirmwareManagerService {
     if (mayWrite != null && !mayWrite()) {
       throw StateError('Bluetooth session became active. No flash attempted.');
     }
-    final result = await _runTool(
-      [
-        '--chip', 'esp32s3',
-        '--port', port,
-        '--baud', '115200',
-        'write-flash', '0x0', file.absolute.path,
-      ],
-      const Duration(minutes: 4),
-    );
+    final result = await _runTool([
+      '--chip',
+      'esp32s3',
+      '--port',
+      port,
+      '--baud',
+      '115200',
+      'write-flash',
+      '0x0',
+      file.absolute.path,
+    ], const Duration(minutes: 4));
     if (result.exitCode != 0) {
       throw StateError(
         'Flashing did not complete (exit ${result.exitCode}). '
@@ -314,10 +314,7 @@ class FirmwareManagerService {
   ) async {
     Process process;
     try {
-      process = await Process.start(
-        'esptool',
-        arguments,
-      );
+      process = await Process.start('esptool', arguments);
     } on ProcessException {
       throw StateError(
         'esptool is unavailable. Install it locally before flashing.',
