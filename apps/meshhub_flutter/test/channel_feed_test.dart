@@ -120,6 +120,25 @@ void main() {
     },
   );
 
+  testWidgets('compact phone layout opens channel with a docked composer', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(MeshHubApp(fieldSession: session));
+    await tester.pumpAndSettle();
+    expect(find.text('Trail'), findsOneWidget);
+    await tester.tap(find.text('Trail'));
+    await tester.pumpAndSettle();
+    expect(find.text('Post once to selected channel'), findsOneWidget);
+    expect(find.byTooltip('All channels'), findsOneWidget);
+    await tester.tap(find.byTooltip('All channels'));
+    await tester.pumpAndSettle();
+    expect(find.text('Trail'), findsOneWidget);
+  });
+
   testWidgets('inline channel post requires a fresh destination confirmation', (
     tester,
   ) async {
