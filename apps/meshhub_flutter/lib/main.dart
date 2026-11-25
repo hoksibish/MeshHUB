@@ -1642,7 +1642,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   MaterialPageRoute<void>(
                     builder: (_) => FirmwareManagerScreen(
                       tactical: theme == MeshHubTheme.tactical,
-                      radioConnected: field.connected,
+                      radioConnected: () => field.connected,
                     ),
                   ),
                 ),
