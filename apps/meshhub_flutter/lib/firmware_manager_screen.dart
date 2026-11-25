@@ -235,12 +235,13 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       return;
     }
     final confirmed = await _confirmFlash();
-    if (!confirmed || !mounted) return;
+    if (!confirmed || !mounted || widget.radioConnected()) return;
     await _run('Flashing over USB; do not unplug or close MeshHub...', () async {
       await service.flashMergedImage(
         image: image,
         port: portPath.text.trim(),
         userConfirmed: true,
+        mayWrite: () => !widget.radioConnected(),
       );
       if (mounted) setState(() => checkedPort = null);
     }, completedStatus:
@@ -508,9 +509,12 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         const SizedBox(height: 24),
       ],
     );
-    return Scaffold(
-      appBar: AppBar(title: const Text('Firmware Manager')),
-      body: widget.tactical ? TacticalHudBackdrop(child: page) : page,
+    return PopScope(
+      canPop: !busy,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Firmware Manager')),
+        body: widget.tactical ? TacticalHudBackdrop(child: page) : page,
+      ),
     );
   }
 }
