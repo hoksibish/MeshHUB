@@ -67,7 +67,7 @@ void main() {
     await expectLater(
       manager.inspectFile(
         firmware.path,
-        expectedSha256: '0' * 64,
+        expectedSha256: List<String>.filled(64, '0').join(),
       ),
       throwsFormatException,
     );
