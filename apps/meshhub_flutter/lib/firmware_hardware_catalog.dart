@@ -18,7 +18,8 @@ class FirmwareBoardCatalog {
 
   static FirmwareBoardCatalog parse(String jsonText) {
     final obj = jsonDecode(jsonText);
-    if (obj is! Map<String, dynamic> || obj['schema'] != 1 ||
+    if (obj is! Map<String, dynamic> ||
+        obj['schema'] != 1 ||
         obj['boards'] is! List) {
       throw const FormatException('Unsupported firmware hardware catalog.');
     }
@@ -59,8 +60,11 @@ class FirmwareVariantPattern {
     final role = obj['role'];
     final pattern = obj['pattern'];
     final format = obj['format'];
-    if (role is! String || pattern is! String || format is! String ||
-        pattern.length > 320 || pattern.isEmpty ||
+    if (role is! String ||
+        pattern is! String ||
+        format is! String ||
+        pattern.length > 320 ||
+        pattern.isEmpty ||
         !const {'merged', 'factory', 'uf2', 'dfu-zip'}.contains(format)) {
       return null;
     }
@@ -98,8 +102,13 @@ class FirmwareBoard {
   bool get supportsUsbFlash =>
       method == 'esptool' &&
       chip != null &&
-      const {'esp32', 'esp32s3', 'esp32c3', 'esp32c6', 'esp32s2'}
-          .contains(chip);
+      const {
+        'esp32',
+        'esp32s3',
+        'esp32c3',
+        'esp32c6',
+        'esp32s2',
+      }.contains(chip);
 
   bool get offersUf2 => patterns.any((p) => p.format == 'uf2');
 
@@ -107,9 +116,13 @@ class FirmwareBoard {
     final id = obj['id'], family = obj['family'], name = obj['name'];
     final arch = obj['architecture'], chip = obj['chip'];
     final method = obj['method'], patterns = obj['patterns'];
-    if (id is! String || family is! String || name is! String ||
-        arch is! String || method is! String ||
-        patterns is! List || id.length > 140 ||
+    if (id is! String ||
+        family is! String ||
+        name is! String ||
+        arch is! String ||
+        method is! String ||
+        patterns is! List ||
+        id.length > 140 ||
         !(family == 'meshCore' || family == 'meshtastic') ||
         (chip != null && chip is! String) ||
         !(method == 'esptool' || method == 'guided')) {
