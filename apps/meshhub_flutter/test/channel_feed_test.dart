@@ -185,12 +185,25 @@ void main() {
       isNotNull,
     );
     await tester.tap(send);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
+    // The fake transport responds asynchronously. Observe local acceptance
+    // before asserting the rendered feed rather than relying on one short nap.
+    await tester.runAsync(() async {
+      for (var attempt = 0; attempt < 50 && session.sendCount == 0; attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+    });
+    await tester.pump();
     await tester.pumpAndSettle();
     expect(radio.writes.where((w) => w.first == 3).length, 1);
     expect(radio.writes.where((w) => w.first == 3).single[2], 2);
+    expect(session.sendCount, 1);
+    expect(session.messages, hasLength(1));
+    expect(session.messages.single.isOutgoing, isTrue);
+    expect(session.messages.single.text, 'Test post');
+    expect(
+      session.messages.single.deliveryState.name,
+      'acceptedByLocalRadio',
+    );
     expect(find.text('Test post'), findsOneWidget);
     expect(find.textContaining('peer delivery unverified'), findsOneWidget);
   });
