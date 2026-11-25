@@ -143,6 +143,22 @@ void main() {
     expect(commands.where((args) => args.contains('write-flash')), hasLength(1));
   });
 
+  test('active Bluetooth state blocks a write after USB preflight', () async {
+    final image = await manager.inspectFile(firmware.path);
+    await expectLater(
+      manager.flashMergedImage(
+        image: image,
+        port: '/dev/ttyACM0',
+        userConfirmed: true,
+        mayWrite: () => false,
+      ),
+      throwsStateError,
+    );
+    expect(commands, hasLength(1));
+    expect(commands.single.last, 'flash-id');
+    expect(commands.where((args) => args.contains('write-flash')), isEmpty);
+  });
+
   test('tampering after inspection blocks write before chip probe', () async {
     final image = await manager.inspectFile(firmware.path);
     final bytes = await firmware.readAsBytes();
