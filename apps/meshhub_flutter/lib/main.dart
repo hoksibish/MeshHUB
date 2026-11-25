@@ -157,9 +157,20 @@ class _MeshHubAppState extends State<MeshHubApp> {
               )
             : null,
         scaffoldBackgroundColor: _pageBackground,
+        listTileTheme: theme == MeshHubTheme.tactical
+            ? const ListTileThemeData(
+                dense: true,
+                horizontalTitleGap: 10,
+                minVerticalPadding: 4,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12),
+              )
+            : null,
         cardTheme: CardThemeData(
           color: panel,
           elevation: 0,
+          margin: theme == MeshHubTheme.tactical
+              ? const EdgeInsets.symmetric(vertical: 3)
+              : null,
           shape: theme == MeshHubTheme.tactical
               ? BeveledRectangleBorder(
                   borderRadius: BorderRadius.circular(9),
@@ -931,7 +942,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          padding: EdgeInsets.fromLTRB(
+            theme == MeshHubTheme.tactical ? 12 : 16,
+            theme == MeshHubTheme.tactical ? 8 : 12,
+            theme == MeshHubTheme.tactical ? 12 : 16,
+            theme == MeshHubTheme.tactical ? 8 : 12,
+          ),
           decoration: BoxDecoration(
             color: theme == MeshHubTheme.tactical
                 ? TacticalHudColors.panel.withValues(alpha: 0.93)
@@ -956,9 +972,13 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   icon: const Icon(Icons.arrow_back),
                 ),
               CircleAvatar(
-                radius: 22,
+                radius: theme == MeshHubTheme.tactical ? 17 : 22,
                 backgroundColor: _meshCoreAccent.withValues(alpha: 0.17),
-                child: const Icon(Icons.tag, color: _meshCoreAccent),
+                child: Icon(
+                  Icons.tag,
+                  size: theme == MeshHubTheme.tactical ? 19 : 24,
+                  color: _meshCoreAccent,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -971,6 +991,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
+                        fontSize: theme == MeshHubTheme.tactical ? 17 : null,
                         fontFamily: theme == MeshHubTheme.tactical
                             ? 'monospace'
                             : null,
@@ -1000,7 +1021,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: EdgeInsets.fromLTRB(
+              theme == MeshHubTheme.tactical ? 12 : 16,
+              theme == MeshHubTheme.tactical ? 10 : 16,
+              theme == MeshHubTheme.tactical ? 12 : 16,
+              theme == MeshHubTheme.tactical ? 14 : 24,
+            ),
             children: [
               Card(
                 child: ListTile(
@@ -1013,9 +1039,14 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   ),
                   title: Text(
                     field.connected ? 'Radio connected' : 'Radio disconnected',
+                    style: theme == MeshHubTheme.tactical
+                        ? const TextStyle(fontSize: 12)
+                        : null,
                   ),
                   subtitle: Text(
-                    '${field.status} · MeshHub cannot verify repeater coverage or recipient delivery.',
+                    theme == MeshHubTheme.tactical
+                        ? '${field.status} · Coverage unverified'
+                        : '${field.status} · MeshHub cannot verify repeater coverage or recipient delivery.',
                   ),
                 ),
               ),
@@ -1041,7 +1072,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                           ? _meshCoreAccent.withValues(alpha: 0.13)
                           : null,
                       child: Padding(
-                        padding: const EdgeInsets.all(14),
+                        padding: EdgeInsets.all(
+                          theme == MeshHubTheme.tactical ? 10 : 14,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1049,7 +1082,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 CircleAvatar(
-                                  radius: 14,
+                                  radius: theme == MeshHubTheme.tactical ? 12 : 14,
                                   backgroundColor: post.isOutgoing
                                       ? _meshCoreAccent
                                       : colors.secondaryContainer,
@@ -1101,7 +1134,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
         SafeArea(
           top: false,
           child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            padding: EdgeInsets.fromLTRB(
+              theme == MeshHubTheme.tactical ? 12 : 16,
+              theme == MeshHubTheme.tactical ? 6 : 8,
+              theme == MeshHubTheme.tactical ? 12 : 16,
+              theme == MeshHubTheme.tactical ? 6 : 12,
+            ),
             decoration: BoxDecoration(
               color: theme == MeshHubTheme.tactical
                   ? TacticalHudColors.panel.withValues(alpha: 0.98)
@@ -1135,6 +1173,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
                         maxLines: 3,
                         maxLength: 133,
                         decoration: InputDecoration(
+                          isDense: theme == MeshHubTheme.tactical,
+                          counterStyle: theme == MeshHubTheme.tactical
+                              ? const TextStyle(fontSize: 10)
+                              : null,
                           hintText: 'Message ${channel.name}',
                           prefixIcon: const Icon(Icons.chat_bubble_outline),
                         ),
@@ -1142,8 +1184,19 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     ),
                     const SizedBox(width: 10),
                     Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                      padding: EdgeInsets.only(
+                        top: theme == MeshHubTheme.tactical ? 2 : 4,
+                      ),
                       child: FilledButton.icon(
+                        style: theme == MeshHubTheme.tactical
+                            ? FilledButton.styleFrom(
+                                textStyle: const TextStyle(fontSize: 13),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 9,
+                                ),
+                              )
+                            : null,
                         onPressed:
                             field.connected &&
                                 !field.channelsLoading &&
