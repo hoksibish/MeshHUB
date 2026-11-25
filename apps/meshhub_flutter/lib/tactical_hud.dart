@@ -287,6 +287,7 @@ class TacticalHudLinkScope extends StatelessWidget {
     ),
   );
   }
+}
 
 class _HudReticlePainter extends CustomPainter {
   const _HudReticlePainter({required this.connected});
