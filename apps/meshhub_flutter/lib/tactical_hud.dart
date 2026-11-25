@@ -295,6 +295,7 @@ class _HudReticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
+    final scale = math.min(size.width, size.height) / 122;
     final cyan = Paint()
       ..color = TacticalHudColors.cyan.withValues(alpha: 0.65)
       ..strokeWidth = 1.3
@@ -304,33 +305,33 @@ class _HudReticlePainter extends CustomPainter {
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     for (final radius in [24.0, 40.0, 53.0]) {
-      canvas.drawCircle(center, radius, cyan);
+      canvas.drawCircle(center, radius * scale, cyan);
     }
     for (var step = 0; step < 12; step++) {
       final angle = step * math.pi / 6;
       final outer = Offset(
-        center.dx + 57 * math.cos(angle),
-        center.dy + 57 * math.sin(angle),
+        center.dx + 57 * scale * math.cos(angle),
+        center.dy + 57 * scale * math.sin(angle),
       );
       final inner = Offset(
-        center.dx + 51 * math.cos(angle),
-        center.dy + 51 * math.sin(angle),
+        center.dx + 51 * scale * math.cos(angle),
+        center.dy + 51 * scale * math.sin(angle),
       );
       canvas.drawLine(inner, outer, step.isEven ? orange : cyan);
     }
     canvas.drawLine(
-      Offset(center.dx - 30, center.dy),
-      Offset(center.dx + 30, center.dy),
+      Offset(center.dx - 30 * scale, center.dy),
+      Offset(center.dx + 30 * scale, center.dy),
       cyan,
     );
     canvas.drawLine(
-      Offset(center.dx, center.dy - 30),
-      Offset(center.dx, center.dy + 30),
+      Offset(center.dx, center.dy - 30 * scale),
+      Offset(center.dx, center.dy + 30 * scale),
       cyan,
     );
     canvas.drawCircle(
       center,
-      6,
+      6 * scale,
       Paint()
         ..color = connected ? TacticalHudColors.teal : TacticalHudColors.orange,
     );
