@@ -393,7 +393,23 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       timestampSeconds: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
       text: text,
     );
-    return _sendFrame(frame, channel: true);
+    final result = await _sendFrame(frame, channel: true);
+    if (result == MeshCoreLocalSendResult.acceptedByRadio) {
+      messages.add(
+        RadioMessage(
+          id: 'outgoing-$sendCount',
+          conversationId: 'meshcore-channel-$channel',
+          protocol: MeshProtocol.meshCore,
+          sender: 'You · local radio',
+          text: text,
+          isSimulated: false,
+          isOutgoing: true,
+          deliveryState: MessageDeliveryState.acceptedByLocalRadio,
+        ),
+      );
+      notifyListeners();
+    }
+    return result;
   }
 
   Future<MeshCoreLocalSendResult> sendDirect({
