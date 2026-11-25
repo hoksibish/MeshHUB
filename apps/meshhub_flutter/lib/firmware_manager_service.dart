@@ -106,10 +106,12 @@ class FirmwareManagerService {
       final family = board.family == 'meshCore'
           ? FirmwareFamily.meshCore
           : FirmwareFamily.meshtastic;
-      final versionMatch = RegExp(
-        r'v?\d+(?:[._-]\d+)*(?:[._+-][a-zA-Z0-9]+)*',
-      ).firstMatch(filename);
-      final version = versionMatch?.group(0) ?? 'release file';
+      final releases = RegExp(
+        r'[-_](v?\d+(?:\.\d+){1,3}(?:[._+-][a-zA-Z0-9]+)*)',
+      ).allMatches(filename).toList();
+      final version = releases.isEmpty
+          ? 'release file'
+          : releases.last.group(1)!;
       return FirmwarePackage(
         family: family,
         role: variant.role,
