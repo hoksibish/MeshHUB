@@ -294,7 +294,11 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
           });
         }
       },
-      completedStatus: 'Flashing command completed. Reconnect and verify firmware, identity and settings.',
+      completedStatus: selectedFamily == FirmwareFamily.meshtastic
+          ? 'USB flash command completed. Verify boot and configure in the '
+            'Meshtastic app; MeshHub Meshtastic messaging is not yet supported.'
+          : 'USB flash command completed. Verify device boot, identity, '
+            'role and radio settings before transmitting.',
     );
   }
 
@@ -426,6 +430,15 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                     : 'Meshtastic node · any release version · '
                       'full .factory.bin from the ESP32-S3 release',
               ),
+              if (selectedFamily == FirmwareFamily.meshtastic) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Firmware installation only: MeshHub does not yet have '
+                  'a live Meshtastic messaging transport. Configure the '
+                  'flashed node with the official Meshtastic app.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
               const SizedBox(height: 6),
               Text(
                 'Download or extract the matching Heltec V3 image first. '
