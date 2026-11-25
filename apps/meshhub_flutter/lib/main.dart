@@ -419,6 +419,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
               'Messages this session',
               _meshtasticAccent,
             ),
+            if (theme == MeshHubTheme.tactical)
+              TacticalHudLinkScope(
+                connected: field.connected,
+                channelCount: field.channels.length,
+                onOpenRadios: () => setState(() => destination = 4),
+              ),
           ],
         ),
         const SizedBox(height: 26),
