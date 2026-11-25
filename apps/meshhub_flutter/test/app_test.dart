@@ -257,4 +257,40 @@ void main() {
     expect(find.text('Discover MeshCore radios'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('firmware manager opens from Radios without a device write', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MeshHubApp());
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Radios'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Firmware Manager'), findsOneWidget);
+    await tester.tap(find.text('Open').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Firmware Manager'), findsWidgets);
+    expect(find.text('Import firmware file'), findsOneWidget);
+    expect(find.text('Inspect image'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Flash firmware'),
+      350,
+      scrollable: find.byType(Scrollable).last,
+    );
+    final flash = tester.widget<FilledButton>(
+      find.ancestor(
+        of: find.text('Flash firmware'),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    expect(flash.onPressed, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
 }
