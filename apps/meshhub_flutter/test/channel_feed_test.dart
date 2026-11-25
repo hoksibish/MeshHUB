@@ -197,7 +197,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(radio.writes.where((w) => w.first == 3).length, 1);
     expect(radio.writes.where((w) => w.first == 3).single[2], 2);
-    expect(session.sendCount, 1);
+    expect(
+      session.sendCount,
+      1,
+      reason: 'Local radio status: ${session.status}; sending: ${session.sending}',
+    );
     expect(session.messages, hasLength(1));
     expect(session.messages.single.isOutgoing, isTrue);
     expect(session.messages.single.text, 'Test post');
