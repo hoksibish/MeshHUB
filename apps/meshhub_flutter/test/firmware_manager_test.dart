@@ -98,6 +98,166 @@ void main() {
     expect(commands, isEmpty);
   });
 
+  test('recognizes MeshCore roles and all release versions', () {
+    final fixtures = <String, String>{
+      'Heltec_v3_companion_radio_ble-v1.18.0-81dbae5-merged.bin':
+          'Companion BLE',
+      'Heltec_v3_companion_radio_usb-v1.21.7-merged.bin':
+          'Companion USB',
+      'Heltec_v3_repeater-v2.5.0-abcd123-merged.bin':
+          'Repeater',
+      'Heltec_v3_room_server-v1.19.7-merged.bin':
+          'Room Server',
+      'Heltec_v3_sensor-v1.20.0-alpha-merged.bin':
+          'Sensor',
+    };
+    for (final item in fixtures.entries) {
+      final parsed = FirmwareManagerService.recognizePackage(item.key);
+      expect(parsed?.family, FirmwareFamily.meshCore);
+      expect(parsed?.role, item.value);
+      expect(parsed?.flashOffset, '0x0');
+    }
+  });
+
+  test('recognizes Meshtastic factory releases without version lock-in', () {
+    for (final name in [
+      'firmware-heltec-v3-2.7.19.bb3d6d5.factory.bin',
+      'firmware-heltec-v3-2.8.3.d0f4096.factory.bin',
+      'firmware-heltec_v3-2.6.0.factory.bin',
+    ]) {
+      final parsed = FirmwareManagerService.recognizePackage(name);
+      expect(parsed?.family, FirmwareFamily.meshtastic);
+      expect(parsed?.role, 'Meshtastic node');
+      expect(parsed?.flashOffset, '0x0');
+    }
+    for (final name in [
+      'firmware-heltec-v4-2.8.0.factory.bin',
+      'firmware-heltec-v3-2.8.0.bin',
+      'firmware-heltec-v3-2.8.0-ota.bin',
+      'firmware-esp32s3-2.8.0.zip',
+      'Heltec_v3_companion_radio_ble-v1.20.0.bin',
+      'Heltec_v4_repeater-v1.20.0-merged.bin',
+      'Heltec_v3_mystery_role-v1.20.0-merged.bin',
+    ]) {
+      expect(FirmwareManagerService.recognizePackage(name), isNull,
+          reason: name);
+    }
+  });
+
+  test('inspects Meshtastic factory image and rejects wrong family', () async {
+    final factory = File(
+      '${temp.path}/firmware-heltec-v3-2.8.3.d0f4096.factory.bin',
+    );
+    await firmware.copy(factory.path);
+    final image = await manager.inspectFile(
+      factory.path,
+      expectedFamily: FirmwareFamily.meshtastic,
+    );
+    expect(image.package.role, 'Meshtastic node');
+    expect(image.package.version, '2.8.3.d0f4096');
+    await expectLater(
+      manager.inspectFile(
+        factory.path,
+        expectedFamily: FirmwareFamily.meshCore,
+      ),
+      throwsFormatException,
+    );
+    await expectLater(
+      manager.inspectFile(
+        firmware.path,
+        expectedFamily: FirmwareFamily.meshtastic,
+      ),
+      throwsFormatException,
+    );
+    expect(commands, isEmpty);
+  });
+
+  test('offline library retains both firmware ecosystems', () async {
+    final meshcore = await manager.inspectFile(firmware.path);
+    await manager.saveOffline(meshcore);
+    final factory = File(
+      '${temp.path}/firmware-heltec-v3-2.8.3.d0f4096.factory.bin',
+    );
+    final bytes = await firmware.readAsBytes();
+    bytes[201] = 0xaa;
+    await factory.writeAsBytes(bytes);
+    final meshtastic = await manager.inspectFile(factory.path);
+    await manager.saveOffline(meshtastic);
+    final images = await manager.savedImages();
+    expect(images, hasLength(2));
+    expect(images.map((i) => i.package.family).toSet(),
+        {FirmwareFamily.meshCore, FirmwareFamily.meshtastic});
+    expect(images.map((i) => i.package.role).toSet(),
+        {'Companion BLE', 'Meshtastic node'});
+  });
+
+  test('Meshtastic factory flash uses full image offset 0x0', () async {
+    final factory = File(
+      '${temp.path}/firmware-heltec-v3-2.8.3.d0f4096.factory.bin',
+    );
+    await firmware.copy(factory.path);
+    final image = await manager.inspectFile(factory.path);
+    await manager.flashMergedImage(
+      image: image,
+      port: '/dev/ttyACM0',
+      userConfirmed: true,
+    );
+    expect(commands, hasLength(2));
+    expect(commands.last, containsAllInOrder([
+      'write-flash',
+      '0x0',
+      factory.absolute.path,
+    ]));
+    expect(commands.where((args) => args.contains('erase-flash')), isEmpty);
+  });
+
+  test('full erase must be explicitly confirmed separately', () async {
+    final image = await manager.inspectFile(firmware.path);
+    await expectLater(
+      manager.flashMergedImage(
+        image: image,
+        port: '/dev/ttyACM0',
+        userConfirmed: true,
+        eraseFirst: true,
+        eraseConfirmed: false,
+      ),
+      throwsStateError,
+    );
+    expect(commands, isEmpty);
+    await manager.flashMergedImage(
+      image: image,
+      port: '/dev/ttyACM0',
+      userConfirmed: true,
+      eraseFirst: true,
+      eraseConfirmed: true,
+    );
+    expect(commands.map((args) => args.last), [
+      'flash-id',
+      'erase-flash',
+      firmware.absolute.path,
+    ]);
+    expect(commands.where((args) => args.contains('erase-flash')), hasLength(1));
+  });
+
+  test('BLE activation after erase prevents any firmware write', () async {
+    final image = await manager.inspectFile(firmware.path);
+    var checks = 0;
+    await expectLater(
+      manager.flashMergedImage(
+        image: image,
+        port: '/dev/ttyACM0',
+        userConfirmed: true,
+        eraseFirst: true,
+        eraseConfirmed: true,
+        mayWrite: () => checks++ == 0,
+      ),
+      throwsStateError,
+    );
+    expect(commands, hasLength(2));
+    expect(commands.last, contains('erase-flash'));
+    expect(commands.where((args) => args.contains('write-flash')), isEmpty);
+  });
+
   test('no USB write without explicit confirmation', () async {
     final image = await manager.inspectFile(firmware.path);
     await expectLater(
