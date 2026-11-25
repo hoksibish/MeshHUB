@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:meshhub_domain/meshhub_domain.dart';
+import 'package:meshhub_domain/meshcore_protocol.dart';
 import 'package:meshhub_flutter/field_session.dart';
 import 'package:meshhub_flutter/linux_meshcore_ble.dart';
 import 'package:meshhub_flutter/main.dart';
@@ -73,6 +74,48 @@ class ChannelRadio extends MeshCoreBleTransport {
   }
 }
 
+/// UI harness: exercise the composer without a fake-async BLE timeout.
+ /// Other tests continue through the real session send path.
+class ChannelUiSession extends MeshCoreFieldSession {
+  ChannelUiSession({required super.transportFactory});
+
+  bool interceptChannelSend = false;
+  int sendRequests = 0;
+  int? requestedSlot;
+  String? requestedText;
+  bool? requestedVerified;
+
+  @override
+  Future<MeshCoreLocalSendResult> sendChannel({
+    required int channel,
+    required String text,
+    required bool verified,
+  }) async {
+    if (!interceptChannelSend) {
+      return super.sendChannel(channel: channel, text: text, verified: verified);
+    }
+    sendRequests++;
+    requestedSlot = channel;
+    requestedText = text;
+    requestedVerified = verified;
+    sendCount++;
+    messages.add(
+      RadioMessage(
+        id: 'ui-accepted-$sendCount',
+        conversationId: 'meshcore-channel-$channel',
+        protocol: MeshProtocol.meshCore,
+        sender: 'You · local radio',
+        text: text,
+        isSimulated: false,
+        isOutgoing: true,
+        deliveryState: MessageDeliveryState.acceptedByLocalRadio,
+      ),
+    );
+    notifyListeners();
+    return MeshCoreLocalSendResult.acceptedByRadio;
+  }
+}
+
 /// Tap the Channels destination, not the identically named page heading.
 Future<void> openChannels(WidgetTester tester) async {
   final navigation = find.byType(NavigationRail).evaluate().isNotEmpty
@@ -95,10 +138,10 @@ void main() {
     true,
   );
   late ChannelRadio radio;
-  late MeshCoreFieldSession session;
+  late ChannelUiSession session;
   setUp(() async {
     radio = ChannelRadio();
-    session = MeshCoreFieldSession(transportFactory: (_) => radio);
+    session = ChannelUiSession(transportFactory: (_) => radio);
     await session.connect(candidate);
     await session.refreshChannels();
   });
@@ -161,9 +204,10 @@ void main() {
     expect(find.text('Trail'), findsOneWidget);
   });
 
-  testWidgets('inline Send starts an operation without a manual RF checkbox', (
+  testWidgets('inline Send starts a verified channel operation without a checkbox', (
     tester,
   ) async {
+    session.interceptChannelSend = true;
     tester.view.physicalSize = const Size(1200, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -189,20 +233,18 @@ void main() {
       isNotNull,
     );
     await tester.tap(send);
-    await tester.pump();
-
-    // WidgetTester runs on fake async; queued BLE futures may not complete
-    // here. Verify the UI initiates the send. Domain tests separately
-    // verify the actual radio ACK, message storage, and no retry behavior.
-    expect(session.sending || session.sendCount == 1, isTrue);
-    expect(
-      radio.writes.where((w) => w.first == 3).length,
-      lessThanOrEqualTo(1),
-    );
-    // Explicitly abort this in-flight fake-async exchange before widget-test
-    // teardown; otherwise the eight-second response timer remains pending.
-    await session.disconnect();
     await tester.pumpAndSettle();
+
+    expect(session.sendRequests, 1);
+    expect(session.requestedSlot, 2);
+    expect(session.requestedText, 'Test post');
+    expect(session.requestedVerified, isTrue);
+    expect(radio.writes.where((w) => w.first == 3), isEmpty);
+    expect(session.messages.single.isOutgoing, isTrue);
+    expect(session.messages.single.deliveryState,
+        MessageDeliveryState.acceptedByLocalRadio);
+    expect(find.text('Test post'), findsOneWidget);
+    expect(find.textContaining('peer delivery unverified'), findsOneWidget);
   });
 
   testWidgets('accepted outgoing channel post labels delivery as unverified', (
