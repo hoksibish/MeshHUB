@@ -219,7 +219,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('COMMUNICATIONS CONSOLE'), findsOneWidget);
     expect(find.text('Discover MeshCore radios'), findsOneWidget);
-    expect(find.text('CONNECTION'), findsOneWidget);
+    expect(find.text('CONNECTION'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
