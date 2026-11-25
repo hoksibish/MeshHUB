@@ -588,13 +588,285 @@ class _MeshHubAppState extends State<MeshHubApp> {
     );
   }
 
-  Widget _nodesView(BuildContext context) => _featurePlaceholder(
-    context,
-    'Nodes',
-    Icons.hub_outlined,
-    'Node discovery and live telemetry will appear here as protocol adapters are completed.',
-    'No verified node inventory is available yet. MeshHub will not invent battery levels, hops, or signal quality.',
-  );
+  /// Shared screen typography and panels. Tactical has its own HUD chrome;
+  /// Light and Dark use the same compact, accessible information hierarchy.
+  Widget _screenHeading(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
+    if (theme == MeshHubTheme.tactical) {
+      return TacticalHudHeading(title, subtitle: subtitle);
+    }
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 23, color: _accent),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                title,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w750,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Text(subtitle, style: textTheme.bodySmall),
+      ],
+    );
+  }
+
+  Widget _sectionPanel(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Widget child,
+    String? subtitle,
+  }) {
+    final tactical = theme == MeshHubTheme.tactical;
+    final colors = Theme.of(context).colorScheme;
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: tactical ? 17 : 19,
+              color: tactical ? TacticalHudColors.orange : _accent,
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Text(
+                tactical ? title.toUpperCase() : title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontFamily: tactical ? 'monospace' : null,
+                  letterSpacing: tactical ? 0.7 : 0,
+                  fontSize: tactical ? 13 : 15,
+                  fontWeight: FontWeight.w700,
+                  color: tactical ? TacticalHudColors.cyan : colors.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        ],
+        const SizedBox(height: 10),
+        Divider(height: 1, color: colors.outlineVariant),
+        const SizedBox(height: 12),
+        child,
+      ],
+    );
+    return SizedBox(
+      width: double.infinity,
+      child: tactical
+          ? TacticalHudPanel(
+              padding: const EdgeInsets.all(14),
+              child: content,
+            )
+          : Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: content,
+              ),
+            ),
+    );
+  }
+
+  Widget _readout(
+    BuildContext context,
+    String label,
+    String value, {
+    bool emphasize = false,
+  }) {
+    final tactical = theme == MeshHubTheme.tactical;
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: tactical ? 110 : 128,
+            child: Text(
+              tactical ? label.toUpperCase() : label,
+              style: TextStyle(
+                fontSize: tactical ? 10 : 12,
+                fontFamily: tactical ? 'monospace' : null,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: tactical ? 12 : 13,
+                color: emphasize ? _accent : colors.onSurface,
+                fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _diagnosticMetric(
+    BuildContext context,
+    String label,
+    int value,
+  ) {
+    final tactical = theme == MeshHubTheme.tactical;
+    final content = Padding(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$value',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              fontFamily: tactical ? 'monospace' : null,
+              color: tactical ? TacticalHudColors.teal : _accent,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            tactical ? label.toUpperCase() : label,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ],
+      ),
+    );
+    return SizedBox(
+      width: 150,
+      child: tactical
+          ? TacticalHudPanel(padding: EdgeInsets.zero, child: content)
+          : Card(child: content),
+    );
+  }
+
+  Widget _nodesView(BuildContext context) {
+    final tactical = theme == MeshHubTheme.tactical;
+    return ListView(
+      padding: EdgeInsets.all(tactical ? 14 : 20),
+      children: [
+        _screenHeading(
+          context,
+          tactical ? 'Node Monitor' : 'Nodes',
+          'MeshCore and Meshtastic · verified network information only',
+          Icons.hub_outlined,
+        ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _metricCard(
+              Icons.hub_outlined,
+              'Unavailable',
+              'Verified node inventory',
+              _accent,
+            ),
+            _metricCard(
+              Icons.bluetooth_connected,
+              field.connected ? 'Connected' : 'Offline',
+              'MeshCore companion',
+              _accent,
+            ),
+            _metricCard(
+              Icons.tag_outlined,
+              '${field.channels.length}',
+              'Configured channels (not nodes)',
+              _accent,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _sectionPanel(
+          context,
+          title: 'Node inventory',
+          icon: Icons.radar_outlined,
+          subtitle: 'No live node inventory source is connected yet',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline, size: 19, color: _accent),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'MeshHub can read the attached radio and its channels, '
+                      'but node discovery and telemetry are not implemented. '
+                      'An empty inventory here does not mean the mesh is empty.',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => setState(() => destination = 4),
+                    icon: const Icon(Icons.router_outlined, size: 18),
+                    label: const Text('Radio details'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => setState(() => destination = 1),
+                    icon: const Icon(Icons.tag_outlined, size: 18),
+                    label: const Text('Open channels'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        _sectionPanel(
+          context,
+          title: 'Telemetry readiness',
+          icon: Icons.monitor_heart_outlined,
+          subtitle: 'Fields will appear only when a protocol adapter reports them',
+          child: Column(
+            children: [
+              _readout(context, 'Node identity', 'Awaiting verified discovery'),
+              _readout(context, 'Last heard / hops', 'Not available'),
+              _readout(context, 'Signal / battery', 'Not available'),
+              _readout(context, 'Location', 'Not available'),
+              const SizedBox(height: 6),
+              Text(
+                'No simulated nodes, inferred reachability, or fabricated '
+                'signal statistics are displayed.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _mapView(BuildContext context) => _featurePlaceholder(
     context,
