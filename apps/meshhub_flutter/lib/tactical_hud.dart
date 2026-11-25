@@ -223,69 +223,69 @@ class TacticalHudLinkScope extends StatelessWidget {
     final width = math.min(344.0, MediaQuery.sizeOf(context).width - 40);
     final reticleSize = compact ? 84.0 : 122.0;
     return SizedBox(
-    width: width,
-    child: TacticalHudPanel(
-      padding: const EdgeInsets.fromLTRB(14, 14, 16, 14),
-      active: connected,
-      child: Row(
-        children: [
-          SizedBox(
-            width: reticleSize,
-            height: reticleSize,
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _HudReticlePainter(connected: connected),
+      width: width,
+      child: TacticalHudPanel(
+        padding: const EdgeInsets.fromLTRB(14, 14, 16, 14),
+        active: connected,
+        child: Row(
+          children: [
+            SizedBox(
+              width: reticleSize,
+              height: reticleSize,
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _HudReticlePainter(connected: connected),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'RADIO / LINK',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    letterSpacing: 1.4,
-                    fontSize: 10,
-                    color: TacticalHudColors.muted,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'RADIO / LINK',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      letterSpacing: 1.4,
+                      fontSize: 10,
+                      color: TacticalHudColors.muted,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  connected ? 'ONLINE' : 'OFFLINE',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 21,
-                    fontWeight: FontWeight.w700,
-                    color: connected
-                        ? TacticalHudColors.teal
-                        : TacticalHudColors.orange,
+                  const SizedBox(height: 8),
+                  Text(
+                    connected ? 'ONLINE' : 'OFFLINE',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 21,
+                      fontWeight: FontWeight.w700,
+                      color: connected
+                          ? TacticalHudColors.teal
+                          : TacticalHudColors.orange,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '$channelCount CH / CONFIGURED',
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 10,
-                    color: TacticalHudColors.muted,
+                  const SizedBox(height: 5),
+                  Text(
+                    '$channelCount CH / CONFIGURED',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 10,
+                      color: TacticalHudColors.muted,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: onOpenRadios,
-                  child: const Text('RADIOS >'),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: onOpenRadios,
+                    child: const Text('RADIOS >'),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
   }
 }
 
