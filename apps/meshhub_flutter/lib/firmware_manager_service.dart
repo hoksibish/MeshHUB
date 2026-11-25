@@ -285,14 +285,17 @@ class FirmwareManagerService {
   }
 
   /// Copies firmware bytes only; no radio keys, identity or message contents.
-  static String _cacheSuffix(FirmwarePackage package) => switch (package.imageKind) {
-    'uf2' => '.uf2',
-    'dfu-zip' => '.zip',
-    _ => '.bin',
-  };
+  static String _cacheSuffix(FirmwarePackage package) =>
+      switch (package.imageKind) {
+        'uf2' => '.uf2',
+        'dfu-zip' => '.zip',
+        _ => '.bin',
+      };
 
   Future<OfflineFirmwareImage> saveOffline(OfflineFirmwareImage image) async {
-    final libraryFile = File('$libraryPath/${image.sha256}${_cacheSuffix(image.package)}');
+    final libraryFile = File(
+      '$libraryPath/${image.sha256}${_cacheSuffix(image.package)}',
+    );
     if (File(image.path).absolute.path == libraryFile.absolute.path) {
       return _verifyStoredImage(
         libraryFile.path,
@@ -386,8 +389,11 @@ class FirmwareManagerService {
       try {
         final info = jsonDecode(await entity.readAsString());
         if (info is! Map<String, dynamic> ||
-            !const {'device', 'heltecV3', 'heltecV3MeshCoreCompanion'}
-                .contains(info['target'])) {
+            !const {
+              'device',
+              'heltecV3',
+              'heltecV3MeshCoreCompanion',
+            }.contains(info['target'])) {
           continue;
         }
         final sha = info['sha256'];
@@ -422,10 +428,15 @@ class FirmwareManagerService {
                 info['imageKind'] != pkg.imageKind)) {
           continue;
         }
-        images.add(await _verifyStoredImage(
-          '${directory.path}/$sha${_cacheSuffix(pkg)}',
-          filename, sha, size, package: pkg,
-        ));
+        images.add(
+          await _verifyStoredImage(
+            '${directory.path}/$sha${_cacheSuffix(pkg)}',
+            filename,
+            sha,
+            size,
+            package: pkg,
+          ),
+        );
       } catch (_) {
         // Corrupt, tampered or obsolete cache entries are never offered.
       }
