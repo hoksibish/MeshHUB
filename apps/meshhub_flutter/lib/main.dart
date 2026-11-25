@@ -1026,19 +1026,21 @@ class _MeshHubAppState extends State<MeshHubApp> {
         ),
       ),
       const SizedBox(height: 12),
-      _sectionPanel(
-        context,
-        title: 'Radios & Bluetooth',
-        icon: Icons.router_outlined,
-        child: ListTile(
-          dense: true,
-          contentPadding: EdgeInsets.zero,
-          title: Text(
-            field.connected ? 'Radio connected' : 'Connect your radio',
+      InkWell(
+        onTap: () => setState(() => destination = 4),
+        child: _sectionPanel(
+          context,
+          title: 'Radios & Bluetooth',
+          icon: Icons.router_outlined,
+          child: ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              field.connected ? 'Radio connected' : 'Connect your radio',
+            ),
+            subtitle: const Text('Discovery, pairing status and diagnostics'),
+            trailing: const Icon(Icons.chevron_right),
           ),
-          subtitle: const Text('Discovery, pairing status and diagnostics'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => setState(() => destination = 4),
         ),
       ),
       const SizedBox(height: 12),
