@@ -28,6 +28,22 @@ class _MeshHubAppState extends State<MeshHubApp> {
   static const _surface = Color(0xff19222c);
   static const _meshCoreAccent = Color(0xff55d6cb);
   static const _meshtasticAccent = Color(0xffb6df62);
+  static const _tacticalAccent = Color(0xffe2b76b);
+  Color get _pageBackground => switch (theme) {
+    MeshHubTheme.light => const Color(0xfff6f9fc),
+    MeshHubTheme.dark => _canvas,
+    MeshHubTheme.tactical => const Color(0xff101710),
+  };
+  Color get _panelBackground => switch (theme) {
+    MeshHubTheme.light => const Color(0xffffffff),
+    MeshHubTheme.dark => _surface,
+    MeshHubTheme.tactical => const Color(0xff202b20),
+  };
+  Color get _accent => switch (theme) {
+    MeshHubTheme.light => const Color(0xff087e83),
+    MeshHubTheme.dark => _meshCoreAccent,
+    MeshHubTheme.tactical => _tacticalAccent,
+  };
   MeshProtocol? filter;
   int destination = 0;
   late final MeshCoreFieldSession field;
@@ -38,7 +54,6 @@ class _MeshHubAppState extends State<MeshHubApp> {
   String? _selectedChannelName;
   bool showExamples = false;
   bool verifiedDestination = false;
-  bool verifiedChannel = false;
 
   @override
   void initState() {
@@ -50,15 +65,13 @@ class _MeshHubAppState extends State<MeshHubApp> {
   void _refresh() {
     if (!field.connected || field.channelsLoading) {
       verifiedDestination = false;
-      verifiedChannel = false;
     }
     if (selectedChannel != null && !field.channelsLoading) {
       final matching = field.channels.where((c) => c.index == selectedChannel);
       if (matching.isEmpty || matching.first.name != _selectedChannelName) {
         selectedChannel = null;
         _selectedChannelName = null;
-        verifiedChannel = false;
-        channelMessageInput.clear();
+          channelMessageInput.clear();
       }
     }
     if (mounted) setState(() {});
@@ -81,44 +94,45 @@ class _MeshHubAppState extends State<MeshHubApp> {
     final color = switch (theme) {
       MeshHubTheme.light => const Color(0xff146c61),
       MeshHubTheme.dark => _meshCoreAccent,
-      MeshHubTheme.tactical => _meshtasticAccent,
+      MeshHubTheme.tactical => _tacticalAccent,
     };
     final mode = theme == MeshHubTheme.light
         ? Brightness.light
         : Brightness.dark;
     final scheme = ColorScheme.fromSeed(seedColor: color, brightness: mode);
+    final panel = _panelBackground;
     return MaterialApp(
       title: 'MeshHub',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: scheme,
         useMaterial3: true,
-        scaffoldBackgroundColor: theme == MeshHubTheme.light
-            ? scheme.surface
-            : _canvas,
+        scaffoldBackgroundColor: _pageBackground,
         cardTheme: CardThemeData(
-          color: theme == MeshHubTheme.light
-              ? scheme.surfaceContainerLow
-              : _surface,
+          color: panel,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(
+              theme == MeshHubTheme.tactical ? 6 : 18,
+            ),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: theme == MeshHubTheme.light
-              ? scheme.surfaceContainerHigh
-              : _surface,
+              ? const Color(0xffeaf1f5)
+              : panel,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(
+              theme == MeshHubTheme.tactical ? 6 : 20,
+            ),
             borderSide: BorderSide.none,
           ),
         ),
       ),
       home: Scaffold(
         appBar: AppBar(
-          backgroundColor: _surface,
+          backgroundColor: panel,
           title: const Text(
             'MeshHub',
             maxLines: 1,
@@ -133,15 +147,15 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: field.connected
-                      ? _meshCoreAccent.withValues(alpha: 0.12)
-                      : Colors.white.withValues(alpha: 0.06),
+                      ? _accent.withValues(alpha: 0.12)
+                      : scheme.onSurface.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       field.connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
-                      color: field.connected ? _meshCoreAccent : Colors.grey,
+                      color: field.connected ? _accent : scheme.onSurfaceVariant,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
@@ -171,7 +185,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
             children: [
               if (constraints.maxWidth >= 760)
                 NavigationRail(
-                  backgroundColor: _surface,
+                  backgroundColor: panel,
                   selectedIndex: destination,
                   extended: constraints.maxWidth >= 1220,
                   labelType: constraints.maxWidth >= 1220
@@ -400,7 +414,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
       width: 195,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _surface,
+        color: _panelBackground,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: accent.withValues(alpha: 0.22)),
       ),
@@ -661,8 +675,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 onTap: () => setState(() {
                   selectedChannel = channel.index;
                   _selectedChannelName = channel.name;
-                  verifiedChannel = false;
-                  channelMessageInput.clear();
+                              channelMessageInput.clear();
                 }),
               ),
             ),
@@ -734,8 +747,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   tooltip: 'All channels',
                   onPressed: () => setState(() {
                     selectedChannel = null;
-                    verifiedChannel = false;
-                  }),
+                                }),
                   icon: const Icon(Icons.arrow_back),
                 ),
               CircleAvatar(
@@ -878,48 +890,14 @@ class _MeshHubAppState extends State<MeshHubApp> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  childrenPadding: const EdgeInsets.only(bottom: 8),
-                  leading: Icon(
-                    verifiedChannel
-                        ? Icons.verified_outlined
-                        : Icons.tune_outlined,
-                    color: verifiedChannel ? _meshCoreAccent : null,
-                  ),
-                  title: Text(
-                    verifiedChannel
-                        ? 'Send settings confirmed'
-                        : 'RF settings & send confirmation',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  subtitle: Text(
-                    'Local acceptance does not confirm delivery',
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  children: [
-                    if (field.identity?.radioPreset case final rf?)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'RF: ${rf.frequencyKHz} kHz · ${rf.bandwidthHz} Hz · SF${rf.spreadingFactor} · CR${rf.codingRate}',
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                      ),
-                    CheckboxListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        'I verified RF region, displayed preset, ${channel.name} (slot ${channel.index}) and a reachable peer',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      value: verifiedChannel,
-                      onChanged: field.connected
-                          ? (value) => setState(() => verifiedChannel = value ?? false)
-                          : null,
+                if (field.identity?.radioPreset == null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Connect a configured radio before sending.',
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
-                  ],
-                ),
+                  ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -943,7 +921,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
                             field.connected &&
                                 !field.channelsLoading &&
                                 !field.sending &&
-                                verifiedChannel
+                                field.identity?.radioPreset != null &&
+                                field.channels.any((c) => c.index == channel.index)
                             ? () => _sendChannelPost(context)
                             : null,
                         icon: const Icon(Icons.send_outlined),
@@ -971,12 +950,11 @@ class _MeshHubAppState extends State<MeshHubApp> {
       final result = await field.sendChannel(
         channel: channel,
         text: text,
-        verified: verifiedChannel,
+        verified: true,
       );
       if (!mounted) return;
       setState(() {
-        verifiedChannel = false;
-        if (result == MeshCoreLocalSendResult.acceptedByRadio) {
+          if (result == MeshCoreLocalSendResult.acceptedByRadio) {
           channelMessageInput.clear();
         }
       });
