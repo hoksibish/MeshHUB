@@ -63,6 +63,10 @@ class ChannelRadio extends MeshCoreBleTransport {
       if (name.isNotEmpty) data[34] = 0x71;
       incoming.add(data);
     } else if (command.first == 3) {
+      // Mirror an actual BLE notification arriving after the write completes.
+      // In widget tests a synchronous fake reply can race the fake-async
+      // scheduler and leave the send waiting despite recording the frame.
+      await Future<void>.delayed(Duration.zero);
       incoming.add([0]);
     }
   }
