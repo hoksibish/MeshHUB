@@ -953,14 +953,11 @@ class _MeshHubAppState extends State<MeshHubApp> {
         verified: true,
       );
       if (!mounted) return;
-      setState(() {
-          if (result == MeshCoreLocalSendResult.acceptedByRadio) {
-          channelMessageInput.clear();
-        }
-      });
+      if (result == MeshCoreLocalSendResult.acceptedByRadio) {
+        channelMessageInput.clear();
+      }
     } catch (e) {
       if (!mounted) return;
-      setState(() => verifiedChannel = false);
       messenger.showSnackBar(
         SnackBar(
           content: Text(
