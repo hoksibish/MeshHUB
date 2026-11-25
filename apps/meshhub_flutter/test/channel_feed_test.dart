@@ -114,8 +114,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(MeshHubApp(fieldSession: session));
-    await tester.pumpAndSettle();
-    await openChannels(tester);
+      await tester.pumpAndSettle();
+      await openChannels(tester);
       await tester.pumpAndSettle();
       expect(find.text('Public'), findsOneWidget);
       expect(find.text('Trail'), findsOneWidget);
@@ -126,7 +126,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Trail'), findsWidgets);
       expect(find.text('Radio connected'), findsOneWidget);
-      expect(find.textContaining('cannot verify repeater coverage'), findsOneWidget);
+      expect(
+        find.textContaining('cannot verify repeater coverage'),
+        findsOneWidget,
+      );
       expect(find.textContaining('slot 2'), findsWidgets);
       radio.receive(channel: 2, text: 'Peer hello');
       await tester.pump();
