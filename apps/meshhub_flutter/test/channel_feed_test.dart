@@ -72,6 +72,20 @@ class ChannelRadio extends MeshCoreBleTransport {
   }
 }
 
+/// Tap the Channels destination, not the identically named page heading.
+Future<void> openChannels(WidgetTester tester) async {
+  final navigation = find.byType(NavigationRail).evaluate().isNotEmpty
+      ? find.byType(NavigationRail)
+      : find.byType(NavigationBar);
+  final destination = find.descendant(
+    of: navigation,
+    matching: find.text('Channels'),
+  );
+  expect(destination, findsOneWidget);
+  await tester.tap(destination);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   const candidate = MeshCoreBleCandidate(
     'fixture-radio',
@@ -101,8 +115,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(MeshHubApp(fieldSession: session));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Channels'));
-    await tester.pumpAndSettle();
+    await openChannels(tester);
       await tester.pumpAndSettle();
       expect(find.text('Public'), findsOneWidget);
       expect(find.text('Trail'), findsOneWidget);
@@ -132,8 +145,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MeshHubApp(fieldSession: session));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Channels'));
-    await tester.pumpAndSettle();
+    await openChannels(tester);
     await tester.pumpAndSettle();
     expect(find.text('Trail'), findsOneWidget);
     await tester.tap(find.text('Trail'));
@@ -154,8 +166,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MeshHubApp(fieldSession: session));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Channels'));
-    await tester.pumpAndSettle();
+    await openChannels(tester);
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
     final send = find.text('Send');
@@ -221,8 +232,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MeshHubApp(fieldSession: session));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Channels'));
-    await tester.pumpAndSettle();
+    await openChannels(tester);
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'é' * 67);
