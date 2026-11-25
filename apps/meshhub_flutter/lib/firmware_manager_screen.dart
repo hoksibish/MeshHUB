@@ -70,11 +70,14 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       setState(() {
         catalog = loaded;
         selectedBoardId = selectedFamily == FirmwareFamily.meshCore
-            ? 'meshcore-heltec-v3' : 'meshtastic-heltec-v3';
+            ? 'meshcore-heltec-v3'
+            : 'meshtastic-heltec-v3';
       });
     } catch (_) {
-      if (mounted) setState(() => status =
-          'Offline board catalog could not be loaded. USB flashing disabled.');
+      if (mounted)
+        setState(
+          () => status = 'Offline board catalog could not be loaded. USB flashing disabled.',
+        );
     }
   }
 
@@ -191,8 +194,9 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
     }
     final board = selectedBoard;
     if (board == null || !board.supportsUsbFlash) {
-      setState(() => status =
-          'This board needs the guided UF2/DFU method; USB esptool is disabled.');
+      setState(
+        () => status = 'This board needs the guided UF2/DFU method; USB esptool is disabled.',
+      );
       return;
     }
     await _run(
@@ -241,13 +245,13 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                         Text(
                           eraseFirst
                               ? 'A FULL CHIP ERASE permanently deletes '
-                                  'identity, keys, Bluetooth pairing, channels '
-                                  'and settings before the new firmware is written. '
-                                  'MeshHub does not create a backup.'
+                                    'identity, keys, Bluetooth pairing, channels '
+                                    'and settings before the new firmware is written. '
+                                    'MeshHub does not create a backup.'
                               : 'Writing a full factory/merged image can overwrite '
-                                  'the bootloader and partitions, affect '
-                                  'Bluetooth pairing and settings, or leave a '
-                                  'node unbootable. No backup is made by MeshHub.',
+                                    'the bootloader and partitions, affect '
+                                    'Bluetooth pairing and settings, or leave a '
+                                    'node unbootable. No backup is made by MeshHub.',
                         ),
                         const SizedBox(height: 10),
                         CheckboxListTile(
@@ -335,9 +339,9 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       },
       completedStatus: selectedFamily == FirmwareFamily.meshtastic
           ? 'USB flash command completed. Verify boot and configure in the '
-            'Meshtastic app; MeshHub Meshtastic messaging is not yet supported.'
+                'Meshtastic app; MeshHub Meshtastic messaging is not yet supported.'
           : 'USB flash command completed. Verify device boot, identity, '
-            'role and radio settings before transmitting.',
+                'role and radio settings before transmitting.',
     );
   }
 
@@ -395,11 +399,9 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         const SizedBox(height: 4),
         Text(
           '${(image.bytes / (1024 * 1024)).toStringAsFixed(2)} MiB · ${image.package.format}',
-      ),
-      const SizedBox(height: 3),
-      Text(
-        image.package.displayName,
         ),
+        const SizedBox(height: 3),
+        Text(image.package.displayName),
         const SizedBox(height: 5),
         SelectableText(
           'SHA-256: ${image.sha256}',
@@ -449,15 +451,19 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                     ChoiceChip(
                       label: Text(family.label),
                       selected: selectedFamily == family,
-                      onSelected: busy ? null : (_) => setState(() {
-                        selectedFamily = family;
-                        selectedBoardId = family == FirmwareFamily.meshCore
-                            ? 'meshcore-heltec-v3' : 'meshtastic-heltec-v3';
-                        selectedImage = null;
-                        checkedPort = null;
-                        boardSearch = '';
-                        eraseFirst = false;
-                      }),
+                      onSelected: busy
+                          ? null
+                          : (_) => setState(() {
+                              selectedFamily = family;
+                              selectedBoardId =
+                                  family == FirmwareFamily.meshCore
+                                  ? 'meshcore-heltec-v3'
+                                  : 'meshtastic-heltec-v3';
+                              selectedImage = null;
+                              checkedPort = null;
+                              boardSearch = '';
+                              eraseFirst = false;
+                            }),
                     ),
                 ],
               ),
@@ -478,36 +484,42 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                 DropdownButton<String>(
                   isExpanded: true,
                   value: currentBoards.any((b) => b.id == selectedBoardId)
-                      ? selectedBoardId : null,
+                      ? selectedBoardId
+                      : null,
                   hint: const Text('Choose an exact board model'),
                   items: currentBoards
-                      .where((board) =>
-                          board.id == selectedBoardId ||
-                          boardSearch.isEmpty ||
-                          board.name.toLowerCase().contains(
-                              boardSearch.toLowerCase()))
-                      .map((board) => DropdownMenuItem<String>(
-                        value: board.id,
-                        child: Text(
-                          board.name,
-                          overflow: TextOverflow.ellipsis,
+                      .where(
+                        (board) =>
+                            board.id == selectedBoardId ||
+                            boardSearch.isEmpty ||
+                            board.name.toLowerCase().contains(
+                              boardSearch.toLowerCase(),
+                            ),
+                      )
+                      .map(
+                        (board) => DropdownMenuItem<String>(
+                          value: board.id,
+                          child: Text(
+                            board.name,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ))
+                      )
                       .toList(),
-                  onChanged: busy ? null : (id) => setState(() {
-                    selectedBoardId = id;
-                    selectedImage = null;
-                    checkedPort = null;
-                    eraseFirst = false;
-                  }),
+                  onChanged: busy
+                      ? null
+                      : (id) => setState(() {
+                          selectedBoardId = id;
+                          selectedImage = null;
+                          checkedPort = null;
+                          eraseFirst = false;
+                        }),
                 ),
               const SizedBox(height: 6),
               if (selectedBoard != null) ...[
                 Text(
                   '${selectedBoard!.architecture.toUpperCase()} · '
-                  '${selectedBoard!.supportsUsbFlash
-                      ? 'USB esptool supported'
-                      : 'Guided UF2 / DFU or vendor installation'}',
+                  '${selectedBoard!.supportsUsbFlash ? 'USB esptool supported' : 'Guided UF2 / DFU or vendor installation'}',
                 ),
                 const SizedBox(height: 5),
                 Text(
@@ -676,24 +688,25 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
               if (selectedBoard?.supportsUsbFlash == true) ...[
                 const SizedBox(height: 12),
                 CheckboxListTile(
-                key: const Key('firmware-erase-first'),
-                contentPadding: EdgeInsets.zero,
-                value: eraseFirst,
-                onChanged: busy
-                    ? null
-                    : (value) => setState(() => eraseFirst = value ?? false),
-                title: const Text(
-                  'Erase all flash before installation (optional)',
+                  key: const Key('firmware-erase-first'),
+                  contentPadding: EdgeInsets.zero,
+                  value: eraseFirst,
+                  onChanged: busy
+                      ? null
+                      : (value) => setState(() => eraseFirst = value ?? false),
+                  title: const Text(
+                    'Erase all flash before installation (optional)',
+                  ),
+                  subtitle: const Text(
+                    'Required for some MeshCore ⇄ Meshtastic migrations. '
+                    'Deletes device identity, keys, channels and all settings. '
+                    'Requires separate ERASE confirmation.',
+                  ),
                 ),
-                subtitle: const Text(
-                  'Required for some MeshCore ⇄ Meshtastic migrations. '
-                  'Deletes device identity, keys, channels and all settings. '
-                  'Requires separate ERASE confirmation.',
-                ),
-              ),
                 const SizedBox(height: 9),
               ],
-              if (selectedBoard != null && !selectedBoard!.supportsUsbFlash) ...[
+              if (selectedBoard != null &&
+                  !selectedBoard!.supportsUsbFlash) ...[
                 const SizedBox(height: 10),
                 Text(
                   'GUIDED OFFLINE INSTALL · No automatic write for this board.',
@@ -703,13 +716,13 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                 Text(
                   selectedBoard!.offersUf2
                       ? 'Select a board-matched UF2 file. Enter the board\'s '
-                        'documented USB bootloader mode, then copy the UF2 '
-                        'file to its BOOT volume using your file manager. '
-                        'The board may restart and unmount automatically.'
+                            'documented USB bootloader mode, then copy the UF2 '
+                            'file to its BOOT volume using your file manager. '
+                            'The board may restart and unmount automatically.'
                       : 'This target requires its vendor-specific bootloader, '
-                        'DFU ZIP utility or recovery instructions. A full '
-                        'esptool flash is not safe for this board. Use the '
-                        'project\'s published offline procedure.',
+                            'DFU ZIP utility or recovery instructions. A full '
+                            'esptool flash is not safe for this board. Use the '
+                            'project\'s published offline procedure.',
                 ),
                 if (selectedImage != null) ...[
                   const SizedBox(height: 6),
