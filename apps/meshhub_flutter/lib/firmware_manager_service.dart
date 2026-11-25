@@ -282,6 +282,7 @@ class FirmwareManagerService {
         image.sourceName,
         image.sha256,
         image.bytes,
+        package: image.package,
       );
     }
     final board = (await FirmwareBoardCatalog.load()).byId(
@@ -459,7 +460,7 @@ class FirmwareManagerService {
     };
     final output = result.output.toUpperCase();
     final match = chip == 'esp32'
-        ? RegExp(r'\\bESP32\\b(?![-A-Z0-9])').hasMatch(output)
+        ? RegExp(r'\bESP32\b(?![-A-Z0-9])').hasMatch(output)
         : output.contains(display);
     if (result.exitCode != 0 || !match) {
       throw StateError(
