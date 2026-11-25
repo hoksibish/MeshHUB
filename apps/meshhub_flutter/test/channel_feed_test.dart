@@ -185,14 +185,11 @@ void main() {
       isNotNull,
     );
     await tester.tap(send);
-    // The fake transport responds asynchronously. Observe local acceptance
-    // before asserting the rendered feed rather than relying on one short nap.
-    await tester.runAsync(() async {
-      for (var attempt = 0; attempt < 50 && session.sendCount == 0; attempt++) {
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-      }
-    });
-    await tester.pump();
+    // Process mock BLE reply events on Flutter's fake async scheduler.
+    // Real-time sleeps do not advance futures scheduled by widget tests.
+    for (var attempt = 0; attempt < 50 && session.sendCount == 0; attempt++) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
     await tester.pumpAndSettle();
     expect(radio.writes.where((w) => w.first == 3).length, 1);
     expect(radio.writes.where((w) => w.first == 3).single[2], 2);
