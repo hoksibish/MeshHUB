@@ -516,6 +516,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                         leading: const Icon(Icons.offline_pin_outlined),
                         title: Text(image.sourceName),
                         subtitle: Text(
+                          '${image.package.displayName}\n'
                           '${image.sha256.substring(0, 16)}… · cached offline',
                         ),
                         trailing: const Icon(Icons.chevron_right),
@@ -523,7 +524,9 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                             ? null
                             : () => setState(() {
                                 selectedImage = image;
+                                selectedFamily = image.package.family;
                                 filePath.text = image.path;
+                                publishedDigest.clear();
                                 checkedPort = null;
                                 status = 'Offline image selected; confirm source before flashing.';
                               }),
@@ -575,11 +578,28 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                key: const Key('firmware-erase-first'),
+                contentPadding: EdgeInsets.zero,
+                value: eraseFirst,
+                onChanged: busy
+                    ? null
+                    : (value) => setState(() => eraseFirst = value ?? false),
+                title: const Text(
+                  'Erase all flash before installation (optional)',
+                ),
+                subtitle: const Text(
+                  'Required for some MeshCore ⇄ Meshtastic migrations. '
+                  'Deletes device identity, keys, channels and all settings. '
+                  'Requires separate ERASE confirmation.',
+                ),
+              ),
               const SizedBox(height: 9),
               Text(
                 'Requires the esptool CLI on this Linux computer. '
-                'A merged flash may overwrite identity, pairing, partitions '
-                'or settings. There is no automatic erase, backup or retry.',
+                'A full image may overwrite bootloader and partitions. '
+                'Erasing is never automatic; no backup or retry is performed.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
