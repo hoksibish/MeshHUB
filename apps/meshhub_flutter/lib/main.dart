@@ -1625,36 +1625,6 @@ class _MeshHubAppState extends State<MeshHubApp> {
         const SizedBox(height: 12),
         _sectionPanel(
           context,
-          title: 'Firmware Manager',
-          subtitle: 'Offline firmware library · guarded Heltec V3 USB flashing',
-          icon: Icons.system_update_alt,
-          child: Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Inspect firmware, save it for offline use, check the USB '
-                  'chip, and flash only after explicit confirmation.',
-                ),
-              ),
-              const SizedBox(width: 12),
-              FilledButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => FirmwareManagerScreen(
-                      tactical: theme == MeshHubTheme.tactical,
-                      radioConnected: () => field.connected,
-                    ),
-                  ),
-                ),
-                icon: const Icon(Icons.open_in_new, size: 18),
-                label: const Text('Open'),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        _sectionPanel(
-          context,
           title: 'Connection',
           subtitle: 'Bluetooth LE companion · local radio only',
           icon: field.connected
@@ -1738,6 +1708,36 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   ),
                 ),
               ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        _sectionPanel(
+          context,
+          title: 'Firmware Manager',
+          subtitle: 'Offline firmware library · guarded Heltec V3 USB flashing',
+          icon: Icons.system_update_alt,
+          child: Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Inspect firmware, save it for offline use, check the USB '
+                  'chip, and flash only after explicit confirmation.',
+                ),
+              ),
+              const SizedBox(width: 12),
+              FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => FirmwareManagerScreen(
+                      tactical: theme == MeshHubTheme.tactical,
+                      radioConnected: () => field.connected,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.open_in_new, size: 18),
+                label: const Text('Open'),
+              ),
             ],
           ),
         ),
