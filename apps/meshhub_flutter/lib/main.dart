@@ -22,20 +22,6 @@ class MeshHubApp extends StatefulWidget {
   State<MeshHubApp> createState() => _MeshHubAppState();
 }
 
-class _ChannelPost {
-  const _ChannelPost({
-    required this.channel,
-    required this.sender,
-    required this.text,
-    required this.status,
-  });
-
-  final int channel;
-  final String sender;
-  final String text;
-  final String status;
-}
-
 class _MeshHubAppState extends State<MeshHubApp> {
   MeshHubTheme theme = MeshHubTheme.dark;
   MeshProtocol? filter;
@@ -44,8 +30,6 @@ class _MeshHubAppState extends State<MeshHubApp> {
   final messageInput = TextEditingController();
   final channelMessageInput = TextEditingController();
   final keyPrefixInput = TextEditingController();
-  final List<_ChannelPost> _channelPosts = [];
-  final Set<String> _seenMessageIds = {};
   int? selectedChannel;
   String? _selectedChannelName;
   bool showExamples = false;
@@ -56,33 +40,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
   void initState() {
     super.initState();
     field = widget.fieldSession ?? MeshCoreFieldSession();
-    _captureNewMessages();
     field.addListener(_refresh);
   }
 
-  void _captureNewMessages() {
-    for (final message in field.messages) {
-      if (message.protocol != MeshProtocol.meshCore ||
-          message.isSimulated ||
-          !_seenMessageIds.add(message.id)) {
-        continue;
-      }
-      final match = RegExp(r'^meshcore-channel-(\d+)$')
-          .firstMatch(message.conversationId);
-      if (match == null) continue;
-      _channelPosts.add(
-        _ChannelPost(
-          channel: int.parse(match.group(1)!),
-          sender: message.sender,
-          text: message.text,
-          status: 'LIVE · received by this radio',
-        ),
-      );
-    }
-  }
-
   void _refresh() {
-    _captureNewMessages();
     if (!field.connected || field.channelsLoading) {
       verifiedDestination = false;
       verifiedChannel = false;
@@ -286,7 +247,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 leading: const Icon(Icons.tag),
                 title: Text(channel.name),
                 subtitle: Text(
-                  'MeshCore · slot ${channel.index} · ${_channelPosts.where((p) => p.channel == channel.index).length} posts this session',
+                  'MeshCore · slot ${channel.index} · ${field.messages.where((m) => m.protocol == MeshProtocol.meshCore && m.conversationId == 'meshcore-channel-${channel.index}').length} posts this session',
                 ),
                 selected: selectedChannel == channel.index,
                 onTap: () => setState(() {
@@ -333,7 +294,11 @@ class _MeshHubAppState extends State<MeshHubApp> {
       return const Center(child: Text('Select a channel to open its feed.'));
     }
     final channel = matching.first;
-    final posts = _channelPosts.where((p) => p.channel == channel.index);
+    final posts = field.messages.where(
+      (m) =>
+          m.protocol == MeshProtocol.meshCore &&
+          m.conversationId == 'meshcore-channel-${channel.index}',
+    );
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -400,7 +365,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   Text(post.text),
                   const SizedBox(height: 8),
                   Text(
-                    post.status,
+                    post.isSimulated
+                        ? 'SIMULATED'
+                        : post.deliveryState ==
+                              MessageDeliveryState.acceptedByLocalRadio
+                        ? 'Accepted locally · peer delivery unverified'
+                        : 'LIVE · received by this radio',
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ],
@@ -468,14 +438,6 @@ class _MeshHubAppState extends State<MeshHubApp> {
       setState(() {
         verifiedChannel = false;
         if (result == MeshCoreLocalSendResult.acceptedByRadio) {
-          _channelPosts.add(
-            _ChannelPost(
-              channel: channel,
-              sender: 'You · local radio',
-              text: text,
-              status: 'Accepted locally · peer delivery unverified',
-            ),
-          );
           channelMessageInput.clear();
         }
       });
