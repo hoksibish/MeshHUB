@@ -338,132 +338,238 @@ class _MeshHubAppState extends State<MeshHubApp> {
   Widget _channelThread(BuildContext context, {bool narrow = false}) {
     final matching = field.channels.where((c) => c.index == selectedChannel);
     if (selectedChannel == null || matching.isEmpty) {
-      return const Center(child: Text('Select a channel to open its feed.'));
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.forum_outlined, size: 54, color: _meshCoreAccent),
+            SizedBox(height: 16),
+            Text('Choose a channel to view its conversation'),
+          ],
+        ),
+      );
     }
     final channel = matching.first;
     final posts = field.messages.where(
       (m) =>
           m.protocol == MeshProtocol.meshCore &&
           m.conversationId == 'meshcore-channel-${channel.index}',
-    );
-    return ListView(
-      padding: const EdgeInsets.all(20),
+    ).toList();
+    final colors = Theme.of(context).colorScheme;
+    return Column(
       children: [
-        if (narrow)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => setState(() {
-                selectedChannel = null;
-                verifiedChannel = false;
-              }),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('All channels'),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: colors.outlineVariant),
             ),
           ),
-        Text(
-          channel.name,
-          style: Theme.of(context).textTheme.headlineMedium
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-        ),
-        Text('MeshCore · channel slot ${channel.index} · this session only'),
-        const SizedBox(height: 8),
-        Card(
-          child: ListTile(
-            leading: Icon(
-              field.connected
-                  ? Icons.bluetooth_connected
-                  : Icons.bluetooth_disabled,
-            ),
-            title: Text(
-              field.connected ? 'Radio connected' : 'Radio disconnected',
-            ),
-            subtitle: Text(
-              '${field.status} · MeshHub cannot verify repeater coverage or recipient delivery.',
-            ),
+          child: Row(
+            children: [
+              if (narrow)
+                IconButton(
+                  tooltip: 'All channels',
+                  onPressed: () => setState(() {
+                    selectedChannel = null;
+                    verifiedChannel = false;
+                  }),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: _meshCoreAccent.withValues(alpha: 0.17),
+                child: const Icon(Icons.tag, color: _meshCoreAccent),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      channel.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.onSurface,
+                      ),
+                    ),
+                    Text(
+                      'MeshCore · channel slot ${channel.index} · session only',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                field.connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+                color: field.connected ? _meshCoreAccent : colors.error,
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'Channel broadcasts appear in order received. MeshCore does not provide Reddit-style reply-to-post links or verified channel senders.',
-        ),
-        const Divider(height: 28),
-        if (posts.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text('No posts in this channel during this session yet.'),
-            ),
-          ),
-        for (final post in posts)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    post.sender,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            children: [
+              Card(
+                child: ListTile(
+                  dense: true,
+                  leading: Icon(
+                    field.connected
+                        ? Icons.check_circle_outline
+                        : Icons.error_outline,
+                    color: field.connected ? _meshCoreAccent : colors.error,
+                  ),
+                  title: Text(
+                    field.connected ? 'Radio connected' : 'Radio disconnected',
+                  ),
+                  subtitle: Text(
+                    '${field.status} · MeshHub cannot verify repeater coverage or recipient delivery.',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (posts.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 45),
+                  child: Center(
+                    child: Text('No posts in this channel during this session yet.'),
+                  ),
+                ),
+              for (final post in posts)
+                Align(
+                  alignment: post.isOutgoing
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 540),
+                    child: Card(
+                      color: post.isOutgoing
+                          ? _meshCoreAccent.withValues(alpha: 0.13)
+                          : null,
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: post.isOutgoing
+                                      ? _meshCoreAccent
+                                      : colors.secondaryContainer,
+                                  child: Text(
+                                    post.isOutgoing ? 'Y' : '#',
+                                    style: TextStyle(
+                                      color: post.isOutgoing
+                                          ? _canvas
+                                          : colors.onSecondaryContainer,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    post.sender,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Text(post.text),
+                            const SizedBox(height: 10),
+                            Text(
+                              post.isSimulated
+                                  ? 'SIMULATED'
+                                  : post.deliveryState ==
+                                        MessageDeliveryState.acceptedByLocalRadio
+                                  ? 'Accepted locally · peer delivery unverified'
+                                  : 'LIVE · received by this radio',
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(post.text),
-                  const SizedBox(height: 8),
-                  Text(
-                    post.isSimulated
-                        ? 'SIMULATED'
-                        : post.deliveryState ==
-                              MessageDeliveryState.acceptedByLocalRadio
-                        ? 'Accepted locally · peer delivery unverified'
-                        : 'LIVE · received by this radio',
-                    style: Theme.of(context).textTheme.labelSmall,
+                ),
+            ],
+          ),
+        ),
+        SafeArea(
+          top: false,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: colors.outlineVariant)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: channelMessageInput,
+                  minLines: 1,
+                  maxLines: 3,
+                  maxLength: 133,
+                  decoration: InputDecoration(
+                    hintText: 'Message ${channel.name}',
+                    labelText: 'Message (UTF-8, max 133 bytes)',
+                    prefixIcon: const Icon(Icons.chat_bubble_outline),
                   ),
-                ],
-              ),
+                ),
+                if (field.identity?.radioPreset case final rf?)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'RF: ${rf.frequencyKHz} kHz · ${rf.bandwidthHz} Hz · SF${rf.spreadingFactor} · CR${rf.codingRate}',
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                  ),
+                CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.trailing,
+                  title: Text(
+                    'I verified RF region, displayed preset, ${channel.name} (slot ${channel.index}) and a reachable peer',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  value: verifiedChannel,
+                  onChanged: field.connected
+                      ? (value) => setState(() => verifiedChannel = value ?? false)
+                      : null,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed:
+                        field.connected &&
+                            !field.channelsLoading &&
+                            !field.sending &&
+                            verifiedChannel
+                        ? () => _sendChannelPost(context)
+                        : null,
+                    icon: const Icon(Icons.send_outlined),
+                    label: const Text('Post once to selected channel'),
+                  ),
+                ),
+                Text(
+                  'Local acceptance is not delivery · do not blindly retry',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ],
             ),
           ),
-        const Divider(height: 28),
-        Text(
-          'Post to ${channel.name}',
-          style: Theme.of(context).textTheme.titleLarge
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-        ),
-        TextField(
-          controller: channelMessageInput,
-          maxLines: 2,
-          maxLength: 133,
-          decoration: const InputDecoration(
-            labelText: 'Message (UTF-8, max 133 bytes)',
-          ),
-        ),
-        if (field.identity?.radioPreset case final rf?)
-          Text(
-            'RF: ${rf.frequencyKHz} kHz · ${rf.bandwidthHz} Hz · SF${rf.spreadingFactor} · CR${rf.codingRate}',
-          ),
-        CheckboxListTile(
-          title: Text(
-            'I verified RF region, displayed preset, ${channel.name} (slot ${channel.index}) and a reachable peer',
-          ),
-          value: verifiedChannel,
-          onChanged: field.connected
-              ? (value) => setState(() => verifiedChannel = value ?? false)
-              : null,
-        ),
-        FilledButton.icon(
-          onPressed:
-              field.connected &&
-                  !field.channelsLoading &&
-                  !field.sending &&
-                  verifiedChannel
-              ? () => _sendChannelPost(context)
-              : null,
-          icon: const Icon(Icons.send_outlined),
-          label: const Text('Post once to selected channel'),
-        ),
-        const Text(
-          'Local radio acceptance is not peer delivery. If a send is interrupted, do not blindly retry.',
         ),
       ],
     );
