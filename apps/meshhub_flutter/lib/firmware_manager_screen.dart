@@ -483,7 +483,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
               ),
               const SizedBox(height: 9),
               Text(
-                'Requires python3 + esptool on this Linux computer. '
+                'Requires the esptool CLI on this Linux computer. '
                 'A merged flash may overwrite identity, pairing, partitions '
                 'or settings. There is no automatic erase, backup or retry.',
                 style: Theme.of(context).textTheme.bodySmall,
