@@ -107,7 +107,7 @@ class FirmwareManagerService {
           ? FirmwareFamily.meshCore
           : FirmwareFamily.meshtastic;
       final versionMatch = RegExp(
-        r'v?\\d+(?:[._-]\\d+)*(?:[._+-][a-zA-Z0-9]+)*',
+        r'v?\d+(?:[._-]\d+)*(?:[._+-][a-zA-Z0-9]+)*',
       ).firstMatch(filename);
       final version = versionMatch?.group(0) ?? 'release file';
       return FirmwarePackage(
@@ -284,10 +284,14 @@ class FirmwareManagerService {
         image.bytes,
       );
     }
+    final board = (await FirmwareBoardCatalog.load()).byId(
+      image.package.boardId,
+    );
     final checked = await inspectFile(
       image.path,
       expectedSha256: image.sha256,
       expectedFamily: image.package.family,
+      board: board,
     );
     final directory = Directory(libraryPath);
     await directory.create(recursive: true);
@@ -300,11 +304,16 @@ class FirmwareManagerService {
       checked.sourceName,
       checked.sha256,
       checked.bytes,
+      package: checked.package,
     );
     final manifest = File('${directory.path}/${checked.sha256}.json');
     await manifest.writeAsString(
       jsonEncode({
-        'target': 'heltecV3',
+        'target': 'device',
+        'boardId': checked.package.boardId,
+        'chip': checked.package.chip,
+        'method': checked.package.method,
+        'imageKind': checked.package.imageKind,
         'family': checked.package.family.name,
         'role': checked.package.role,
         'version': checked.package.version,
@@ -322,12 +331,13 @@ class FirmwareManagerService {
     String path,
     String sourceName,
     String checksum,
-    int expectedBytes,
-  ) async {
+    int expectedBytes, {
+    FirmwarePackage? package,
+  }) async {
     final file = File(path);
     final stat = await file.stat();
-    final package = recognizePackage(sourceName);
-    if (package == null ||
+    final pkg = package ?? recognizePackage(sourceName);
+    if (pkg == null ||
         stat.type != FileSystemEntityType.file ||
         stat.size != expectedBytes ||
         await _calculateSha256(path) != checksum) {
@@ -335,12 +345,22 @@ class FirmwareManagerService {
         'Stored image failed integrity verification.',
       );
     }
+    final handle = await file.open();
+    try {
+      if (!_validFirmwareHeader(pkg.imageKind, await handle.read(8))) {
+        throw const FormatException(
+          'Stored image header failed integrity verification.',
+        );
+      }
+    } finally {
+      await handle.close();
+    }
     return OfflineFirmwareImage(
       path: file.absolute.path,
       sourceName: sourceName,
       sha256: checksum,
       bytes: expectedBytes,
-      package: package,
+      package: pkg,
     );
   }
 
