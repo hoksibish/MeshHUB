@@ -418,7 +418,7 @@ void main() {
     session = MeshCoreFieldSession(
       scan: (_) async => [candidate],
       transportFactory: (_) => device,
-      responseTimeout: const Duration(milliseconds: 20),
+      responseTimeout: const Duration(milliseconds: 100),
     );
     await session.connect(candidate);
     device.channelSendReply = null;
@@ -498,6 +498,35 @@ void main() {
       0x1f,
       0x1f,
     ]);
+  });
+
+  test('manual disconnect cancels reconnect timer and stale callback', () async {
+    await session.disconnect();
+    FieldFakeTimer? timer;
+    void Function()? callback;
+    session = MeshCoreFieldSession(
+      scan: (_) async => [candidate],
+      transportFactory: (_) => device,
+      scheduleRetry: (duration, retry) {
+        expect(duration, const Duration(seconds: 1));
+        callback = retry;
+        timer = FieldFakeTimer();
+        return timer!;
+      },
+    );
+    await session.connect(candidate);
+    final initialWrites = device.writes.length;
+    device.drop();
+    expect(session.connected, false);
+    expect(timer?.isActive, true);
+    await session.disconnect();
+    expect(timer?.isActive, false);
+    // Even an already-queued callback cannot reconnect after manual stop.
+    callback!();
+    await Future<void>.delayed(Duration.zero);
+    expect(session.reconnectAttempts, 0);
+    expect(session.connected, false);
+    expect(device.writes.length, initialWrites);
   });
 
   test(
