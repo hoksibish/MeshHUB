@@ -111,7 +111,7 @@ void main() {
 
       await tester.tap(find.text('Trail'));
       await tester.pumpAndSettle();
-      expect(find.text('Post to Trail'), findsOneWidget);
+      expect(find.text('Trail'), findsWidgets);
       expect(find.text('Radio connected'), findsOneWidget);
       expect(find.textContaining('cannot verify repeater coverage'), findsOneWidget);
       expect(find.textContaining('slot 2'), findsWidgets);
@@ -138,7 +138,7 @@ void main() {
     expect(find.text('Trail'), findsOneWidget);
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
-    expect(find.text('Post once to selected channel'), findsOneWidget);
+    expect(find.text('Send'), findsOneWidget);
     expect(find.byTooltip('All channels'), findsOneWidget);
     await tester.tap(find.byTooltip('All channels'));
     await tester.pumpAndSettle();
@@ -158,7 +158,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
-    final send = find.text('Post once to selected channel');
+    final send = find.text('Send');
     expect(
       tester
           .widget<FilledButton>(
@@ -168,6 +168,8 @@ void main() {
       isNull,
     );
     await tester.enterText(find.byType(TextField).last, 'Test post');
+    await tester.tap(find.text('RF settings & send confirmation'));
+    await tester.pumpAndSettle();
     final confirmation = find.textContaining('I verified RF region');
     await tester.ensureVisible(confirmation);
     await tester.tap(confirmation);
@@ -224,11 +226,13 @@ void main() {
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'é' * 67);
+    await tester.tap(find.text('RF settings & send confirmation'));
+    await tester.pumpAndSettle();
     final confirmation = find.textContaining('I verified RF region');
     await tester.ensureVisible(confirmation);
     await tester.tap(confirmation);
     await tester.pumpAndSettle();
-    final send = find.text('Post once to selected channel');
+    final send = find.text('Send');
     await tester.ensureVisible(send);
     expect(
       tester
