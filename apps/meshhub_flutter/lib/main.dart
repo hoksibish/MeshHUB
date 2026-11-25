@@ -119,19 +119,15 @@ class _MeshHubAppState extends State<MeshHubApp> {
       home: Scaffold(
         appBar: AppBar(
           backgroundColor: _surface,
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.hub_outlined, color: _meshCoreAccent),
-              const SizedBox(width: 10),
-              const Text(
-                'MeshHub',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ],
+          title: const Text(
+            'MeshHub',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontWeight: FontWeight.w800),
           ),
           actions: [
-            Padding(
+            if (MediaQuery.sizeOf(context).width >= 500)
+              Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
