@@ -103,24 +103,31 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       await _inspect();
     } on ProcessException {
       if (mounted) {
-        setState(() => status =
-            'File picker not installed. Paste the full .bin path instead.');
+        setState(
+          () => status =
+              'File picker not installed. Paste the full .bin path instead.',
+        );
       }
     }
   }
 
   Future<void> _inspect() async {
-    await _run('Inspecting firmware file and computing SHA-256...', () async {
-      final image = await service.inspectFile(
-        filePath.text,
-        expectedSha256: publishedDigest.text,
-      );
-      if (!mounted) return;
-      setState(() {
-        selectedImage = image;
-        checkedPort = null;
-      });
-    }, completedStatus: 'Image inspected locally; publisher authenticity is not verified.');
+    await _run(
+      'Inspecting firmware file and computing SHA-256...',
+      () async {
+        final image = await service.inspectFile(
+          filePath.text,
+          expectedSha256: publishedDigest.text,
+        );
+        if (!mounted) return;
+        setState(() {
+          selectedImage = image;
+          checkedPort = null;
+        });
+      },
+      completedStatus:
+          'Image inspected locally; publisher authenticity is not verified.',
+    );
   }
 
   Future<void> _save() async {
@@ -139,15 +146,21 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
 
   Future<void> _checkPort() async {
     if (widget.radioConnected()) {
-      setState(() => status =
-          'Disconnect MeshHub Bluetooth radio session before USB flashing.');
+      setState(
+        () => status =
+            'Disconnect MeshHub Bluetooth radio session before USB flashing.',
+      );
       return;
     }
-    await _run('Checking USB chip (read-only)...', () async {
-      checkedPort = null;
-      await service.checkUsb(portPath.text.trim());
-      if (mounted) setState(() => checkedPort = portPath.text.trim());
-    }, completedStatus: 'USB preflight confirmed ESP32-S3. No flash performed.');
+    await _run(
+      'Checking USB chip (read-only)...',
+      () async {
+        checkedPort = null;
+        await service.checkUsb(portPath.text.trim());
+        if (mounted) setState(() => checkedPort = portPath.text.trim());
+      },
+      completedStatus: 'USB preflight confirmed ESP32-S3. No flash performed.',
+    );
   }
 
   Future<bool> _confirmFlash() async {
@@ -236,16 +249,19 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
     }
     final confirmed = await _confirmFlash();
     if (!confirmed || !mounted || widget.radioConnected()) return;
-    await _run('Flashing over USB; do not unplug or close MeshHub...', () async {
-      await service.flashMergedImage(
-        image: image,
-        port: portPath.text.trim(),
-        userConfirmed: true,
-        mayWrite: () => !widget.radioConnected(),
-      );
-      if (mounted) setState(() => checkedPort = null);
-    }, completedStatus:
-        'Flashing command completed. Reconnect and verify firmware, identity and settings.');
+    await _run(
+      'Flashing over USB; do not unplug or close MeshHub...',
+      () async {
+        await service.flashMergedImage(
+          image: image,
+          port: portPath.text.trim(),
+          userConfirmed: true,
+          mayWrite: () => !widget.radioConnected(),
+        );
+        if (mounted) setState(() => checkedPort = null);
+      },
+      completedStatus: 'Flashing command completed. Reconnect and verify firmware, identity and settings.',
+    );
   }
 
   Widget _section(
@@ -261,7 +277,11 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 19, color: Theme.of(context).colorScheme.primary),
+              Icon(
+                icon,
+                size: 19,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
@@ -282,23 +302,23 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       ),
     );
     if (widget.tactical) {
-      return TacticalHudPanel(
-        padding: EdgeInsets.zero,
-        child: content,
-      );
+      return TacticalHudPanel(padding: EdgeInsets.zero, child: content);
     }
-    return Card(
-      child: content,
-    );
+    return Card(child: content);
   }
 
   Widget _imageDetails(BuildContext context, OfflineFirmwareImage image) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(image.sourceName, style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(
+          image.sourceName,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
         const SizedBox(height: 4),
-        Text('${(image.bytes / (1024 * 1024)).toStringAsFixed(2)} MiB · ESP32-S3 merged BIN'),
+        Text(
+          '${(image.bytes / (1024 * 1024)).toStringAsFixed(2)} MiB · ESP32-S3 merged BIN',
+        ),
         const SizedBox(height: 5),
         SelectableText(
           'SHA-256: ${image.sha256}',
@@ -311,7 +331,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final canFlash = Platform.isLinux &&
+    final canFlash =
+        Platform.isLinux &&
         !busy &&
         !widget.radioConnected() &&
         selectedImage != null &&
@@ -327,7 +348,9 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
           ),
         ),
         const SizedBox(height: 5),
-        const Text('Local firmware library · manual USB flashing · no internet required'),
+        const Text(
+          'Local firmware library · manual USB flashing · no internet required',
+        ),
         const SizedBox(height: 14),
         _section(
           context,
@@ -361,8 +384,10 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                 enabled: !busy,
                 decoration: const InputDecoration(
                   labelText: 'Local firmware .bin path',
-                  hintText: '/home/user/Downloads/Heltec_v3_companion...-merged.bin',
-                  helperText: 'Official source recommended · no online downloads',
+                  hintText:
+                      '/home/user/Downloads/Heltec_v3_companion...-merged.bin',
+                  helperText:
+                      'Official source recommended · no online downloads',
                 ),
               ),
               const SizedBox(height: 9),
@@ -425,16 +450,18 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.offline_pin_outlined),
                         title: Text(image.sourceName),
-                        subtitle: Text('${image.sha256.substring(0, 16)}… · cached offline'),
+                        subtitle: Text(
+                          '${image.sha256.substring(0, 16)}… · cached offline',
+                        ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: busy
                             ? null
                             : () => setState(() {
-                                  selectedImage = image;
-                                  filePath.text = image.path;
-                                  checkedPort = null;
-                                  status = 'Offline image selected; confirm source before flashing.';
-                                }),
+                                selectedImage = image;
+                                filePath.text = image.path;
+                                checkedPort = null;
+                                status = 'Offline image selected; confirm source before flashing.';
+                              }),
                       ),
                   ],
                 ),
@@ -460,7 +487,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                 decoration: const InputDecoration(
                   labelText: 'USB serial port',
                   hintText: '/dev/ttyACM0',
-                  helperText: '/dev/ttyACM*, /dev/ttyUSB* or /dev/serial/by-id/*',
+                  helperText:
+                      '/dev/ttyACM*, /dev/ttyUSB* or /dev/serial/by-id/*',
                 ),
               ),
               const SizedBox(height: 10),
