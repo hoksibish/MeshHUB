@@ -1082,7 +1082,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 CircleAvatar(
-                                  radius: theme == MeshHubTheme.tactical ? 12 : 14,
+                                  radius: theme == MeshHubTheme.tactical
+                                      ? 12
+                                      : 14,
                                   backgroundColor: post.isOutgoing
                                       ? _meshCoreAccent
                                       : colors.secondaryContainer,
