@@ -1,0 +1,3919 @@
+{
+  "schema": 1,
+  "source": {
+    "meshcore": "meshcore-dev/flasher.meshcore.io/config.json",
+    "meshtastic": "meshtastic/web-flasher/public/data/hardware-list.json"
+  },
+  "boards": [
+    {
+      "id": "meshcore-heltec-v4-expansion-kit-touch",
+      "family": "meshCore",
+      "name": "Heltec v4 + Expansion Kit (Touch)",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^heltec_v4_tft_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^heltec_v4_tft_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^heltec_v4_tft_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^heltec_v4_tft_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-deck",
+      "family": "meshCore",
+      "name": "LilyGo T-Deck",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_TDeck_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_TDeck_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_TDeck_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_TDeck_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-wio-tracker-l1-pro",
+      "family": "meshCore",
+      "name": "Seeed Studio Wio Tracker L1 Pro",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^WioTrackerL1_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^WioTrackerL1_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^WioTrackerL1_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^WioTrackerL1_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^WioTrackerL1_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^WioTrackerL1_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^WioTrackerL1_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^WioTrackerL1_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t3-s3-sx126x",
+      "family": "meshCore",
+      "name": "LilyGo T3 S3 (SX126x)",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T3S3_sx1262_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T3S3_sx1262_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T3S3_sx1262_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T3S3_sx1262_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t3-s3-sx127x",
+      "family": "meshCore",
+      "name": "LilyGo T3 S3 (SX127x)",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T3S3_sx1276_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T3S3_sx1276_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T3S3_sx1276_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T3S3_sx1276_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-beam-sx1262",
+      "family": "meshCore",
+      "name": "LilyGo T-Beam (SX1262)",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Tbeam_SX1262_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Tbeam_SX1262_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Tbeam_SX1262_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Tbeam_SX1262_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-beam-1-2-sx1276",
+      "family": "meshCore",
+      "name": "LilyGo T-Beam 1.2 (SX1276)",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Tbeam(_SX1276)?_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Tbeam(_SX1276)?_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Tbeam(_SX1276)?_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Tbeam(_SX1276)?_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-beam-1w",
+      "family": "meshCore",
+      "name": "LilyGo T-Beam 1W",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_TBeam_1W_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_TBeam_1W_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_TBeam_1W_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_TBeam_1W_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-beam-supreme-sx1262",
+      "family": "meshCore",
+      "name": "LilyGo T-Beam Supreme (SX1262)",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^T_Beam_S3_Supreme_SX1262_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^T_Beam_S3_Supreme_SX1262_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^T_Beam_S3_Supreme_SX1262_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^T_Beam_S3_Supreme_SX1262_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-echo",
+      "family": "meshCore",
+      "name": "LilyGo T-Echo",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T-Echo_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T-Echo_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T-Echo_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T-Echo_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T-Echo_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T-Echo_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T-Echo_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T-Echo_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-echo-lite",
+      "family": "meshCore",
+      "name": "LilyGo T-Echo Lite",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T-Echo-Lite_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T-Echo-Lite_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T-Echo-Lite_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T-Echo-Lite_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T-Echo-Lite_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T-Echo-Lite_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T-Echo-Lite_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T-Echo-Lite_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-echo-card",
+      "family": "meshCore",
+      "name": "LilyGo T-Echo Card",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T-Echo_Card_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_T-Echo_Card_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T-Echo_Card_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_T-Echo_Card_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T-Echo_Card_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_T-Echo_Card_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-t-lora-pager",
+      "family": "meshCore",
+      "name": "LilyGo T-Lora Pager",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T-Echo_Card_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_T-Echo_Card_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-lilygo-lora32-v2-1-1-6",
+      "family": "meshCore",
+      "name": "LilyGo LoRa32 V2.1_1.6",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^LilyGo_TLora_V2_1_1_6_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^LilyGo_TLora_V2_1_1_6_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^LilyGo_TLora_V2_1_1_6_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^LilyGo_TLora_V2_1_1_6_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-gat-iot-gat562-tracker",
+      "family": "meshCore",
+      "name": "GAT-IoT GAT562 Tracker",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-gat-iot-gat562-30s",
+      "family": "meshCore",
+      "name": "GAT-IoT GAT562 30s",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^GAT562_30S_Mesh_Kit_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^GAT562_30S_Mesh_Kit_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^GAT562_30S_Mesh_Kit_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^GAT562_30S_Mesh_Kit_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^GAT562_30S_Mesh_Kit_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^GAT562_30S_Mesh_Kit_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^GAT562_Mesh_Tracker_Pro_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-vision-master-e213",
+      "family": "meshCore",
+      "name": "Heltec Vision Master E213",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_E213_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_E213_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_E213_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_E213_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-vision-master-e290",
+      "family": "meshCore",
+      "name": "Heltec Vision Master E290",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_E290_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_E290_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_E290_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_E290_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-v2",
+      "family": "meshCore",
+      "name": "Heltec v2",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_v2_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_v2_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_v2_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_v2_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-v3",
+      "family": "meshCore",
+      "name": "Heltec v3",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_v3_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_v3_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_v3_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_v3_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-v4",
+      "family": "meshCore",
+      "name": "Heltec v4",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^heltec_v4_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^heltec_v4_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^heltec_v4_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^heltec_v4_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-v4-r8",
+      "family": "meshCore",
+      "name": "Heltec v4 R8",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^heltec_v4_r8_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^heltec_v4_r8_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^heltec_v4_r8_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^heltec_v4_r8_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-mesh-node-t096",
+      "family": "meshCore",
+      "name": "Heltec Mesh Node T096",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t096_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t096_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t096_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t096_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t096_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t096_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t096_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t096_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-mesh-node-t1",
+      "family": "meshCore",
+      "name": "Heltec Mesh Node T1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t1_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t1_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t1_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t1_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t1_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t1_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t1_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t1_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-t114",
+      "family": "meshCore",
+      "name": "Heltec T114",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t114_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t114_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t114_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t114_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t114_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t114_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t114_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t114_room_server.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t114_without_display_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_t114_without_display_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t114_without_display_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_t114_without_display_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t114_without_display_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_t114_without_display_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t114_without_display_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_t114_without_display_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-wireless-tracker-v2",
+      "family": "meshCore",
+      "name": "Heltec Wireless Tracker v2",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^heltec_tracker_v2_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^heltec_tracker_v2_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^heltec_tracker_v2_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^heltec_tracker_v2_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-meshpocket",
+      "family": "meshCore",
+      "name": "Heltec MeshPocket",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Mesh_pocket_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Mesh_pocket_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Mesh_pocket_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Mesh_pocket_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Mesh_pocket_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Mesh_pocket_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Mesh_pocket_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Mesh_pocket_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-meshsolar-meshtower",
+      "family": "meshCore",
+      "name": "Heltec MeshSolar / MeshTower",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_mesh_solar_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_mesh_solar_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_mesh_solar_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_mesh_solar_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_mesh_solar_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_mesh_solar_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_mesh_solar_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_mesh_solar_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-meshtower-v2",
+      "family": "meshCore",
+      "name": "Heltec MeshTower V2",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_tower_v2_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_tower_v2_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_tower_v2_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_tower_v2_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_tower_v2_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_tower_v2_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_tower_v2_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_tower_v2_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-wireless-tracker",
+      "family": "meshCore",
+      "name": "Heltec Wireless Tracker",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_Wireless_Tracker_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_Wireless_Tracker_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_Wireless_Tracker_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_Wireless_Tracker_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-heltec-wireless-paper",
+      "family": "meshCore",
+      "name": "Heltec Heltec Wireless Paper",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_Wireless_Paper_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_Wireless_Paper_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_Wireless_Paper_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_Wireless_Paper_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-heltec-wsl3",
+      "family": "meshCore",
+      "name": "Heltec WSL3",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Heltec_WSL3_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Heltec_WSL3_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Heltec_WSL3_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Heltec_WSL3_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-ikoka-stick",
+      "family": "meshCore",
+      "name": "Ikoka Stick",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_stick_nrf_22dbm_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_stick_nrf_22dbm_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_stick_nrf_22dbm_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_stick_nrf_22dbm_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_stick_nrf_22dbm_[Rr]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_stick_nrf_22dbm_[Rr]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_stick_nrf_22dbm_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_stick_nrf_22dbm_room_server.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_stick_nrf_30dbm_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_stick_nrf_30dbm_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_stick_nrf_30dbm_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_stick_nrf_30dbm_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_stick_nrf_30dbm_[Rr]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_stick_nrf_30dbm_[Rr]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_stick_nrf_30dbm_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_stick_nrf_30dbm_room_server.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_stick_nrf_33dbm_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_stick_nrf_33dbm_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_stick_nrf_33dbm_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_stick_nrf_33dbm_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_stick_nrf_33dbm_[Rr]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_stick_nrf_33dbm_[Rr]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_stick_nrf_33dbm_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_stick_nrf_33dbm_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-ikoka-nano",
+      "family": "meshCore",
+      "name": "Ikoka Nano",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_nano_nrf_22dbm_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_nano_nrf_22dbm_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_nano_nrf_22dbm_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_nano_nrf_22dbm_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_nano_nrf_22dbm_[Rr]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_nano_nrf_22dbm_[Rr]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_nano_nrf_22dbm_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_nano_nrf_22dbm_room_server.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_nano_nrf_30dbm_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_nano_nrf_30dbm_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_nano_nrf_30dbm_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_nano_nrf_30dbm_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_nano_nrf_30dbm_[Rr]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_nano_nrf_30dbm_[Rr]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_nano_nrf_30dbm_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_nano_nrf_30dbm_room_server.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_nano_nrf_33dbm_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ikoka_nano_nrf_33dbm_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_nano_nrf_33dbm_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ikoka_nano_nrf_33dbm_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_nano_nrf_33dbm_[Rr]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ikoka_nano_nrf_33dbm_[Rr]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_nano_nrf_33dbm_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ikoka_nano_nrf_33dbm_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-keepteen-lt1",
+      "family": "meshCore",
+      "name": "Keepteen LT1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^KeepteenLT1_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^KeepteenLT1_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^KeepteenLT1_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^KeepteenLT1_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^KeepteenLT1_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^KeepteenLT1_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^KeepteenLT1_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^KeepteenLT1_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-rak-wisblock-3112",
+      "family": "meshCore",
+      "name": "RAK WisBlock 3112",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^RAK_3112_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^RAK_3112_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^RAK_3112_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^RAK3112_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-rak-wisblock-wismesh-rak-4631",
+      "family": "meshCore",
+      "name": "RAK WisBlock / WisMesh (RAK 4631)",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^RAK_4631_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^RAK_4631_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^RAK_4631_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^RAK_4631_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^RAK_4631_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^RAK_4631_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^RAK_4631_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^RAK_4631_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-rak-wismesh-1w-booster-3401-13302",
+      "family": "meshCore",
+      "name": "RAK WisMesh 1W Booster (3401 + 13302)",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^RAK_3401_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^RAK_3401_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^RAK_3401_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^RAK_3401_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^RAK_3401_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^RAK_3401_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^RAK_3401_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^RAK_3401_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-rak-wismesh-tag",
+      "family": "meshCore",
+      "name": "RAK WisMesh Tag",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^RAK_WisMesh_Tag_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^RAK_WisMesh_Tag_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^RAK_WisMesh_Tag_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^RAK_WisMesh_Tag_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^RAK_WisMesh_Tag_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^RAK_WisMesh_Tag_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^RAK_WisMesh_Tag_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^RAK_WisMesh_Tag_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-sensecap-solar-node-p1",
+      "family": "meshCore",
+      "name": "Seeed Studio SenseCAP Solar Node P1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^SenseCap_Solar_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^SenseCap_Solar_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^SenseCap_Solar_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^SenseCap_Solar_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^SenseCap_Solar_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^SenseCap_Solar_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^SenseCap_Solar_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^SenseCap_Solar_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-sensecap-t1000-e",
+      "family": "meshCore",
+      "name": "Seeed Studio SenseCAP T1000-E",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^t1000e_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^t1000e_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^t1000e_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^t1000e_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^t1000e_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^t1000e_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^t1000e_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^t1000e_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-sensecap-meshtracker-x1",
+      "family": "meshCore",
+      "name": "Seeed Studio SenseCAP MeshTracker X1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^MeshTracker_X1_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^MeshTracker_X1_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^MeshTracker_X1_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^MeshTracker_X1_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^MeshTracker_X1_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^MeshTracker_X1_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^MeshTracker_X1_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^MeshTracker_X1_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-wio-tracker-l1-eink",
+      "family": "meshCore",
+      "name": "Seeed Studio Wio Tracker L1 EINK",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^WioTrackerL1Eink_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^WioTrackerL1Eink_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^WioTrackerL1Eink_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^WioTrackerL1Eink_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^WioTrackerL1Eink_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^WioTrackerL1Eink_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^WioTrackerL1Eink_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^WioTrackerL1Eink_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-xiao-c3",
+      "family": "meshCore",
+      "name": "Seeed Studio Xiao C3",
+      "architecture": "esp32",
+      "chip": "esp32c3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Xiao_C3_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Xiao_C3_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Xiao_C3_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Xiao_C3_sx1268_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-xiao-s3-wio",
+      "family": "meshCore",
+      "name": "Seeed Studio Xiao S3 WIO",
+      "architecture": "esp32",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Xiao_S3_WIO_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Xiao_S3_WIO_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Xiao_S3_WIO_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Xiao_S3_WIO_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-seeed-studio-xiao-nrf52-wio",
+      "family": "meshCore",
+      "name": "Seeed Studio Xiao nRF52 WIO",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Xiao_nrf52_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Xiao_nrf52_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Xiao_nrf52_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Xiao_nrf52_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Xiao_nrf52_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Xiao_nrf52_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Xiao_nrf52_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Xiao_nrf52_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-elecrow-thinknode-m1",
+      "family": "meshCore",
+      "name": "Elecrow ThinkNode M1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M1_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M1_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M1_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M1_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M1_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M1_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M1_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M1_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-elecrow-thinknode-m2",
+      "family": "meshCore",
+      "name": "Elecrow ThinkNode M2",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M2_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M2_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M2_repeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M2_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-elecrow-thinknode-m3",
+      "family": "meshCore",
+      "name": "Elecrow ThinkNode M3",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M3_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M3_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M3_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M3_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M3_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M3_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M3_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M3_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-elecrow-thinknode-m5",
+      "family": "meshCore",
+      "name": "Elecrow ThinkNode M5",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M5_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M5_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M5_repeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M5_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-elecrow-thinknode-m6",
+      "family": "meshCore",
+      "name": "Elecrow ThinkNode M6",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M6_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M6_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M6_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M6_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M6_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M6_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M6_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M6_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-elecrow-thinknode-m7",
+      "family": "meshCore",
+      "name": "Elecrow ThinkNode M7",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^ThinkNode_M7_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^ThinkNode_M7_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^ThinkNode_M7_repeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^ThinkNode_M7_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-uniteng-bq-voyage-station-g3",
+      "family": "meshCore",
+      "name": "UnitEng/BQ Voyage Station G3",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Station_G3_ESP32_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Station_G3_ESP32_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Station_G3_ESP32_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Station_G3_ESP32_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-uniteng-station-g2",
+      "family": "meshCore",
+      "name": "UnitEng Station G2",
+      "architecture": "esp32",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Station_G2_companion_radio_ble.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Station_G2_companion_radio_usb.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Station_G2_[rR]epeater.*?-merged\\.bin$",
+          "format": "merged"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Station_G2_room_server.*?-merged\\.bin$",
+          "format": "merged"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-uniteng-nano-g2-ultra",
+      "family": "meshCore",
+      "name": "UnitEng Nano G2 Ultra",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^Nano_G2_Ultra_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^Nano_G2_Ultra_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Nano_G2_Ultra_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^Nano_G2_Ultra_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Nano_G2_Ultra_[Rr]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^Nano_G2_Ultra_[Rr]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Nano_G2_Ultra_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^Nano_G2_Ultra_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-muzi-works-r1-neo",
+      "family": "meshCore",
+      "name": "Muzi Works R1 Neo",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^R1Neo_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^R1Neo_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^R1Neo_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^R1Neo_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^R1Neo_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^R1Neo_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^R1Neo_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^R1Neo_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-promicro-nrf52-faketec",
+      "family": "meshCore",
+      "name": "ProMicro nrf52 (faketec)",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^(?:ProMicro|Faketec)_companion_radio_ble.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion BLE",
+          "pattern": "^(?:ProMicro|Faketec)_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^(?:ProMicro|Faketec)_companion_radio_usb.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^(?:ProMicro|Faketec)_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^(?:ProMicro|Faketec)_[rR]epeater.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^(?:ProMicro|Faketec)_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^(?:ProMicro|Faketec)_room_server.*?\\.zip$",
+          "format": "dfu-zip"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^(?:ProMicro|Faketec)_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshcore-rpi-pico-2040-waveshare-sx1262",
+      "family": "meshCore",
+      "name": "RPI Pico 2040 + WaveShare SX1262",
+      "architecture": "rp2040",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Companion BLE",
+          "pattern": "^PicoW_companion_radio_ble.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Companion USB",
+          "pattern": "^PicoW_companion_radio_usb.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Repeater",
+          "pattern": "^PicoW_[rR]epeater.*?\\.uf2$",
+          "format": "uf2"
+        },
+        {
+          "role": "Room Server",
+          "pattern": "^PicoW_room_server.*?\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tlora-v2-1-1_6",
+      "family": "meshtastic",
+      "name": "LILYGO T-LoRa V2.1-1.6",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tlora-v2-1-1_6-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tbeam",
+      "family": "meshtastic",
+      "name": "LILYGO T-Beam",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tbeam-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t-echo",
+      "family": "meshtastic",
+      "name": "LILYGO T-Echo",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t-echo-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak4631",
+      "family": "meshtastic",
+      "name": "RAK WisBlock 4631",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak4631-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tbeam-s3-core",
+      "family": "meshtastic",
+      "name": "LILYGO T-Beam Supreme",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tbeam-s3-core-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak11200",
+      "family": "meshtastic",
+      "name": "RAK WisBlock 11200",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak11200-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-nano-g1",
+      "family": "meshtastic",
+      "name": "Nano G1",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-nano-g1-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tlora-v2-1-1_8",
+      "family": "meshtastic",
+      "name": "LILYGO T-LoRa V2.1-1.8",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tlora-v2-1-1_8-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tlora-t3s3-v1",
+      "family": "meshtastic",
+      "name": "LILYGO T-LoRa T3-S3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tlora-t3s3-v1-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tlora-t3s3-epaper",
+      "family": "meshtastic",
+      "name": "LILYGO T-LoRa T3-S3 E-Ink",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tlora-t3s3-epaper-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-nano-g1-explorer",
+      "family": "meshtastic",
+      "name": "Nano G1 Explorer",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-nano-g1-explorer-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-nano-g2-ultra",
+      "family": "meshtastic",
+      "name": "Nano G2 Ultra",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-nano-g2-ultra-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-wio-tracker-wm1110",
+      "family": "meshtastic",
+      "name": "Seeed Wio WM1110 Tracker",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-wio-tracker-wm1110-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-station-g1",
+      "family": "meshtastic",
+      "name": "Station G1",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-station-g1-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak11310",
+      "family": "meshtastic",
+      "name": "RAK WisBlock 11310",
+      "architecture": "rp2040",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak11310-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-canaryone",
+      "family": "meshtastic",
+      "name": "Canary One",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-canaryone-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rp2040-lora",
+      "family": "meshtastic",
+      "name": "RP2040 LoRa",
+      "architecture": "rp2040",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rp2040-lora-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-station-g2",
+      "family": "meshtastic",
+      "name": "Station G2",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-station-g2-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t-echo-plus",
+      "family": "meshtastic",
+      "name": "LILYGO T-Echo Plus",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t-echo-plus-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-meshtastic-diy-v1",
+      "family": "meshtastic",
+      "name": "DIY V1",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-meshtastic-diy-v1-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-hydra",
+      "family": "meshtastic",
+      "name": "Hydra",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-hydra-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-m5stack-core",
+      "family": "meshtastic",
+      "name": "M5 Stack",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-m5stack-core-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-v3",
+      "family": "meshtastic",
+      "name": "Heltec V3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-v3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-wsl-v3",
+      "family": "meshtastic",
+      "name": "Heltec Wireless Stick Lite V3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-wsl-v3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-pico",
+      "family": "meshtastic",
+      "name": "Raspberry Pi Pico",
+      "architecture": "rp2040",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-pico-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-picow",
+      "family": "meshtastic",
+      "name": "Raspberry Pi Pico W",
+      "architecture": "rp2040",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-picow-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-wireless-tracker",
+      "family": "meshtastic",
+      "name": "Heltec Wireless Tracker V1.1",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-wireless-tracker-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-wireless-paper",
+      "family": "meshtastic",
+      "name": "Heltec Wireless Paper",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-wireless-paper-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t-deck",
+      "family": "meshtastic",
+      "name": "LILYGO T-Deck",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t-deck-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t-watch-s3",
+      "family": "meshtastic",
+      "name": "LILYGO T-Watch S3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t-watch-s3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-picomputer-s3",
+      "family": "meshtastic",
+      "name": "Pi Computer S3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-picomputer-s3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-ht62-esp32c3-sx1262",
+      "family": "meshtastic",
+      "name": "Heltec HT62",
+      "architecture": "esp32-c3",
+      "chip": "esp32c3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-ht62-esp32c3-sx1262-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-unphone",
+      "family": "meshtastic",
+      "name": "unPhone",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-unphone-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tracksenger",
+      "family": "meshtastic",
+      "name": "TrackSenger (small TFT)",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tracksenger-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tracksenger-oled",
+      "family": "meshtastic",
+      "name": "TrackSenger (big OLED)",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tracksenger-oled-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-CDEBYTE_EoRa-S3",
+      "family": "meshtastic",
+      "name": "EBYTE EoRa-S3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-CDEBYTE_EoRa-S3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-radiomaster_900_bandit_nano",
+      "family": "meshtastic",
+      "name": "RadioMaster 900 Bandit Nano",
+      "architecture": "esp32",
+      "chip": "esp32",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-radiomaster_900_bandit_nano-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-vision-master-t190",
+      "family": "meshtastic",
+      "name": "Heltec Vision Master T190",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-vision-master-t190-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-vision-master-e213",
+      "family": "meshtastic",
+      "name": "Heltec Vision Master E213",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-vision-master-e213-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-vision-master-e290",
+      "family": "meshtastic",
+      "name": "Heltec Vision Master E290",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-vision-master-e290-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-mesh-node-t114",
+      "family": "meshtastic",
+      "name": "Heltec Mesh Node T114",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-mesh-node-t114-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed-sensecap-indicator",
+      "family": "meshtastic",
+      "name": "Seeed SenseCAP Indicator",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed-sensecap-indicator-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tracker-t1000-e",
+      "family": "meshtastic",
+      "name": "Seeed Card Tracker T1000-E",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tracker-t1000-e-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed-xiao-s3",
+      "family": "meshtastic",
+      "name": "Seeed Xiao ESP32-S3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed-xiao-s3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak_wismeshtag",
+      "family": "meshtastic",
+      "name": "RAK WisMesh Tag",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak_wismeshtag-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak_wismeshtap",
+      "family": "meshtastic",
+      "name": "RAK WisMesh Tap",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak_wismeshtap-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak2560",
+      "family": "meshtastic",
+      "name": "RAK WisMesh Repeater",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak2560-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-nrf52_promicro_diy_tcxo",
+      "family": "meshtastic",
+      "name": "NRF52 Pro-micro DIY",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-nrf52_promicro_diy_tcxo-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed_xiao_nrf52840_kit",
+      "family": "meshtastic",
+      "name": "Seeed Xiao NRF52840 Kit",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed_xiao_nrf52840_kit-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m1",
+      "family": "meshtastic",
+      "name": "ThinkNode M1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m1-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m5",
+      "family": "meshtastic",
+      "name": "ThinkNode M5",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m5-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m2",
+      "family": "meshtastic",
+      "name": "ThinkNode M2",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m2-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-muzi-base",
+      "family": "meshtastic",
+      "name": "muzi BASE DUO/UNO",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-muzi-base-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-mesh-pocket-10000",
+      "family": "meshtastic",
+      "name": "Heltec MeshPocket",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-mesh-pocket-10000-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-mesh-pocket-5000",
+      "family": "meshtastic",
+      "name": "Heltec MeshPocket",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-mesh-pocket-5000-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed_solar_node",
+      "family": "meshtastic",
+      "name": "Seeed SenseCAP Solar Node",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed_solar_node-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed_wio_tracker_L1",
+      "family": "meshtastic",
+      "name": "Seeed Wio Tracker L1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed_wio_tracker_L1-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed_wio_tracker_L1_eink",
+      "family": "meshtastic",
+      "name": "Seeed Wio Tracker L1 E-Ink",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed_wio_tracker_L1_eink-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak4631_nomadstar_meteor_pro",
+      "family": "meshtastic",
+      "name": "NomadStar Meteor Pro",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak4631_nomadstar_meteor_pro-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-elecrow-adv1-43-50-70-tft",
+      "family": "meshtastic",
+      "name": "Crowpanel Adv 4.3/5.0/7.0 TFT",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-elecrow-adv1-43-50-70-tft-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-elecrow-adv-24-28-tft",
+      "family": "meshtastic",
+      "name": "Crowpanel Adv 2.4/2.8 TFT",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-elecrow-adv-24-28-tft-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-elecrow-adv-35-tft",
+      "family": "meshtastic",
+      "name": "Crowpanel Adv 3.5 TFT",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-elecrow-adv-35-tft-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-r1-neo",
+      "family": "meshtastic",
+      "name": "muzi R1 Neo",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-r1-neo-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t-deck-pro",
+      "family": "meshtastic",
+      "name": "LILYGO T-Deck Pro",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t-deck-pro-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tlora-pager",
+      "family": "meshtastic",
+      "name": "LILYGO T-LoRa Pager",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tlora-pager-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-m5stack-unitc6l",
+      "family": "meshtastic",
+      "name": "M5Stack Unit C6L",
+      "architecture": "esp32-c6",
+      "chip": "esp32c6",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-m5stack-unitc6l-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-v4",
+      "family": "meshtastic",
+      "name": "Heltec V4",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-v4-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-v4-r8-oled",
+      "family": "meshtastic",
+      "name": "Heltec V4 R8",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-v4-r8-oled-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak3312",
+      "family": "meshtastic",
+      "name": "RAK3312",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak3312-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-m5stack-cardputer-adv",
+      "family": "meshtastic",
+      "name": "Cardputer Mesh Kit",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-m5stack-cardputer-adv-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-wireless-tracker-v2",
+      "family": "meshtastic",
+      "name": "Heltec Wireless Tracker V2",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-wireless-tracker-v2-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m3",
+      "family": "meshtastic",
+      "name": "ThinkNode M3",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m3-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak_wismesh_tap_v2",
+      "family": "meshtastic",
+      "name": "RAK WisMesh Tap V2",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak_wismesh_tap_v2-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak3401-1watt",
+      "family": "meshtastic",
+      "name": "RAK3401 1W",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak3401-1watt-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m4",
+      "family": "meshtastic",
+      "name": "ThinkNode M4",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m4-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m6",
+      "family": "meshtastic",
+      "name": "ThinkNode M6",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m6-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t-beam-1w",
+      "family": "meshtastic",
+      "name": "LilyGo T-Beam 1W",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t-beam-1w-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t5s3-epaper-v1",
+      "family": "meshtastic",
+      "name": "LilyGo T5 E-paper S3 Pro",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t5s3-epaper-v1-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t5s3-epaper-v2",
+      "family": "meshtastic",
+      "name": "LilyGo T5 E-paper S3 Pro V2",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t5s3-epaper-v2-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-mini-epaper-s3",
+      "family": "meshtastic",
+      "name": "LilyGo Mini E-paper S3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-mini-epaper-s3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-mesh-node-t096",
+      "family": "meshtastic",
+      "name": "Heltec Mesh Node T096",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-mesh-node-t096-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m7",
+      "family": "meshtastic",
+      "name": "ThinkNode M7",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m7-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-station-g3",
+      "family": "meshtastic",
+      "name": "Station G3",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-station-g3-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-tlora-c6",
+      "family": "meshtastic",
+      "name": "LilyGo T-Lora C6",
+      "architecture": "esp32-c6",
+      "chip": "esp32c6",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-tlora-c6-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-mesh-node-t1",
+      "family": "meshtastic",
+      "name": "Heltec Mesh Node T1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-mesh-node-t1-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed_mesh_tracker_X1",
+      "family": "meshtastic",
+      "name": "Seeed MeshTracker X1",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed_mesh_tracker_X1-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-t-beam-bpf",
+      "family": "meshtastic",
+      "name": "LilyGo T-Beam BPF",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-t-beam-bpf-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-thinknode_m9",
+      "family": "meshtastic",
+      "name": "Elecrow ThinkNode M9",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-thinknode_m9-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-rc32",
+      "family": "meshtastic",
+      "name": "Heltec RC32",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-rc32-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-rc52",
+      "family": "meshtastic",
+      "name": "Heltec RC52",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-rc52-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-heltec-rcc6",
+      "family": "meshtastic",
+      "name": "Heltec RCC6",
+      "architecture": "esp32-c6",
+      "chip": "esp32c6",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-heltec-rcc6-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak_wismesh_pocket",
+      "family": "meshtastic",
+      "name": "RAK WisMesh Pocket V3",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak_wismesh_pocket-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-seeed_wio_tracker_L2",
+      "family": "meshtastic",
+      "name": "Seeed Wio Tracker L2",
+      "architecture": "esp32-s3",
+      "chip": "esp32s3",
+      "method": "esptool",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-seeed_wio_tracker_L2-(.+)\\.factory\\.bin$",
+          "format": "factory"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic-rak_wismesh_pod",
+      "family": "meshtastic",
+      "name": "RAKwireless WisMesh Pod",
+      "architecture": "nrf52840",
+      "chip": null,
+      "method": "guided",
+      "patterns": [
+        {
+          "role": "Meshtastic node",
+          "pattern": "^firmware-rak_wismesh_pod-(.+)\\.uf2$",
+          "format": "uf2"
+        }
+      ]
+    }
+  ]
+}
