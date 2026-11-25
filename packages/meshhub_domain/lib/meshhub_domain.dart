@@ -20,6 +20,9 @@ class RadioDevice {
   final Set<RadioCapability> capabilities;
 }
 
+/// Message state describes observation, not an end-to-end delivery receipt.
+enum MessageDeliveryState { receivedByRadio, acceptedByLocalRadio }
+
 /// A locally displayed message; simulation is never confused with RF evidence.
 class RadioMessage {
   const RadioMessage({
@@ -29,6 +32,8 @@ class RadioMessage {
     required this.sender,
     required this.text,
     required this.isSimulated,
+    this.isOutgoing = false,
+    this.deliveryState = MessageDeliveryState.receivedByRadio,
   });
 
   final String id;
@@ -37,6 +42,8 @@ class RadioMessage {
   final String sender;
   final String text;
   final bool isSimulated;
+  final bool isOutgoing;
+  final MessageDeliveryState deliveryState;
 }
 
 /// Storage boundary; encrypted on-disk implementation is a later milestone.
