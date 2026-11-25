@@ -125,7 +125,7 @@ class FirmwareManagerService {
   }
 
   Future<String> _calculateSha256(String path) async {
-    final result = await Process.run('sha256sum', [path]);
+    final result = await Process.run('sha256sum', ['--', path]);
     if (result.exitCode != 0) {
       throw StateError('Unable to calculate SHA-256 for this firmware file.');
     }
