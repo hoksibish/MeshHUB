@@ -76,4 +76,38 @@ void main() {
     expect(find.text('MeshCore example'), findsOneWidget);
     expect(find.text('Meshtastic example'), findsNothing);
   });
+  testWidgets('all three themes use distinct scaffold and rail surfaces', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MeshHubApp());
+    await tester.pumpAndSettle();
+
+    Color background() {
+      final context = tester.element(find.byType(Scaffold).first);
+      return Theme.of(context).scaffoldBackgroundColor;
+    }
+
+    final dark = background();
+    await tester.tap(find.byTooltip('Theme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('light').last);
+    await tester.pumpAndSettle();
+    final light = background();
+    expect(light, isNot(dark));
+    expect(Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
+        Brightness.light);
+
+    await tester.tap(find.byTooltip('Theme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('tactical').last);
+    await tester.pumpAndSettle();
+    final tactical = background();
+    expect(tactical, isNot(dark));
+    expect(tactical, isNot(light));
+  });
+
 }
