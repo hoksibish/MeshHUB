@@ -162,7 +162,32 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   color: TacticalHudColors.muted,
                 ),
               )
-            : null,
+            : NavigationRailThemeData(
+                backgroundColor: panel,
+                indicatorColor: _accent.withValues(alpha: 0.15),
+                selectedIconTheme: IconThemeData(
+                  size: 22,
+                  color: _accent,
+                ),
+                unselectedIconTheme: IconThemeData(
+                  size: 22,
+                  color: themedScheme.onSurfaceVariant,
+                ),
+                selectedLabelTextStyle: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: _accent,
+                ),
+                unselectedLabelTextStyle: TextStyle(
+                  fontSize: 12,
+                  color: themedScheme.onSurfaceVariant,
+                ),
+              ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: panel,
+          indicatorColor: _accent.withValues(alpha: 0.15),
+          height: theme == MeshHubTheme.tactical ? 62 : 68,
+        ),
         filledButtonTheme: theme == MeshHubTheme.tactical
             ? FilledButtonThemeData(
                 style: FilledButton.styleFrom(
@@ -173,8 +198,23 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   ),
                 ),
               )
-            : null,
+            : FilledButtonThemeData(
+                style: FilledButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: theme == MeshHubTheme.light
+                      ? const Color(0xffffffff)
+                      : _canvas,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 11,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
         scaffoldBackgroundColor: _pageBackground,
+        dividerColor: themedScheme.outlineVariant,
         listTileTheme: theme == MeshHubTheme.tactical
             ? const ListTileThemeData(
                 dense: true,
@@ -186,9 +226,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
         cardTheme: CardThemeData(
           color: panel,
           elevation: 0,
-          margin: theme == MeshHubTheme.tactical
-              ? const EdgeInsets.symmetric(vertical: 3)
-              : null,
+          margin: const EdgeInsets.symmetric(vertical: 4),
           shape: theme == MeshHubTheme.tactical
               ? BeveledRectangleBorder(
                   borderRadius: BorderRadius.circular(9),
@@ -196,38 +234,44 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     color: TacticalHudColors.cyan.withValues(alpha: 0.4),
                   ),
                 )
-              : RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              : RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: themedScheme.outlineVariant),
+                ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: theme == MeshHubTheme.light
-              ? const Color(0xffeaf1f5)
-              : panel,
+              ? const Color(0xffedf3f6)
+              : theme == MeshHubTheme.dark
+                  ? const Color(0xff243440)
+                  : panel,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
-              theme == MeshHubTheme.tactical ? 4 : 20,
+              theme == MeshHubTheme.tactical ? 4 : 12,
             ),
-            borderSide: theme == MeshHubTheme.tactical
-                ? const BorderSide(color: TacticalHudColors.cyan)
-                : BorderSide.none,
+            borderSide: BorderSide(color: themedScheme.outlineVariant),
           ),
         ),
       ),
       home: Scaffold(
         appBar: AppBar(
-          toolbarHeight: theme == MeshHubTheme.tactical ? 48 : null,
+          toolbarHeight: theme == MeshHubTheme.tactical ? 48 : 52,
           backgroundColor: panel,
+          foregroundColor: themedScheme.onSurface,
+          elevation: 0,
+          scrolledUnderElevation: 0,
           title: Text(
             theme == MeshHubTheme.tactical ? 'MESHHUB // HUD' : 'MeshHub',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontFamily: theme == MeshHubTheme.tactical ? 'monospace' : null,
-              fontSize: theme == MeshHubTheme.tactical ? 18 : null,
+              fontSize: theme == MeshHubTheme.tactical ? 18 : 20,
               letterSpacing: theme == MeshHubTheme.tactical ? 1.0 : 0,
               color: theme == MeshHubTheme.tactical
                   ? TacticalHudColors.cyan
-                  : null,
+                  : themedScheme.onSurface,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -275,7 +319,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                       Text(
                         field.connected ? 'Radio online' : 'Offline',
                         style: TextStyle(
-                          fontSize: theme == MeshHubTheme.tactical ? 11 : 13,
+                          fontSize: theme == MeshHubTheme.tactical ? 11 : 12,
                         ),
                       ),
                     ],
