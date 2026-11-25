@@ -299,7 +299,7 @@ class FirmwareManagerService {
       'write-flash',
       '0x0',
       file.absolute.path,
-    ], const Duration(minutes: 4));
+    ], Duration(seconds: 120 + (image.bytes ~/ 8000)));
     if (result.exitCode != 0) {
       throw StateError(
         'Flashing did not complete (exit ${result.exitCode}). '
