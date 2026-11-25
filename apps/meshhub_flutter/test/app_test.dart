@@ -160,27 +160,34 @@ void main() {
     expect(find.text('CHANNEL ARRAY'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-  testWidgets('nodes screen shows verified-state placeholders without fake telemetry', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1200, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(const MeshHubApp());
-    await tester.tap(
-      find.descendant(
-        of: find.byType(NavigationRail),
-        matching: find.text('Nodes'),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Node inventory'), findsOneWidget);
-    expect(find.textContaining('No live node inventory source'), findsOneWidget);
-    expect(find.text('Verified node inventory'), findsOneWidget);
-    expect(find.textContaining('empty inventory here does not mean'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'nodes screen shows verified-state placeholders without fake telemetry',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(const MeshHubApp());
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationRail),
+          matching: find.text('Nodes'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Node inventory'), findsOneWidget);
+      expect(
+        find.textContaining('No live node inventory source'),
+        findsOneWidget,
+      );
+      expect(find.text('Verified node inventory'), findsOneWidget);
+      expect(
+        find.textContaining('empty inventory here does not mean'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('tactical Nodes and Radios retain compact console navigation', (
     tester,
@@ -216,9 +223,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('light and dark maintain readable radio chrome', (
-    tester,
-  ) async {
+  testWidgets('light and dark maintain readable radio chrome', (tester) async {
     tester.view.physicalSize = const Size(1200, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -234,7 +239,10 @@ void main() {
     expect(find.text('Radios & Bluetooth'), findsOneWidget);
     final darkTheme = Theme.of(tester.element(find.byType(Scaffold).first));
     expect(darkTheme.brightness, Brightness.dark);
-    expect(darkTheme.colorScheme.onSurface, isNot(darkTheme.colorScheme.surface));
+    expect(
+      darkTheme.colorScheme.onSurface,
+      isNot(darkTheme.colorScheme.surface),
+    );
 
     await tester.tap(find.byTooltip('Theme'));
     await tester.pumpAndSettle();
@@ -242,9 +250,11 @@ void main() {
     await tester.pumpAndSettle();
     final lightTheme = Theme.of(tester.element(find.byType(Scaffold).first));
     expect(lightTheme.brightness, Brightness.light);
-    expect(lightTheme.colorScheme.onSurface, isNot(lightTheme.colorScheme.surface));
+    expect(
+      lightTheme.colorScheme.onSurface,
+      isNot(lightTheme.colorScheme.surface),
+    );
     expect(find.text('Discover MeshCore radios'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
 }
