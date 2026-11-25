@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meshhub_flutter/firmware_manager_service.dart';
+import 'package:meshhub_flutter/firmware_hardware_catalog.dart';
 
 void main() {
   late Directory temp;
@@ -257,6 +258,77 @@ void main() {
     expect(commands, hasLength(2));
     expect(commands.last, contains('erase-flash'));
     expect(commands.where((args) => args.contains('write-flash')), isEmpty);
+  });
+
+  test('offline catalog includes both firmware ecosystems and exact models', () async {
+    final catalog = await FirmwareBoardCatalog.load();
+    expect(catalog.forFamily('meshCore').length, greaterThan(50));
+    expect(catalog.forFamily('meshtastic').length, greaterThan(90));
+    expect(catalog.byId('meshcore-heltec-v3')?.chip, 'esp32s3');
+    expect(catalog.byId('meshtastic-heltec-v3')?.chip, 'esp32s3');
+    expect(catalog.byId('meshtastic-tbeam')?.chip, 'esp32');
+    expect(catalog.byId('meshtastic-rak4631')?.offersUf2, true);
+    expect(catalog.byId('meshtastic-rak4631')?.supportsUsbFlash, false);
+    expect(catalog.byId('meshcore-heltec-t114')?.supportsUsbFlash, false);
+  });
+
+  test('board profile controls allowed firmware and MCU preflight', () async {
+    final catalog = await FirmwareBoardCatalog.load();
+    final heltec3 = catalog.byId('meshcore-heltec-v3')!;
+    final heltec4 = catalog.byId('meshcore-heltec-v4')!;
+    final image = await manager.inspectFile(
+      firmware.path, board: heltec3,
+      expectedFamily: FirmwareFamily.meshCore,
+    );
+    expect(image.package.boardId, heltec3.id);
+    expect(image.package.supportsDirectUsb, true);
+    await expectLater(
+      manager.inspectFile(firmware.path, board: heltec4),
+      throwsFormatException,
+    );
+    expect(commands, isEmpty);
+    await manager.flashMergedImage(
+      image: image,
+      port: '/dev/ttyACM0',
+      userConfirmed: true,
+    );
+    expect(commands.first, ['--chip', 'esp32s3', '--port', '/dev/ttyACM0', 'flash-id']);
+  });
+
+  test('nRF UF2 images can be saved for guided offline installation', () async {
+    final catalog = await FirmwareBoardCatalog.load();
+    final rak = catalog.byId('meshtastic-rak4631')!;
+    final uf2 = File('${temp.path}/firmware-rak4631-2.8.3.d0f4096.uf2');
+    final blocks = List<int>.filled(128 * 1024, 0);
+    blocks.setRange(0, 8, [0x55, 0x46, 0x32, 0x0a,
+                            0x57, 0x51, 0x5d, 0x9e]);
+    await uf2.writeAsBytes(blocks);
+    final inspected = await manager.inspectFile(
+      uf2.path, board: rak, expectedFamily: FirmwareFamily.meshtastic,
+    );
+    expect(inspected.package.imageKind, 'uf2');
+    expect(inspected.package.supportsDirectUsb, false);
+    final cached = await manager.saveOffline(inspected);
+    expect(cached.package.boardId, rak.id);
+    expect((await manager.savedImages()).single.package.boardId, rak.id);
+    await expectLater(
+      manager.flashMergedImage(
+        image: inspected, port: '/dev/ttyACM0', userConfirmed: true,
+      ),
+      throwsFormatException,
+    );
+    expect(commands, isEmpty);
+  });
+
+  test('wrong firmware magic is rejected on a selected UF2 board', () async {
+    final rak = (await FirmwareBoardCatalog.load()).byId('meshtastic-rak4631')!;
+    final file = File('${temp.path}/firmware-rak4631-2.8.3.d0f4096.uf2');
+    await firmware.copy(file.path);
+    await expectLater(
+      manager.inspectFile(file.path, board: rak),
+      throwsFormatException,
+    );
+    expect(commands, isEmpty);
   });
 
   test('no USB write without explicit confirmation', () async {
