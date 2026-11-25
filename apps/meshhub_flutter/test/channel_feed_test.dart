@@ -195,7 +195,10 @@ void main() {
     // here. Verify the UI initiates the send. Domain tests separately
     // verify the actual radio ACK, message storage, and no retry behavior.
     expect(session.sending || session.sendCount == 1, isTrue);
-    expect(radio.writes.where((w) => w.first == 3).length, lessThanOrEqualTo(1));
+    expect(
+      radio.writes.where((w) => w.first == 3).length,
+      lessThanOrEqualTo(1),
+    );
   });
 
   testWidgets('accepted outgoing channel post labels delivery as unverified', (
