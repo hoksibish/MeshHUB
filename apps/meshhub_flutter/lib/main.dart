@@ -24,6 +24,10 @@ class MeshHubApp extends StatefulWidget {
 
 class _MeshHubAppState extends State<MeshHubApp> {
   MeshHubTheme theme = MeshHubTheme.dark;
+  static const _canvas = Color(0xff0e131a);
+  static const _surface = Color(0xff19222c);
+  static const _meshCoreAccent = Color(0xff55d6cb);
+  static const _meshtasticAccent = Color(0xffb6df62);
   MeshProtocol? filter;
   int destination = 0;
   late final MeshCoreFieldSession field;
@@ -76,8 +80,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
   Widget build(BuildContext context) {
     final color = switch (theme) {
       MeshHubTheme.light => const Color(0xff146c61),
-      MeshHubTheme.dark => const Color(0xff69d5bf),
-      MeshHubTheme.tactical => const Color(0xffb2dc7c),
+      MeshHubTheme.dark => _meshCoreAccent,
+      MeshHubTheme.tactical => _meshtasticAccent,
     };
     final mode = theme == MeshHubTheme.light
         ? Brightness.light
@@ -86,10 +90,35 @@ class _MeshHubAppState extends State<MeshHubApp> {
     return MaterialApp(
       title: 'MeshHub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorScheme: scheme, useMaterial3: true),
+      theme: ThemeData(
+        colorScheme: scheme,
+        useMaterial3: true,
+        scaffoldBackgroundColor: theme == MeshHubTheme.light
+            ? scheme.surface
+            : _canvas,
+        cardTheme: CardThemeData(
+          color: theme == MeshHubTheme.light
+              ? scheme.surfaceContainerLow
+              : _surface,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: theme == MeshHubTheme.light
+              ? scheme.surfaceContainerHigh
+              : _surface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('MeshHub'),
+          title: const Text('MeshHub', style: TextStyle(fontWeight: FontWeight.w700)),
           actions: [
             PopupMenuButton<MeshHubTheme>(
               tooltip: 'Theme',
@@ -110,7 +139,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
               if (constraints.maxWidth >= 700)
                 NavigationRail(
                   selectedIndex: destination,
-                  extended: constraints.maxWidth >= 1000,
+                  extended: constraints.maxWidth >= 1280,
                   onDestinationSelected: (index) =>
                       setState(() => destination = index),
                   destinations: const [
@@ -172,7 +201,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
       return Row(
         children: [
           SizedBox(
-            width: wide ? 300 : constraints.maxWidth,
+            width: wide ? (constraints.maxWidth >= 1150 ? 340 : 280) : constraints.maxWidth,
             child: _channelList(context),
           ),
           if (wide) ...[
@@ -200,7 +229,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
               ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 4),
-        const Text('Read-only names from the connected MeshCore radio.'),
+        const Text('Your radio channels · session-only conversations'),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -243,13 +272,31 @@ class _MeshHubAppState extends State<MeshHubApp> {
         if (filter != MeshProtocol.meshtastic)
           for (final channel in field.channels)
             Card(
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
-                leading: const Icon(Icons.tag),
-                title: Text(channel.name),
-                subtitle: Text(
-                  'MeshCore · slot ${channel.index} · ${field.messages.where((m) => m.protocol == MeshProtocol.meshCore && m.conversationId == 'meshcore-channel-${channel.index}').length} posts this session',
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 9,
                 ),
+                leading: CircleAvatar(
+                  radius: 23,
+                  backgroundColor: _meshCoreAccent.withValues(alpha: 0.17),
+                  child: const Icon(Icons.tag, color: _meshCoreAccent),
+                ),
+                title: Text(
+                  channel.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(
+                  'MeshCore · ${field.messages.where((m) => m.protocol == MeshProtocol.meshCore && m.conversationId == 'meshcore-channel-${channel.index}').length} messages · slot ${channel.index}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: const Icon(Icons.chevron_right),
                 selected: selectedChannel == channel.index,
+                selectedTileColor: _meshCoreAccent.withValues(alpha: 0.08),
                 onTap: () => setState(() {
                   selectedChannel = channel.index;
                   _selectedChannelName = channel.name;
