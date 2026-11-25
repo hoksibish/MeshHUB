@@ -74,10 +74,11 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
             : 'meshtastic-heltec-v3';
       });
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => status = 'Offline board catalog could not be loaded. USB flashing disabled.',
         );
+      }
     }
   }
 
