@@ -1524,142 +1524,310 @@ class _MeshHubAppState extends State<MeshHubApp> {
   }
 
   Widget _radios(BuildContext context) {
+    final tactical = theme == MeshHubTheme.tactical;
+    final colors = Theme.of(context).colorScheme;
     final info = field.deviceInfo;
     final rf = field.identity?.radioPreset;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(tactical ? 14 : 20),
       children: [
-        if (theme == MeshHubTheme.tactical)
-          const TacticalHudHeading(
-            'Communications Console',
-            subtitle: 'LIVE BLE TRANSPORT / CONFIGURATION READBACK',
-          )
-        else
-          Text(
-            'Radios',
-            style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-          ),
-        const SizedBox(height: 8),
-        FilledButton.icon(
-          onPressed: field.scanning ? null : () => unawaited(field.discover()),
-          icon: const Icon(Icons.bluetooth_searching),
-          label: const Text('Discover MeshCore radios'),
+        _screenHeading(
+          context,
+          tactical ? 'Communications Console' : 'Radios & Bluetooth',
+          'Companion connection, verified readback and session diagnostics',
+          Icons.router_outlined,
         ),
-        if (field.scanning) const LinearProgressIndicator(),
-        for (final candidate in field.candidates)
-          Card(
-            child: ListTile(
-              title: Text(
-                candidate.name.isEmpty
-                    ? 'Unnamed BLE candidate'
-                    : candidate.name,
-              ),
-              subtitle: Text(
-                candidate.assessment ==
-                        MeshCoreCandidateAssessment.serviceUuidKnown
-                    ? 'MeshCore service known · ${candidate.isFresh ? 'fresh' : 'cached'}'
-                    : 'Name hint only · GATT verification required',
-              ),
-              trailing: TextButton(
-                onPressed: field.connecting
-                    ? null
-                    : () => unawaited(field.connect(candidate)),
-                child: const Text('Connect'),
-              ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _metricCard(
+              Icons.bluetooth_connected,
+              field.connected ? 'Online' : 'Offline',
+              'MeshCore link',
+              _accent,
             ),
-          ),
-        Card(
+            _metricCard(
+              Icons.router_outlined,
+              info?.model ?? 'Unknown',
+              'Radio model',
+              _accent,
+            ),
+            _metricCard(
+              Icons.tune,
+              rf == null ? 'Unavailable' : '${rf.frequencyKHz} kHz',
+              'Read-only RF frequency',
+              _accent,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _sectionPanel(
+          context,
+          title: 'Connection',
+          subtitle: 'Bluetooth LE companion · local radio only',
+          icon: field.connected
+              ? Icons.bluetooth_connected
+              : Icons.bluetooth_disabled,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
                 leading: Icon(
                   field.connected
-                      ? Icons.bluetooth_connected
-                      : Icons.bluetooth_disabled,
+                      ? Icons.check_circle_outline
+                      : Icons.radio_button_unchecked,
+                  color: field.connected ? _accent : colors.onSurfaceVariant,
                 ),
                 title: Text(field.selected?.name ?? 'No radio selected'),
                 subtitle: Text(
-                  'Bluetooth: ${field.connected ? 'connected, paired' : 'not ready'} · ${field.status}',
+                  field.connected
+                      ? 'Connected / paired · ${field.status}'
+                      : 'Not ready · ${field.status}',
                 ),
               ),
-              if (field.connected)
-                TextButton(
-                  onPressed: () => unawaited(field.disconnect()),
-                  child: const Text('Disconnect'),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.icon(
+                    onPressed: field.scanning
+                        ? null
+                        : () => unawaited(field.discover()),
+                    icon: const Icon(Icons.bluetooth_searching, size: 18),
+                    label: const Text('Discover MeshCore radios'),
+                  ),
+                  if (field.connected)
+                    OutlinedButton.icon(
+                      onPressed: () => unawaited(field.disconnect()),
+                      icon: const Icon(Icons.bluetooth_disabled, size: 18),
+                      label: const Text('Disconnect'),
+                    ),
+                ],
+              ),
+              if (field.scanning) ...[
+                const SizedBox(height: 10),
+                const LinearProgressIndicator(),
+              ],
+              if (field.error != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  field.error!,
+                  style: TextStyle(color: colors.error),
                 ),
-              if (field.error != null) ListTile(title: Text(field.error!)),
-              if (info != null) ...[
+              ],
+              for (final candidate in field.candidates) ...[
+                const Divider(height: 16),
                 ListTile(
-                  title: Text('${info.model} · ${info.version}'),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    candidate.assessment ==
+                            MeshCoreCandidateAssessment.serviceUuidKnown
+                        ? Icons.bluetooth_searching
+                        : Icons.help_outline,
+                    color: _accent,
+                  ),
+                  title: Text(
+                    candidate.name.isEmpty
+                        ? 'Unnamed BLE candidate'
+                        : candidate.name,
+                  ),
                   subtitle: Text(
-                    'Build ${info.build} · protocol ${info.firmwareCode} · ${info.maxChannels} channel slots',
+                    candidate.assessment ==
+                            MeshCoreCandidateAssessment.serviceUuidKnown
+                        ? 'MeshCore service seen · ${candidate.isFresh ? 'fresh' : 'cached'}'
+                        : 'Name hint only · service verification required',
+                  ),
+                  trailing: TextButton(
+                    onPressed: field.connecting
+                        ? null
+                        : () => unawaited(field.connect(candidate)),
+                    child: const Text('Connect'),
                   ),
                 ),
-                if (rf != null)
-                  ListTile(
-                    title: Text(
-                      'RF: ${rf.frequencyKHz} kHz · ${rf.bandwidthHz} Hz',
-                    ),
-                    subtitle: Text(
-                      'SF${rf.spreadingFactor} · CR${rf.codingRate} · read-only; region not verified by app',
-                    ),
-                  ),
               ],
             ],
           ),
         ),
         const SizedBox(height: 12),
-        Text(
-          'Field diagnostics',
-          style: Theme.of(context).textTheme.titleLarge
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 780;
+            final width = wide
+                ? (constraints.maxWidth - 12) / 2
+                : constraints.maxWidth;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                SizedBox(
+                  width: width,
+                  child: _sectionPanel(
+                    context,
+                    title: 'Device identification',
+                    icon: Icons.memory_outlined,
+                    subtitle: 'Reported by the connected radio',
+                    child: info == null
+                        ? const Text('Connect a radio for model and firmware details.')
+                        : Column(
+                            children: [
+                              _readout(context, 'Model', info.model),
+                              _readout(context, 'Firmware', info.version),
+                              _readout(context, 'Build', '${info.build}'),
+                              _readout(
+                                context,
+                                'Protocol',
+                                '${info.firmwareCode}',
+                              ),
+                              _readout(
+                                context,
+                                'Channel slots',
+                                '${info.maxChannels}',
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                SizedBox(
+                  width: width,
+                  child: _sectionPanel(
+                    context,
+                    title: 'RF configuration',
+                    icon: Icons.settings_input_antenna_outlined,
+                    subtitle: 'Read-only preset · regulatory region not verified',
+                    child: rf == null
+                        ? const Text('No RF preset available until a radio is connected.')
+                        : Column(
+                            children: [
+                              _readout(
+                                context,
+                                'Frequency',
+                                '${rf.frequencyKHz} kHz',
+                                emphasize: true,
+                              ),
+                              _readout(
+                                context,
+                                'Bandwidth',
+                                '${rf.bandwidthHz} Hz',
+                              ),
+                              _readout(
+                                context,
+                                'Spreading',
+                                'SF${rf.spreadingFactor}',
+                              ),
+                              _readout(
+                                context,
+                                'Coding rate',
+                                'CR${rf.codingRate}',
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'MeshHub has not verified legal RF region, repeater coverage, or peer delivery.',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
-        ListTile(
-          title: Text('Connection: ${field.status}'),
-          subtitle: Text(
-            'Waiting pushes: ${field.waitingCount} · received: ${field.receiveCount} · malformed: ${field.rejectedFrames} · local sends accepted: ${field.sendCount} · reconnect attempts: ${field.reconnectAttempts}',
+        const SizedBox(height: 12),
+        _sectionPanel(
+          context,
+          title: 'Field diagnostics',
+          subtitle: 'Counters observed by this local session · not RF delivery receipts',
+          icon: Icons.monitor_heart_outlined,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _readout(context, 'Connection', field.status),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _diagnosticMetric(context, 'Received', field.receiveCount),
+                  _diagnosticMetric(context, 'Waiting pushes', field.waitingCount),
+                  _diagnosticMetric(context, 'Malformed', field.rejectedFrames),
+                  _diagnosticMetric(context, 'Local accepts', field.sendCount),
+                  _diagnosticMetric(context, 'Reconnects', field.reconnectAttempts),
+                ],
+              ),
+            ],
           ),
         ),
-        const Divider(),
-        Text(
-          'Direct test message',
-          style: Theme.of(context).textTheme.titleLarge
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-        ),
-        const Text(
-          'Channel conversations and their inline composer are in Inbox. For a direct test, verify region, displayed preset, contact prefix and a reachable peer before transmitting.',
-        ),
-        TextField(
-          controller: keyPrefixInput,
-          decoration: const InputDecoration(
-            labelText: 'Verified direct contact key prefix (12 lowercase hex characters)',
+        const SizedBox(height: 12),
+        _sectionPanel(
+          context,
+          title: 'Advanced field tools',
+          subtitle: 'Direct test sends require explicit destination verification',
+          icon: Icons.science_outlined,
+          child: ExpansionTile(
+            key: const PageStorageKey('direct-test-tools'),
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: EdgeInsets.zero,
+            title: const Text('Direct test message'),
+            subtitle: const Text('Optional · local acceptance is not delivery'),
+            children: [
+              const SizedBox(height: 8),
+              const Text(
+                'Before transmitting, verify RF region, the readback preset, '
+                'the direct contact prefix, and a reachable peer. '
+                'An interrupted send remains uncertain.',
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: keyPrefixInput,
+                decoration: const InputDecoration(
+                  labelText: 'Verified direct contact prefix',
+                  helperText: '12 lowercase hexadecimal characters',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: messageInput,
+                maxLines: 2,
+                maxLength: 133,
+                decoration: const InputDecoration(
+                  labelText: 'Direct test message (UTF-8, max 133 bytes)',
+                ),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  'I verified RF region, preset, contact, and reachable peer',
+                ),
+                value: verifiedDestination,
+                onChanged: (value) =>
+                    setState(() => verifiedDestination = value ?? false),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: !field.connected ||
+                          !verifiedDestination ||
+                          field.sending
+                      ? null
+                      : () => unawaited(_sendDirectOnce(context)),
+                  icon: const Icon(Icons.send_outlined),
+                  label: const Text('Send direct once'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Radio acceptance does not confirm over-the-air or recipient delivery. '
+                'Do not blindly retransmit an uncertain send.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
           ),
-        ),
-        TextField(
-          controller: messageInput,
-          maxLines: 2,
-          maxLength: 133,
-          decoration: const InputDecoration(
-            labelText: 'Direct test message (UTF-8, max 133 bytes)',
-          ),
-        ),
-        CheckboxListTile(
-          title: const Text(
-            'I verified RF region, displayed preset, direct contact and reachable test peer',
-          ),
-          value: verifiedDestination,
-          onChanged: (value) =>
-              setState(() => verifiedDestination = value ?? false),
-        ),
-        FilledButton(
-          onPressed: !field.connected || !verifiedDestination || field.sending
-              ? null
-              : () => unawaited(_sendDirectOnce(context)),
-          child: const Text('Send direct once (local radio acceptance only)'),
-        ),
-        const Text(
-          'Local radio acceptance is not over-the-air or recipient delivery. An interrupted send is uncertain; do not blindly resend.',
         ),
       ],
     );
