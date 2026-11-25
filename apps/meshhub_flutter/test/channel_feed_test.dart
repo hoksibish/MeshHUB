@@ -100,6 +100,9 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(MeshHubApp(fieldSession: session));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Channels'));
+    await tester.pumpAndSettle();
       await tester.pumpAndSettle();
       expect(find.text('Public'), findsOneWidget);
       expect(find.text('Trail'), findsOneWidget);
@@ -129,6 +132,9 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MeshHubApp(fieldSession: session));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Channels'));
+    await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
     expect(find.text('Trail'), findsOneWidget);
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
@@ -147,6 +153,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MeshHubApp(fieldSession: session));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Channels'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
     final send = find.text('Post once to selected channel');
@@ -209,6 +218,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MeshHubApp(fieldSession: session));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Channels'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Trail'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'é' * 67);
