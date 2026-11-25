@@ -180,6 +180,8 @@ void main() {
     expect(find.textContaining('I verified RF region'), findsNothing);
     expect(find.text('RF settings & send confirmation'), findsNothing);
     await tester.enterText(find.byType(TextField).last, 'Test post');
+    await tester.ensureVisible(send);
+    await tester.pumpAndSettle();
     expect(
       tester
           .widget<FilledButton>(
@@ -195,7 +197,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 20));
     }
     await tester.pumpAndSettle();
-    expect(radio.writes.where((w) => w.first == 3).length, 1);
+    expect(
+      radio.writes.where((w) => w.first == 3).length,
+      1,
+      reason: 'status=${session.status}, sending=${session.sending}',
+    );
     expect(radio.writes.where((w) => w.first == 3).single[2], 2);
     expect(
       session.sendCount,
