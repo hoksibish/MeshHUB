@@ -14,12 +14,14 @@ class FirmwareManagerScreen extends StatefulWidget {
     required this.tactical,
     required this.radioConnected,
     this.service,
+    this.boardCatalog,
     super.key,
   });
 
   final bool tactical;
   final bool Function() radioConnected;
   final FirmwareManagerService? service;
+  final FirmwareBoardCatalog? boardCatalog;
 
   @override
   State<FirmwareManagerScreen> createState() => _FirmwareManagerScreenState();
@@ -46,7 +48,12 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   void initState() {
     super.initState();
     service = widget.service ?? FirmwareManagerService();
-    unawaited(_loadCatalog());
+    if (widget.boardCatalog != null) {
+      catalog = widget.boardCatalog;
+      selectedBoardId = 'meshcore-heltec-v3';
+    } else {
+      unawaited(_loadCatalog());
+    }
     unawaited(_loadSaved());
   }
 
