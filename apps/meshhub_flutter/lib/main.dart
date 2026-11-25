@@ -378,17 +378,24 @@ class _MeshHubAppState extends State<MeshHubApp> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text(
-          'Your mesh, one place.',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
+        if (theme == MeshHubTheme.tactical)
+          const TacticalHudHeading(
+            'Operations // Overview',
+            subtitle: 'LIVE TELEMETRY / CURRENT LOCAL SESSION',
+          )
+        else ...[
+          Text(
+            'Your mesh, one place.',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'MeshCore and Meshtastic messaging, without mixing networks.',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+          const SizedBox(height: 6),
+          Text(
+            'MeshCore and Meshtastic messaging, without mixing networks.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
         const SizedBox(height: 18),
         Wrap(
           spacing: 12,
@@ -504,6 +511,14 @@ class _MeshHubAppState extends State<MeshHubApp> {
   }
 
   Widget _metricCard(IconData icon, String value, String label, Color accent) {
+    if (theme == MeshHubTheme.tactical) {
+      return TacticalHudMetric(
+        icon: icon,
+        label: label,
+        value: value,
+        highlight: accent == _meshtasticAccent,
+      );
+    }
     return Container(
       width: 195,
       padding: const EdgeInsets.all(18),
@@ -692,13 +707,20 @@ class _MeshHubAppState extends State<MeshHubApp> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(
-          'Channels',
-          style: Theme.of(context).textTheme.headlineMedium
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-        ),
-        const SizedBox(height: 4),
-        const Text('Your radio channels · session-only conversations'),
+        if (theme == MeshHubTheme.tactical)
+          const TacticalHudHeading(
+            'Channel Array',
+            subtitle: 'RADIO-REPORTED CHANNELS / SESSION-ONLY MESSAGES',
+          )
+        else ...[
+          Text(
+            'Channels',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
+          ),
+          const SizedBox(height: 4),
+          const Text('Your radio channels · session-only conversations'),
+        ],
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -739,40 +761,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
             'No configured channel names were returned by this radio.',
           ),
         if (filter != MeshProtocol.meshtastic)
-          for (final channel in field.channels)
-            Card(
-              clipBehavior: Clip.antiAlias,
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 9,
-                ),
-                leading: CircleAvatar(
-                  radius: 23,
-                  backgroundColor: _meshCoreAccent.withValues(alpha: 0.17),
-                  child: const Icon(Icons.tag, color: _meshCoreAccent),
-                ),
-                title: Text(
-                  channel.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: Text(
-                  'MeshCore · ${field.messages.where((m) => m.protocol == MeshProtocol.meshCore && m.conversationId == 'meshcore-channel-${channel.index}').length} messages · slot ${channel.index}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                selected: selectedChannel == channel.index,
-                selectedTileColor: _meshCoreAccent.withValues(alpha: 0.08),
-                onTap: () => setState(() {
-                  selectedChannel = channel.index;
-                  _selectedChannelName = channel.name;
-                              channelMessageInput.clear();
-                }),
-              ),
-            ),
+          for (final channel in field.channels) _channelTile(channel),
         const Divider(height: 32),
         Text(
           'Other messages',
@@ -801,6 +790,60 @@ class _MeshHubAppState extends State<MeshHubApp> {
         if (showExamples) _banner(),
       ],
     );
+  }
+
+  Widget _channelTile(MeshCoreChannel channel) {
+    final selected = selectedChannel == channel.index;
+    final count = field.messages.where(
+      (message) =>
+          message.protocol == MeshProtocol.meshCore &&
+          message.conversationId == 'meshcore-channel-${channel.index}',
+    ).length;
+    final item = ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      leading: CircleAvatar(
+        radius: 23,
+        backgroundColor: _accent.withValues(alpha: 0.18),
+        child: Icon(Icons.tag, color: _accent),
+      ),
+      title: Text(
+        channel.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      subtitle: Text(
+        'MeshCore · $count messages · slot ${channel.index}',
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Icon(
+        selected && theme == MeshHubTheme.tactical
+            ? Icons.radio_button_checked
+            : Icons.chevron_right,
+        color: selected && theme == MeshHubTheme.tactical
+            ? TacticalHudColors.orange
+            : null,
+      ),
+      selected: selected,
+      selectedTileColor: _accent.withValues(alpha: 0.10),
+      onTap: () => setState(() {
+        selectedChannel = channel.index;
+        _selectedChannelName = channel.name;
+        channelMessageInput.clear();
+      }),
+    );
+    if (theme == MeshHubTheme.tactical) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: TacticalHudPanel(
+          active: selected,
+          padding: EdgeInsets.zero,
+          child: item,
+        ),
+      );
+    }
+    return Card(clipBehavior: Clip.antiAlias, child: item);
   }
 
   Widget _channelThread(BuildContext context, {bool narrow = false}) {
