@@ -103,34 +103,34 @@ class _MeshHubAppState extends State<MeshHubApp> {
     final scheme = ColorScheme.fromSeed(seedColor: color, brightness: mode);
     final themedScheme = switch (theme) {
       MeshHubTheme.tactical => scheme.copyWith(
-          primary: TacticalHudColors.cyan,
-          onPrimary: TacticalHudColors.background,
-          secondary: TacticalHudColors.orange,
-          onSecondary: TacticalHudColors.background,
-          surface: TacticalHudColors.panel,
-          onSurface: TacticalHudColors.text,
-          onSurfaceVariant: TacticalHudColors.muted,
-          outline: TacticalHudColors.cyan.withValues(alpha: 0.5),
-          outlineVariant: TacticalHudColors.cyan.withValues(alpha: 0.25),
-        ),
+        primary: TacticalHudColors.cyan,
+        onPrimary: TacticalHudColors.background,
+        secondary: TacticalHudColors.orange,
+        onSecondary: TacticalHudColors.background,
+        surface: TacticalHudColors.panel,
+        onSurface: TacticalHudColors.text,
+        onSurfaceVariant: TacticalHudColors.muted,
+        outline: TacticalHudColors.cyan.withValues(alpha: 0.5),
+        outlineVariant: TacticalHudColors.cyan.withValues(alpha: 0.25),
+      ),
       MeshHubTheme.dark => scheme.copyWith(
-          primary: _meshCoreAccent,
-          onPrimary: _canvas,
-          surface: _surface,
-          onSurface: const Color(0xffedf4f6),
-          onSurfaceVariant: const Color(0xffa8bdc6),
-          outline: const Color(0xff4a606b),
-          outlineVariant: const Color(0xff344752),
-        ),
+        primary: _meshCoreAccent,
+        onPrimary: _canvas,
+        surface: _surface,
+        onSurface: const Color(0xffedf4f6),
+        onSurfaceVariant: const Color(0xffa8bdc6),
+        outline: const Color(0xff4a606b),
+        outlineVariant: const Color(0xff344752),
+      ),
       MeshHubTheme.light => scheme.copyWith(
-          primary: const Color(0xff087e83),
-          onPrimary: const Color(0xffffffff),
-          surface: const Color(0xffffffff),
-          onSurface: const Color(0xff172d36),
-          onSurfaceVariant: const Color(0xff566d78),
-          outline: const Color(0xffa6bac3),
-          outlineVariant: const Color(0xffd5e2e7),
-        ),
+        primary: const Color(0xff087e83),
+        onPrimary: const Color(0xffffffff),
+        surface: const Color(0xffffffff),
+        onSurface: const Color(0xff172d36),
+        onSurfaceVariant: const Color(0xff566d78),
+        outline: const Color(0xffa6bac3),
+        outlineVariant: const Color(0xffd5e2e7),
+      ),
     };
     final panel = _panelBackground;
     return MaterialApp(
@@ -165,10 +165,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
             : NavigationRailThemeData(
                 backgroundColor: panel,
                 indicatorColor: _accent.withValues(alpha: 0.15),
-                selectedIconTheme: IconThemeData(
-                  size: 22,
-                  color: _accent,
-                ),
+                selectedIconTheme: IconThemeData(size: 22, color: _accent),
                 unselectedIconTheme: IconThemeData(
                   size: 22,
                   color: themedScheme.onSurfaceVariant,
@@ -244,8 +241,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
           fillColor: theme == MeshHubTheme.light
               ? const Color(0xffedf3f6)
               : theme == MeshHubTheme.dark
-                  ? const Color(0xff243440)
-                  : panel,
+              ? const Color(0xff243440)
+              : panel,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
               theme == MeshHubTheme.tactical ? 4 : 12,
@@ -724,9 +721,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: colors.onSurfaceVariant),
           ),
         ],
         const SizedBox(height: 10),
@@ -738,15 +734,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
     return SizedBox(
       width: double.infinity,
       child: tactical
-          ? TacticalHudPanel(
-              padding: const EdgeInsets.all(14),
-              child: content,
-            )
+          ? TacticalHudPanel(padding: const EdgeInsets.all(14), child: content)
           : Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: content,
-              ),
+              child: Padding(padding: const EdgeInsets.all(16), child: content),
             ),
     );
   }
@@ -791,11 +781,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
     );
   }
 
-  Widget _diagnosticMetric(
-    BuildContext context,
-    String label,
-    int value,
-  ) {
+  Widget _diagnosticMetric(BuildContext context, String label, int value) {
     final tactical = theme == MeshHubTheme.tactical;
     final content = Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
@@ -911,7 +897,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
           context,
           title: 'Telemetry readiness',
           icon: Icons.monitor_heart_outlined,
-          subtitle: 'Fields will appear only when a protocol adapter reports them',
+          subtitle:
+              'Fields will appear only when a protocol adapter reports them',
           child: Column(
             children: [
               _readout(context, 'Node identity', 'Awaiting verified discovery'),
@@ -1687,10 +1674,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
               ],
               if (field.error != null) ...[
                 const SizedBox(height: 10),
-                Text(
-                  field.error!,
-                  style: TextStyle(color: colors.error),
-                ),
+                Text(field.error!, style: TextStyle(color: colors.error)),
               ],
               for (final candidate in field.candidates) ...[
                 const Divider(height: 16),
@@ -1745,7 +1729,9 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     icon: Icons.memory_outlined,
                     subtitle: 'Reported by the connected radio',
                     child: info == null
-                        ? const Text('Connect a radio for model and firmware details.')
+                        ? const Text(
+                            'Connect a radio for model and firmware details.',
+                          )
                         : Column(
                             children: [
                               _readout(context, 'Model', info.model),
@@ -1771,9 +1757,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     context,
                     title: 'RF configuration',
                     icon: Icons.settings_input_antenna,
-                    subtitle: 'Read-only preset · regulatory region not verified',
+                    subtitle:
+                        'Read-only preset · regulatory region not verified',
                     child: rf == null
-                        ? const Text('No RF preset available until a radio is connected.')
+                        ? const Text(
+                            'No RF preset available until a radio is connected.',
+                          )
                         : Column(
                             children: [
                               _readout(
@@ -1826,10 +1815,18 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 runSpacing: 8,
                 children: [
                   _diagnosticMetric(context, 'Received', field.receiveCount),
-                  _diagnosticMetric(context, 'Waiting pushes', field.waitingCount),
+                  _diagnosticMetric(
+                    context,
+                    'Waiting pushes',
+                    field.waitingCount,
+                  ),
                   _diagnosticMetric(context, 'Malformed', field.rejectedFrames),
                   _diagnosticMetric(context, 'Local accepts', field.sendCount),
-                  _diagnosticMetric(context, 'Reconnects', field.reconnectAttempts),
+                  _diagnosticMetric(
+                    context,
+                    'Reconnects',
+                    field.reconnectAttempts,
+                  ),
                 ],
               ),
             ],
@@ -1839,7 +1836,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
         _sectionPanel(
           context,
           title: 'Advanced field tools',
-          subtitle: 'Direct test sends require explicit destination verification',
+          subtitle:
+              'Direct test sends require explicit destination verification',
           icon: Icons.science_outlined,
           child: ExpansionTile(
             key: const PageStorageKey('direct-test-tools'),
@@ -1883,9 +1881,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: !field.connected ||
-                          !verifiedDestination ||
-                          field.sending
+                  onPressed:
+                      !field.connected || !verifiedDestination || field.sending
                       ? null
                       : () => unawaited(_sendDirectOnce(context)),
                   icon: const Icon(Icons.send_outlined),
