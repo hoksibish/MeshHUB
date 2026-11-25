@@ -368,14 +368,15 @@ class FirmwareManagerService {
   Future<List<OfflineFirmwareImage>> savedImages() async {
     final directory = Directory(libraryPath);
     if (!await directory.exists()) return [];
+    final catalog = await FirmwareBoardCatalog.load();
     final results = <OfflineFirmwareImage>[];
     await for (final entity in directory.list(followLinks: false)) {
       if (entity is! File || !entity.path.endsWith('.json')) continue;
       try {
         final manifest = jsonDecode(await entity.readAsString());
         if (manifest is! Map<String, dynamic> ||
-            (manifest['target'] != 'heltecV3' &&
-                manifest['target'] != 'heltecV3MeshCoreCompanion')) {
+            !const {'device', 'heltecV3', 'heltecV3MeshCoreCompanion'}
+                .contains(manifest['target'])) {
           continue;
         }
         final sha = manifest['sha256'];
@@ -385,20 +386,29 @@ class FirmwareManagerService {
             name is! String ||
             bytes is! int ||
             !RegExp(r'^[a-f0-9]{64}$').hasMatch(sha) ||
-            recognizePackage(name) == null ||
             entity.path.split('/').last != '$sha.json') {
           continue;
         }
-        final package = recognizePackage(name)!;
+        final board = catalog.byId(manifest['boardId'] as String?);
+        final package = recognizePackage(name, board: board);
+        if (package == null) continue;
         if (manifest['target'] == 'heltecV3MeshCoreCompanion' &&
             package.family != FirmwareFamily.meshCore) {
           continue;
         }
-        if (manifest['target'] == 'heltecV3' &&
+        if (manifest['target'] != 'heltecV3MeshCoreCompanion' &&
             (manifest['family'] != package.family.name ||
                 manifest['role'] != package.role ||
                 manifest['version'] != package.version ||
                 manifest['format'] != package.format)) {
+          continue;
+        }
+        if (manifest['target'] == 'device' &&
+            (board == null ||
+                manifest['boardId'] != package.boardId ||
+                manifest['method'] != package.method ||
+                manifest['chip'] != package.chip ||
+                manifest['imageKind'] != package.imageKind)) {
           continue;
         }
         results.add(
@@ -407,10 +417,11 @@ class FirmwareManagerService {
             name,
             sha,
             bytes,
+            package: package,
           ),
         );
       } catch (_) {
-        // A broken or tampered offline package is never offered for flashing.
+        // Bad/tampered cache entry is never offered for flashing.
       }
     }
     results.sort((a, b) => a.sourceName.compareTo(b.sourceName));
