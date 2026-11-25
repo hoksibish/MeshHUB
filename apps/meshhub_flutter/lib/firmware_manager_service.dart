@@ -210,7 +210,11 @@ class FirmwareManagerService {
 
   /// Copies firmware bytes only; no radio keys, identity or message contents.
   Future<OfflineFirmwareImage> saveOffline(OfflineFirmwareImage image) async {
-    final checked = await inspectFile(image.path, expectedSha256: image.sha256);
+    final checked = await inspectFile(
+      image.path,
+      expectedSha256: image.sha256,
+      expectedFamily: image.package.family,
+    );
     final directory = Directory(libraryPath);
     await directory.create(recursive: true);
     final filePath = '${directory.path}/${checked.sha256}.bin';
@@ -226,7 +230,11 @@ class FirmwareManagerService {
     final manifest = File('${directory.path}/${checked.sha256}.json');
     await manifest.writeAsString(
       jsonEncode({
-        'target': FirmwareTarget.heltecV3MeshCoreCompanion.name,
+        'target': 'heltecV3',
+        'family': checked.package.family.name,
+        'role': checked.package.role,
+        'version': checked.package.version,
+        'format': checked.package.format,
         'sourceName': checked.sourceName,
         'sha256': checked.sha256,
         'bytes': checked.bytes,
@@ -244,7 +252,9 @@ class FirmwareManagerService {
   ) async {
     final file = File(path);
     final stat = await file.stat();
-    if (stat.type != FileSystemEntityType.file ||
+    final package = recognizePackage(sourceName);
+    if (package == null ||
+        stat.type != FileSystemEntityType.file ||
         stat.size != expectedBytes ||
         await _calculateSha256(path) != checksum) {
       throw const FormatException(
@@ -256,6 +266,7 @@ class FirmwareManagerService {
       sourceName: sourceName,
       sha256: checksum,
       bytes: expectedBytes,
+      package: package,
     );
   }
 
@@ -269,8 +280,8 @@ class FirmwareManagerService {
       try {
         final manifest = jsonDecode(await entity.readAsString());
         if (manifest is! Map<String, dynamic> ||
-            manifest['target'] !=
-                FirmwareTarget.heltecV3MeshCoreCompanion.name) {
+            (manifest['target'] != 'heltecV3' &&
+                manifest['target'] != 'heltecV3MeshCoreCompanion')) {
           continue;
         }
         final sha = manifest['sha256'];
@@ -280,8 +291,20 @@ class FirmwareManagerService {
             name is! String ||
             bytes is! int ||
             !RegExp(r'^[a-f0-9]{64}$').hasMatch(sha) ||
-            !_firmwareNameMatches(name) ||
+            recognizePackage(name) == null ||
             entity.path.split('/').last != '$sha.json') {
+          continue;
+        }
+        final package = recognizePackage(name)!;
+        if (manifest['target'] == 'heltecV3MeshCoreCompanion' &&
+            package.family != FirmwareFamily.meshCore) {
+          continue;
+        }
+        if (manifest['target'] == 'heltecV3' &&
+            (manifest['family'] != package.family.name ||
+                manifest['role'] != package.role ||
+                manifest['version'] != package.version ||
+                manifest['format'] != package.format)) {
           continue;
         }
         results.add(
