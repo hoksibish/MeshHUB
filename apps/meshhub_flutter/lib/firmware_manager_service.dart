@@ -10,7 +10,8 @@ import 'firmware_hardware_catalog.dart';
 enum FirmwareFamily { meshCore, meshtastic }
 
 extension FirmwareFamilyLabel on FirmwareFamily {
-  String get label => this == FirmwareFamily.meshCore ? 'MeshCore' : 'Meshtastic';
+  String get label =>
+      this == FirmwareFamily.meshCore ? 'MeshCore' : 'Meshtastic';
 }
 
 class FirmwarePackage {
@@ -33,7 +34,9 @@ class FirmwarePackage {
   final String? chip;
   final String method;
   final String imageKind;
-  bool get supportsDirectUsb => method == 'esptool' && chip != null &&
+  bool get supportsDirectUsb =>
+      method == 'esptool' &&
+      chip != null &&
       (imageKind == 'merged' || imageKind == 'factory');
   String get flashOffset => '0x0';
   String get displayName => family.label + ' · ' + role + ' · ' + version;
@@ -104,7 +107,8 @@ class FirmwareManagerService {
       final variant = board.match(filename);
       if (variant == null) return null;
       final family = board.family == 'meshCore'
-          ? FirmwareFamily.meshCore : FirmwareFamily.meshtastic;
+          ? FirmwareFamily.meshCore
+          : FirmwareFamily.meshtastic;
       final cleanName = filename
           .replaceAll('-merged.bin', '')
           .replaceAll('.factory.bin', '')
@@ -114,16 +118,21 @@ class FirmwareManagerService {
         r'[-_](v?[0-9]+(?:[.][0-9]+){1,3}(?:[._+-][A-Za-z0-9]+)*)',
       ).allMatches(cleanName).toList();
       final version = releases.isEmpty
-          ? 'release file' : releases.last.group(1)!;
+          ? 'release file'
+          : releases.last.group(1)!;
       return FirmwarePackage(
         family: family,
         role: variant.role,
         version: version,
         format: switch (variant.format) {
-          'merged' => board.chip == 'esp32s3'
-              ? 'Merged ESP32-S3 image' : 'Merged ESP32 full image',
-          'factory' => board.chip == 'esp32s3'
-              ? 'Factory ESP32-S3 image' : 'Factory ESP32 full image',
+          'merged' =>
+            board.chip == 'esp32s3'
+                ? 'Merged ESP32-S3 image'
+                : 'Merged ESP32 full image',
+          'factory' =>
+            board.chip == 'esp32s3'
+                ? 'Factory ESP32-S3 image'
+                : 'Factory ESP32 full image',
           'uf2' => 'UF2 bootloader image',
           _ => 'nRF52 DFU archive',
         },
@@ -151,16 +160,13 @@ class FirmwareManagerService {
       );
     }
 
-    final core = RegExp(
-      r'^heltec[-_]v3[-_](.+)-merged\.bin$',
-    ).firstMatch(name);
+    final core = RegExp(r'^heltec[-_]v3[-_](.+)-merged\.bin$').firstMatch(name);
     if (core == null) return null;
     final stem = core.group(1)!;
     final separator = RegExp(r'-v[0-9]').firstMatch(stem);
-    final roleToken = (separator == null
-            ? stem
-            : stem.substring(0, separator.start))
-        .replaceAll('-', '_');
+    final roleToken =
+        (separator == null ? stem : stem.substring(0, separator.start))
+            .replaceAll('-', '_');
     final version = separator == null
         ? 'unspecified'
         : stem.substring(separator.start + 1);
@@ -200,7 +206,8 @@ class FirmwareManagerService {
   }) async {
     final input = path.trim();
     final package = input.isEmpty
-        ? null : recognizePackage(input.split('/').last, board: board);
+        ? null
+        : recognizePackage(input.split('/').last, board: board);
     if (package == null ||
         (expectedFamily != null && expectedFamily != package.family)) {
       throw const FormatException('Firmware does not match selected board.');
@@ -208,8 +215,11 @@ class FirmwareManagerService {
     final file = File(input);
     final stat = await file.stat();
     if (stat.type != FileSystemEntityType.file ||
-        stat.size < minImageSize || stat.size > maxImageSize) {
-      throw const FormatException('Firmware file size must be 64 KiB to 16 MiB.');
+        stat.size < minImageSize ||
+        stat.size > maxImageSize) {
+      throw const FormatException(
+        'Firmware file size must be 64 KiB to 16 MiB.',
+      );
     }
     final handle = await file.open();
     try {
@@ -227,26 +237,38 @@ class FirmwareManagerService {
       }
     }
     return OfflineFirmwareImage(
-      path: file.absolute.path, sourceName: file.uri.pathSegments.last,
-      sha256: digest, bytes: stat.size, package: package,
+      path: file.absolute.path,
+      sourceName: file.uri.pathSegments.last,
+      sha256: digest,
+      bytes: stat.size,
+      package: package,
     );
   }
 
   static bool _validFirmwareHeader(String kind, List<int> prefix) {
     if (kind == 'merged' || kind == 'factory') {
-      return prefix.length >= 8 && prefix[0] == 0xe9 &&
-          prefix[1] >= 1 && prefix[1] <= 16;
+      return prefix.length >= 8 &&
+          prefix[0] == 0xe9 &&
+          prefix[1] >= 1 &&
+          prefix[1] <= 16;
     }
     if (kind == 'uf2') {
       return prefix.length >= 8 &&
-          prefix[0] == 0x55 && prefix[1] == 0x46 &&
-          prefix[2] == 0x32 && prefix[3] == 0x0a &&
-          prefix[4] == 0x57 && prefix[5] == 0x51 &&
-          prefix[6] == 0x5d && prefix[7] == 0x9e;
+          prefix[0] == 0x55 &&
+          prefix[1] == 0x46 &&
+          prefix[2] == 0x32 &&
+          prefix[3] == 0x0a &&
+          prefix[4] == 0x57 &&
+          prefix[5] == 0x51 &&
+          prefix[6] == 0x5d &&
+          prefix[7] == 0x9e;
     }
     if (kind == 'dfu-zip') {
-      return prefix.length >= 4 && prefix[0] == 0x50 &&
-          prefix[1] == 0x4b && prefix[2] == 3 && prefix[3] == 4;
+      return prefix.length >= 4 &&
+          prefix[0] == 0x50 &&
+          prefix[1] == 0x4b &&
+          prefix[2] == 3 &&
+          prefix[3] == 4;
     }
     return false;
   }
@@ -267,38 +289,51 @@ class FirmwareManagerService {
     final libraryFile = File(libraryPath + '/' + image.sha256 + '.bin');
     if (File(image.path).absolute.path == libraryFile.absolute.path) {
       return _verifyStoredImage(
-        libraryFile.path, image.sourceName, image.sha256, image.bytes,
+        libraryFile.path,
+        image.sourceName,
+        image.sha256,
+        image.bytes,
         package: image.package,
       );
     }
-    final board = (await FirmwareBoardCatalog.load()).byId(image.package.boardId);
+    final board = (await FirmwareBoardCatalog.load()).byId(
+      image.package.boardId,
+    );
     final checked = await inspectFile(
-      image.path, expectedSha256: image.sha256,
-      expectedFamily: image.package.family, board: board,
+      image.path,
+      expectedSha256: image.sha256,
+      expectedFamily: image.package.family,
+      board: board,
     );
     await Directory(libraryPath).create(recursive: true);
     if (File(checked.path).absolute.path != libraryFile.absolute.path) {
       await File(checked.path).copy(libraryFile.path);
     }
     final saved = await _verifyStoredImage(
-      libraryFile.path, checked.sourceName, checked.sha256, checked.bytes,
+      libraryFile.path,
+      checked.sourceName,
+      checked.sha256,
+      checked.bytes,
       package: checked.package,
     );
     final manifest = File(libraryPath + '/' + checked.sha256 + '.json');
-    await manifest.writeAsString(jsonEncode({
-      'target': 'device',
-      'boardId': checked.package.boardId,
-      'chip': checked.package.chip,
-      'method': checked.package.method,
-      'imageKind': checked.package.imageKind,
-      'family': checked.package.family.name,
-      'role': checked.package.role,
-      'version': checked.package.version,
-      'format': checked.package.format,
-      'sourceName': checked.sourceName,
-      'sha256': checked.sha256,
-      'bytes': checked.bytes,
-    }), flush: true);
+    await manifest.writeAsString(
+      jsonEncode({
+        'target': 'device',
+        'boardId': checked.package.boardId,
+        'chip': checked.package.chip,
+        'method': checked.package.method,
+        'imageKind': checked.package.imageKind,
+        'family': checked.package.family.name,
+        'role': checked.package.role,
+        'version': checked.package.version,
+        'format': checked.package.format,
+        'sourceName': checked.sourceName,
+        'sha256': checked.sha256,
+        'bytes': checked.bytes,
+      }),
+      flush: true,
+    );
     return saved;
   }
 
@@ -312,7 +347,8 @@ class FirmwareManagerService {
     final pkg = package ?? recognizePackage(sourceName);
     final file = File(path);
     final stat = await file.stat();
-    if (pkg == null || stat.type != FileSystemEntityType.file ||
+    if (pkg == null ||
+        stat.type != FileSystemEntityType.file ||
         stat.size != expectedBytes ||
         await _calculateSha256(file.path) != checksum) {
       throw const FormatException('Stored image failed integrity check.');
@@ -326,8 +362,11 @@ class FirmwareManagerService {
       await handle.close();
     }
     return OfflineFirmwareImage(
-      path: file.absolute.path, sourceName: sourceName,
-      sha256: checksum, bytes: expectedBytes, package: pkg,
+      path: file.absolute.path,
+      sourceName: sourceName,
+      sha256: checksum,
+      bytes: expectedBytes,
+      package: pkg,
     );
   }
 
@@ -341,37 +380,53 @@ class FirmwareManagerService {
       try {
         final info = jsonDecode(await entity.readAsString());
         if (info is! Map<String, dynamic> ||
-            !const {'device', 'heltecV3', 'heltecV3MeshCoreCompanion'}
-                .contains(info['target'])) continue;
+            !const {
+              'device',
+              'heltecV3',
+              'heltecV3MeshCoreCompanion',
+            }.contains(info['target']))
+          continue;
         final sha = info['sha256'], filename = info['sourceName'];
         final size = info['bytes'];
-        if (sha is! String || filename is! String || size is! int ||
+        if (sha is! String ||
+            filename is! String ||
+            size is! int ||
             !RegExp(r'^[a-f0-9]{64}$').hasMatch(sha) ||
-            entity.path.split('/').last != sha + '.json') continue;
+            entity.path.split('/').last != sha + '.json')
+          continue;
         final board = catalog.byId(info['boardId'] as String?);
         final pkg = recognizePackage(filename, board: board);
         if (pkg == null) continue;
         if (info['target'] == 'heltecV3MeshCoreCompanion' &&
-            pkg.family != FirmwareFamily.meshCore) continue;
+            pkg.family != FirmwareFamily.meshCore)
+          continue;
         if (info['target'] != 'heltecV3MeshCoreCompanion' &&
             (info['family'] != pkg.family.name ||
-            info['role'] != pkg.role ||
-            info['version'] != pkg.version ||
-            info['format'] != pkg.format)) continue;
+                info['role'] != pkg.role ||
+                info['version'] != pkg.version ||
+                info['format'] != pkg.format))
+          continue;
         if (info['target'] == 'device' &&
-            (board == null || info['boardId'] != pkg.boardId ||
-            info['chip'] != pkg.chip ||
-            info['method'] != pkg.method ||
-            info['imageKind'] != pkg.imageKind)) continue;
-        images.add(await _verifyStoredImage(
-          directory.path + '/' + sha + '.bin',
-          filename, sha, size, package: pkg,
-        ));
+            (board == null ||
+                info['boardId'] != pkg.boardId ||
+                info['chip'] != pkg.chip ||
+                info['method'] != pkg.method ||
+                info['imageKind'] != pkg.imageKind))
+          continue;
+        images.add(
+          await _verifyStoredImage(
+            directory.path + '/' + sha + '.bin',
+            filename,
+            sha,
+            size,
+            package: pkg,
+          ),
+        );
       } catch (_) {
         // Corrupt, tampered or obsolete cache entries are never offered.
       }
     }
-    images.sort((a,b) => a.sourceName.compareTo(b.sourceName));
+    images.sort((a, b) => a.sourceName.compareTo(b.sourceName));
     return images;
   }
 
@@ -395,10 +450,15 @@ class FirmwareManagerService {
       throw const FormatException('Unverified or unsupported chip family.');
     }
     final result = await _runTool([
-      '--chip', chip, '--port', port, 'flash-id',
+      '--chip',
+      chip,
+      '--port',
+      port,
+      'flash-id',
     ], const Duration(seconds: 40));
     final response = result.output.toUpperCase();
-    final matches = response.contains('CHIP IS ' + label) &&
+    final matches =
+        response.contains('CHIP IS ' + label) &&
         (chip != 'esp32' || !response.contains('CHIP IS ESP32-'));
     if (result.exitCode != 0 || !matches) {
       throw StateError('USB preflight did not confirm ' + label + '.');
@@ -417,19 +477,25 @@ class FirmwareManagerService {
     if (!userConfirmed || (eraseFirst && !eraseConfirmed)) {
       throw StateError('Explicit FLASH/ERASE confirmation required.');
     }
-    final board = (await FirmwareBoardCatalog.load()).byId(image.package.boardId);
+    final board = (await FirmwareBoardCatalog.load()).byId(
+      image.package.boardId,
+    );
     final pkg = recognizePackage(image.sourceName, board: board);
-    if (pkg == null || !pkg.supportsDirectUsb ||
+    if (pkg == null ||
+        !pkg.supportsDirectUsb ||
         pkg.boardId != image.package.boardId ||
         pkg.family != image.package.family ||
         pkg.role != image.package.role ||
         pkg.version != image.package.version ||
         pkg.format != image.package.format ||
         pkg.chip != image.package.chip) {
-      throw const FormatException('Firmware/board package changed or unsupported.');
+      throw const FormatException(
+        'Firmware/board package changed or unsupported.',
+      );
     }
     final file = File(image.path);
-    if (!await file.exists() || await file.length() != image.bytes ||
+    if (!await file.exists() ||
+        await file.length() != image.bytes ||
         await _calculateSha256(file.path) != image.sha256) {
       throw const FormatException('Firmware changed since inspection.');
     }
@@ -447,21 +513,36 @@ class FirmwareManagerService {
     }
     if (eraseFirst) {
       final result = await _runTool([
-        '--chip', pkg.chip!, '--port', port, 'erase-flash',
+        '--chip',
+        pkg.chip!,
+        '--port',
+        port,
+        'erase-flash',
       ], const Duration(minutes: 2));
       if (result.exitCode != 0) {
         throw StateError('Full erase failed. Recover device manually.');
       }
       if (mayWrite != null && !mayWrite()) {
-        throw StateError('Bluetooth active after erase. No image write attempted.');
+        throw StateError(
+          'Bluetooth active after erase. No image write attempted.',
+        );
       }
     }
     final written = await _runTool([
-      '--chip', pkg.chip!, '--port', port, '--baud', '115200',
-      'write-flash', pkg.flashOffset, file.absolute.path,
+      '--chip',
+      pkg.chip!,
+      '--port',
+      port,
+      '--baud',
+      '115200',
+      'write-flash',
+      pkg.flashOffset,
+      file.absolute.path,
     ], Duration(seconds: 120 + (image.bytes ~/ 8000)));
     if (written.exitCode != 0) {
-      throw StateError('Flash incomplete; do not retry without inspecting device.');
+      throw StateError(
+        'Flash incomplete; do not retry without inspecting device.',
+      );
     }
   }
 
