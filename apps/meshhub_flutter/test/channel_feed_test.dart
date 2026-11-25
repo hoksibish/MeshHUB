@@ -199,6 +199,10 @@ void main() {
       radio.writes.where((w) => w.first == 3).length,
       lessThanOrEqualTo(1),
     );
+    // Explicitly abort this in-flight fake-async exchange before widget-test
+    // teardown; otherwise the eight-second response timer remains pending.
+    await session.disconnect();
+    await tester.pumpAndSettle();
   });
 
   testWidgets('accepted outgoing channel post labels delivery as unverified', (
