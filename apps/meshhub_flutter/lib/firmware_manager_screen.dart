@@ -387,18 +387,44 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         const SizedBox(height: 14),
         _section(
           context,
-          title: 'Target device',
+          title: 'Target device / firmware family',
           icon: Icons.memory_outlined,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Heltec WiFi LoRa 32 V3 · ESP32-S3'),
-              const SizedBox(height: 4),
-              const Text('MeshCore Companion · merged .bin image only'),
+              const Text('Heltec WiFi LoRa 32 V3 · ESP32-S3 USB'),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final family in FirmwareFamily.values)
+                    ChoiceChip(
+                      label: Text(family.label),
+                      selected: selectedFamily == family,
+                      onSelected: busy
+                          ? null
+                          : (_) => setState(() {
+                                selectedFamily = family;
+                                selectedImage = null;
+                                checkedPort = null;
+                              }),
+                    ),
+                ],
+              ),
               const SizedBox(height: 8),
               Text(
-                'Other Heltec revisions, Meshtastic, nRF52 and OTA flashing '
-                'are not supported by this workflow yet.',
+                selectedFamily == FirmwareFamily.meshCore
+                    ? 'Companion BLE/USB, Repeater, Room Server or Sensor · '
+                      'any release version · full -merged.bin'
+                    : 'Meshtastic node · any release version · '
+                      'full .factory.bin from the ESP32-S3 release',
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Download or extract the matching Heltec V3 image first. '
+                'Non-merged/update-only BINs, other boards, ZIPs, nRF52 '
+                'and OTA are not supported in this USB workflow.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -415,10 +441,16 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
               TextField(
                 controller: filePath,
                 enabled: !busy,
-                decoration: const InputDecoration(
+                onChanged: (_) => setState(() {
+                  selectedImage = null;
+                  checkedPort = null;
+                }),
+                decoration: InputDecoration(
                   labelText: 'Local firmware .bin path',
                   hintText:
-                      '/home/user/Downloads/Heltec_v3_companion...-merged.bin',
+                      selectedFamily == FirmwareFamily.meshCore
+                          ? '/home/user/Downloads/Heltec_v3_repeater-vX.Y-merged.bin'
+                          : '/home/user/Downloads/firmware-heltec-v3-X.Y.factory.bin',
                   helperText:
                       'Official source recommended · no online downloads',
                 ),
