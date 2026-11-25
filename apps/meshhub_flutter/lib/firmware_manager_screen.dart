@@ -17,7 +17,7 @@ class FirmwareManagerScreen extends StatefulWidget {
   });
 
   final bool tactical;
-  final bool radioConnected;
+  final bool Function() radioConnected;
   final FirmwareManagerService? service;
 
   @override
@@ -138,7 +138,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   }
 
   Future<void> _checkPort() async {
-    if (widget.radioConnected) {
+    if (widget.radioConnected()) {
       setState(() => status =
           'Disconnect MeshHub Bluetooth radio session before USB flashing.');
       return;
@@ -229,7 +229,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   Future<void> _flash() async {
     final image = selectedImage;
     if (image == null ||
-        widget.radioConnected ||
+        widget.radioConnected() ||
         checkedPort != portPath.text.trim() ||
         busy) {
       return;
@@ -312,7 +312,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
     final colors = Theme.of(context).colorScheme;
     final canFlash = Platform.isLinux &&
         !busy &&
-        !widget.radioConnected &&
+        !widget.radioConnected() &&
         selectedImage != null &&
         checkedPort == portPath.text.trim();
     final page = ListView(
@@ -446,7 +446,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.radioConnected)
+              if (widget.radioConnected())
                 Text(
                   'Disconnect the current MeshHub Bluetooth radio session '
                   'before flashing over USB.',
@@ -468,7 +468,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                 runSpacing: 8,
                 children: [
                   OutlinedButton.icon(
-                    onPressed: busy || widget.radioConnected
+                    onPressed: busy || widget.radioConnected()
                         ? null
                         : () => unawaited(_checkPort()),
                     icon: const Icon(Icons.fact_check_outlined),
