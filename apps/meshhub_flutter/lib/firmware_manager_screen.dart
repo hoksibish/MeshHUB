@@ -287,7 +287,12 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
           eraseConfirmed: eraseFirst,
           mayWrite: () => !widget.radioConnected(),
         );
-        if (mounted) setState(() => checkedPort = null);
+        if (mounted) {
+          setState(() {
+            checkedPort = null;
+            eraseFirst = false;
+          });
+        }
       },
       completedStatus: 'Flashing command completed. Reconnect and verify firmware, identity and settings.',
     );
@@ -408,6 +413,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                                 selectedFamily = family;
                                 selectedImage = null;
                                 checkedPort = null;
+                                eraseFirst = false;
                               }),
                     ),
                 ],
