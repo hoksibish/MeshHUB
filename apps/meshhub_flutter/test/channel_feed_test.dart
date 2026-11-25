@@ -200,10 +200,7 @@ void main() {
     expect(session.messages, hasLength(1));
     expect(session.messages.single.isOutgoing, isTrue);
     expect(session.messages.single.text, 'Test post');
-    expect(
-      session.messages.single.deliveryState.name,
-      'acceptedByLocalRadio',
-    );
+    expect(session.messages.single.deliveryState.name, 'acceptedByLocalRadio');
     expect(find.text('Test post'), findsOneWidget);
     expect(find.textContaining('peer delivery unverified'), findsOneWidget);
   });
