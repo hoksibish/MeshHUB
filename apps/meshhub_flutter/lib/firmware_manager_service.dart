@@ -157,6 +157,8 @@ class FirmwareManagerService {
         role: 'Meshtastic node',
         version: version,
         format: 'Factory ESP32-S3 image',
+        boardId: 'meshtastic-heltec-v3',
+        imageKind: 'factory',
       );
     }
 
