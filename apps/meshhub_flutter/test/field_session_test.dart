@@ -358,6 +358,10 @@ void main() {
       );
       expect(result.name, 'acceptedByRadio');
       expect(session.sendCount, 1);
+      expect(session.messages.single.isOutgoing, true);
+      expect(session.messages.single.conversationId, 'meshcore-channel-0');
+      expect(session.messages.single.isSimulated, false);
+      expect(session.messages.single.deliveryState.name, 'acceptedByLocalRadio');
       expect(device.writes.last.first, 3);
     },
   );
