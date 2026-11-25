@@ -618,6 +618,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
   }
 
   Widget _metricCard(IconData icon, String value, String label, Color accent) {
+    final effectiveAccent = theme == MeshHubTheme.light ? _accent : accent;
     if (theme == MeshHubTheme.tactical) {
       return TacticalHudMetric(
         icon: icon,
@@ -627,24 +628,24 @@ class _MeshHubAppState extends State<MeshHubApp> {
       );
     }
     return Container(
-      width: 195,
-      padding: const EdgeInsets.all(18),
+      width: 190,
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: _panelBackground,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accent.withValues(alpha: 0.22)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: effectiveAccent.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: accent, size: 26),
-          const SizedBox(height: 14),
+          Icon(icon, color: effectiveAccent, size: 23),
+          const SizedBox(height: 11),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
           ),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          Text(label, style: const TextStyle(fontSize: 11)),
         ],
       ),
     );
@@ -958,8 +959,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 children: [
                   CircleAvatar(
                     radius: 34,
-                    backgroundColor: _meshCoreAccent.withValues(alpha: 0.15),
-                    child: Icon(icon, color: _meshCoreAccent, size: 34),
+                    backgroundColor: _accent.withValues(alpha: 0.15),
+                    child: Icon(icon, color: _accent, size: 34),
                   ),
                   const SizedBox(height: 18),
                   Text(
