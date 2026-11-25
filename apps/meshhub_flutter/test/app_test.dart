@@ -292,5 +292,4 @@ void main() {
     expect(flash.onPressed, isNull);
     expect(tester.takeException(), isNull);
   });
-
 }
