@@ -26,29 +26,31 @@ cd ~/MeshHUB
 
 The built binary is at `build/linux/x64/release/bundle/meshhub_flutter`. The `bundle/` directory (not only the executable) is required to run the release app. For a noninteractive shell on this Omarchy session, `WAYLAND_DISPLAY=wayland-1` and `DISPLAY=:0` were needed to launch a window; normal graphical terminals inherit those automatically.
 
-## Firmware Manager — MeshCore ⇄ Meshtastic, offline USB (Heltec V3)
+## Firmware Manager — offline hardware catalog and USB flashing
 
-Open **Radios → Firmware Manager → Open**. Choose **MeshCore** or **Meshtastic**, select an independently downloaded firmware image for the Heltec V3, inspect its detected **role and release version**, compare the SHA-256 with the official release value when available, save the image in the offline library, run a read-only USB chip preflight, and explicitly confirm a flash. No network connection is required once the firmware file and tools are available.
+Open **Radios → Firmware Manager → Open**. The hardware selector is bundled with MeshHub and is populated from snapshots of the official MeshCore and Meshtastic flasher catalogs:
 
-The owner confirmed that the original Heltec V3 MeshCore Companion flash worked on real hardware. **The newly added Meshtastic and additional MeshCore-role paths have not been confirmed by a physical flash**; treat them as field-test features.
+- MeshCore: `meshcore-dev/flasher.meshcore.io/config.json` — only the open-source community MeshCore firmware entries are indexed, not separately licensed third-party firmware.
+- Meshtastic: `meshtastic/web-flasher/public/data/hardware-list.json` — actively supported physical-device targets.
+- Snapshot: `apps/meshhub_flutter/assets/firmware_hardware_catalog.json` — **152 board entries** at the time of import (58 MeshCore, 94 Meshtastic). These are not refreshed automatically; check the publisher's current site for newly added devices or retired builds.
 
-### Supported target and image formats
+The manager can **select an exact supported hardware model, inspect a board-matched firmware release, calculate SHA-256, compare a supplied publisher checksum and save the firmware bytes for offline use**. A file-name and ESP image/UF2/ZIP header check are basic safeguards, not firmware signature validation or a guarantee that the board's pinout, LoRa radio or bootloader match. Independently verify model, exact hardware revision, role, frequency variant, official release source, and a trusted checksum/signature when supplied.
 
-| Firmware ecosystem | Roles supported on Heltec V3 | File to extract/download | USB offset |
-| --- | --- | --- | --- |
-| MeshCore | Companion BLE / USB / Wi-Fi, Repeater, Room Server, Sensor | `Heltec_v3_<role>-v<version>-merged.bin` | `0x0` |
-| Meshtastic | Meshtastic node | `firmware-heltec-v3-<version>.factory.bin` | `0x0` |
+### Flashing modes
 
-**Any release version** matching a recognized full-image filename pattern can be imported; the manager does not hardcode one version or automatically install the newest release. The board remains **Heltec WiFi LoRa 32 V3 (ESP32-S3)**. Other Heltec revisions, non-merged/app-only firmware, Meshtastic update-only images, ZIP archives, nRF52/UF2 devices and wireless OTA are intentionally not supported by this operation. For a Meshtastic ESP32-S3 release ZIP, extract the exact Heltec V3 `.factory.bin` before import.
+| Hardware / firmware format | MeshHub operation |
+| --- | --- |
+| ESP32-family boards with **known chip profiles** and official **merged MeshCore** or **factory Meshtastic** image | Integrated USB `esptool` flashing (explicit confirmation; correct chip/board selection required) |
+| nRF52840 boards using board-specific `.uf2` firmware | Offline import/cache plus guided bootloader drag-and-drop instructions; **no automated copy or DFU** yet |
+| RP2040 or other UF2 devices | Offline UF2 import/cache plus guided bootloader install instructions |
+| nRF52 DFU ZIP images, unsupported chip variants or board bootloaders | Offline import/cache and manual vendor-specific installation guidance; USB flash button disabled |
+| App-only `.bin`, update-only images, unsupported devices, ambiguous package formats | Rejected or unavailable; not automatically flashed |
 
-Official sources:
-- MeshCore flasher and firmware downloads: https://flasher.meshcore.io/
-- Meshtastic web flasher: https://flasher.meshtastic.org/
-- Meshtastic release assets: https://github.com/meshtastic/firmware/releases
+A **supported hardware listing does not mean its automatic flashing backend is validated**. Selection must exactly match the official release's filename profile. Some devices require bootloader entry steps, external tools, UF2 drives, DFU packaging or board-specific partition layouts that cannot safely be inferred from the MCU name alone.
 
-**A filename and ESP32 header are not proof of image authenticity or compatible pins/partitions.** Use a trustworthy publisher and verify a published checksum or signature out-of-band where available. A locally calculated SHA-256 only verifies byte consistency.
+The initially verified hardware case was the owner's Heltec V3 running MeshCore Companion. Other MeshCore roles, Meshtastic factory builds, ESP32 variants and the guided UF2/DFU workflows still need a physical-device acceptance test.
 
-### Linux prerequisites
+### Linux prerequisites and usage
 
 ```bash
 uv tool install esptool
@@ -56,20 +58,19 @@ esptool version
 ls /dev/ttyACM* /dev/ttyUSB* 2>/dev/null
 ```
 
-Ensure `esptool` is on MeshHub's PATH (usually `$HOME/.local/bin`). An optional `zenity` file picker can help select a BIN; otherwise paste its absolute path. Use normal local USB serial permissions, not `sudo` on MeshHub. No firmware is downloaded automatically.
+The executable `esptool` must be on MeshHub's PATH (often `$HOME/.local/bin`). The optional `zenity` picker can select `.bin`, `.uf2` and `.zip` files; otherwise paste an absolute path. Use normal USB serial permissions rather than running MeshHub with `sudo`.
 
-The offline library under `~/.local/share/meshhub/firmware` stores only firmware bytes and a SHA-256 metadata manifest. It rehashes cached files before showing them and supports previously saved MeshCore Companion images. It does not include message history, keys or device identities.
+The offline library is `~/.local/share/meshhub/firmware`. It retains content-addressed images, SHA-256 and nonsecret board metadata, and verifies the bytes before displaying them. Previous Heltec V3 cache manifests are still supported. It does not store device identities, channel keys or chat history.
 
-### Flash workflow and destructive erase
+For a supported **ESP32 direct-write target**, select the exact device and firmware file, verify the release and a trusted checksum if available, disconnect MeshHub's Bluetooth radio session, run **Check device (read-only)**, and review the matched chip model. The manager then rechecks the image and USB chip and invokes `esptool --chip CHIP --port PORT --baud 115200 write-flash 0x0 IMAGE` **once**, only after the explicit backup/target checkboxes and typed `FLASH` confirmation.
 
-1. Back up the device's **network identity, channels/keys, settings and any other important data** using supported external tools, and verify the backup. Ensure the antenna is attached, USB power is stable and you selected the correct Heltec V3 hardware.
-2. Disconnect MeshHub's Bluetooth session and any other program holding the serial port. Verify the selected firmware **protocol, role and version**.
-3. Press **Check device (read-only)**. MeshHub invokes `esptool --chip esp32s3 --port PORT flash-id` to confirm the ESP32-S3.
-4. For a normal full-image install, leave **Erase all flash** unchecked. The manager repeats the image hash/chip preflight, checks Bluetooth state, and invokes `esptool --chip esp32s3 --port PORT --baud 115200 write-flash 0x0 IMAGE` **once** after the backup/target checkboxes and typed `FLASH` confirmation.
-5. **Optional, destructive:** Switching between MeshCore and Meshtastic can require clearing incompatible prior settings/partitions. Only if necessary and after independently backed-up data, opt into **Erase all flash** and type `ERASE` in the separate confirmation dialog. This runs a single `erase-flash` before writing the new factory/merged image. It irreversibly deletes the prior device's identity, keys, channels, settings, pairing, and other storage. This is never enabled automatically.
-6. After a successful USB write, power-cycle/reconnect using the **correct protocol's app** and verify firmware, identity, configuration, and RF preset before transmitting. Switching protocols does not automatically migrate keys, contacts, or channels.
+Optional **Erase all flash** is **off by default**. It may be necessary for some major upgrades or MeshCore ⇄ Meshtastic migrations and permanently deletes the old network identity, channel keys, contacts, pairing, RF configuration and other data. After independently backing up the device's identity/settings, opt in and type `ERASE` in the separate confirmation dialog. MeshHub never auto-erases or automatically retries interrupted writes.
 
-There is **no automatic erase, retry, backup, firmware download, or recovery**. An interrupted or failed erase/flash must be treated as uncertain and may require manual recovery. The "esptool completed" status only confirms a local USB operation, not successful boot, radio connectivity, or over-the-air message delivery. In particular, MeshHub's **Meshtastic messaging transport is not implemented yet**; the new firmware manager can install Meshtastic without implying that MeshHub can connect to a Meshtastic node afterward.
+**An accepted USB write is not proof of a successful boot, correct identity, successful node configuration or peer delivery.** After flashing, reconnect via the appropriate project's supported client, confirm firmware and radio settings, and verify restoration of your identity if required. MeshHub can install Meshtastic but does **not yet implement a live Meshtastic messaging transport**.
+
+For UF2 devices, use the official device-specific bootloader instructions to mount the device's firmware drive and manually copy the firmware file from the displayed offline path. For DFU ZIP files, follow the publisher's compatible DFU utility instructions; MeshHub deliberately does not pass an arbitrary ZIP to `esptool`.
+
+Offline operation requires the firmware image and relevant local tools to have been acquired ahead of time. The bundled catalog is a reproducible snapshot, not an always-up-to-date online release browser.
 
 ## Architecture
 
