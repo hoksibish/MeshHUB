@@ -93,6 +93,7 @@ void main() {
     expect(saved.sha256, image.sha256);
     expect(saved.path, isNot(firmware.path));
     expect((await manager.savedImages()).single.sourceName, image.sourceName);
+    expect((await manager.saveOffline(saved)).sha256, saved.sha256);
     await File(saved.path).writeAsBytes([0xe9, 2, 0, 0]);
     expect(await manager.savedImages(), isEmpty);
     expect(commands, isEmpty);
@@ -323,6 +324,33 @@ void main() {
       );
     },
   );
+
+  test('failed full erase stops before firmware write', () async {
+    final image = await manager.inspectFile(firmware.path);
+    manager = FirmwareManagerService(
+      libraryPath: '${temp.path}/offline',
+      runTool: (args, limit) async {
+        commands.add(List<String>.of(args));
+        if (args.contains('flash-id')) {
+          return const FirmwareToolResult(0, 'Chip is ESP32-S3');
+        }
+        return const FirmwareToolResult(1, 'erase unsuccessful');
+      },
+    );
+    await expectLater(
+      manager.flashMergedImage(
+        image: image,
+        port: '/dev/ttyACM0',
+        userConfirmed: true,
+        eraseFirst: true,
+        eraseConfirmed: true,
+      ),
+      throwsStateError,
+    );
+    expect(commands, hasLength(2));
+    expect(commands.last, contains('erase-flash'));
+    expect(commands.where((args) => args.contains('write-flash')), isEmpty);
+  });
 
   test('active Bluetooth state blocks a write after USB preflight', () async {
     final image = await manager.inspectFile(firmware.path);
