@@ -39,7 +39,7 @@ class FirmwarePackage {
       chip != null &&
       (imageKind == 'merged' || imageKind == 'factory');
   String get flashOffset => '0x0';
-  String get displayName => family.label + ' · ' + role + ' · ' + version;
+  String get displayName => '${family.label} · $role · $version';
 }
 
 class OfflineFirmwareImage {
@@ -292,7 +292,7 @@ class FirmwareManagerService {
   };
 
   Future<OfflineFirmwareImage> saveOffline(OfflineFirmwareImage image) async {
-    final libraryFile = File(libraryPath + '/' + image.sha256 + _cacheSuffix(image.package));
+    final libraryFile = File('$libraryPath/${image.sha256}${_cacheSuffix(image.package)}');
     if (File(image.path).absolute.path == libraryFile.absolute.path) {
       return _verifyStoredImage(
         libraryFile.path,
@@ -322,7 +322,7 @@ class FirmwareManagerService {
       checked.bytes,
       package: checked.package,
     );
-    final manifest = File(libraryPath + '/' + checked.sha256 + '.json');
+    final manifest = File('$libraryPath/${checked.sha256}.json');
     await manifest.writeAsString(
       jsonEncode({
         'target': 'device',
@@ -386,48 +386,46 @@ class FirmwareManagerService {
       try {
         final info = jsonDecode(await entity.readAsString());
         if (info is! Map<String, dynamic> ||
-            !const {
-              'device',
-              'heltecV3',
-              'heltecV3MeshCoreCompanion',
-            }.contains(info['target']))
+            !const {'device', 'heltecV3', 'heltecV3MeshCoreCompanion'}
+                .contains(info['target'])) {
           continue;
-        final sha = info['sha256'], filename = info['sourceName'];
+        }
+        final sha = info['sha256'];
+        final filename = info['sourceName'];
         final size = info['bytes'];
         if (sha is! String ||
             filename is! String ||
             size is! int ||
             !RegExp(r'^[a-f0-9]{64}$').hasMatch(sha) ||
-            entity.path.split('/').last != sha + '.json')
+            entity.path.split('/').last != '$sha.json') {
           continue;
+        }
         final board = catalog.byId(info['boardId'] as String?);
         final pkg = recognizePackage(filename, board: board);
         if (pkg == null) continue;
         if (info['target'] == 'heltecV3MeshCoreCompanion' &&
-            pkg.family != FirmwareFamily.meshCore)
+            pkg.family != FirmwareFamily.meshCore) {
           continue;
+        }
         if (info['target'] != 'heltecV3MeshCoreCompanion' &&
             (info['family'] != pkg.family.name ||
                 info['role'] != pkg.role ||
                 info['version'] != pkg.version ||
-                info['format'] != pkg.format))
+                info['format'] != pkg.format)) {
           continue;
+        }
         if (info['target'] == 'device' &&
             (board == null ||
                 info['boardId'] != pkg.boardId ||
                 info['chip'] != pkg.chip ||
                 info['method'] != pkg.method ||
-                info['imageKind'] != pkg.imageKind))
+                info['imageKind'] != pkg.imageKind)) {
           continue;
-        images.add(
-          await _verifyStoredImage(
-            directory.path + '/' + sha + _cacheSuffix(pkg),
-            filename,
-            sha,
-            size,
-            package: pkg,
-          ),
-        );
+        }
+        images.add(await _verifyStoredImage(
+          '${directory.path}/$sha${_cacheSuffix(pkg)}',
+          filename, sha, size, package: pkg,
+        ));
       } catch (_) {
         // Corrupt, tampered or obsolete cache entries are never offered.
       }
@@ -464,10 +462,10 @@ class FirmwareManagerService {
     ], const Duration(seconds: 40));
     final response = result.output.toUpperCase();
     final matches =
-        response.contains('CHIP IS ' + label) &&
+        response.contains('CHIP IS $label') &&
         (chip != 'esp32' || !response.contains('CHIP IS ESP32-'));
     if (result.exitCode != 0 || !matches) {
-      throw StateError('USB preflight did not confirm ' + label + '.');
+      throw StateError('USB preflight did not confirm $label.');
     }
   }
 
