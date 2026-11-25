@@ -11,7 +11,7 @@ class FirmwareBoardCatalog {
 
   static Future<FirmwareBoardCatalog> load() async {
     final json = await rootBundle.loadString(
-      'packages/meshhub_flutter/assets/firmware_hardware_catalog.json',
+      'assets/firmware_hardware_catalog.json',
     );
     return parse(json);
   }
