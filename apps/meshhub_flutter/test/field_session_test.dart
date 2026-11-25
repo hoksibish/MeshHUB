@@ -413,29 +413,32 @@ void main() {
     expect(device.writes.where((f) => f.first == 3).length, 1);
   });
 
-  test('missing ACK remains uncertain and never causes an automatic resend', () async {
-    await session.disconnect();
-    session = MeshCoreFieldSession(
-      scan: (_) async => [candidate],
-      transportFactory: (_) => device,
-      responseTimeout: const Duration(milliseconds: 100),
-    );
-    await session.connect(candidate);
-    device.channelSendReply = null;
-    await expectLater(
-      session.sendChannel(channel: 0, text: 'no ack', verified: true),
-      throwsA(isA<TimeoutException>()),
-    );
-    expect(session.sendRequestCount, 1);
-    expect(session.sendCount, 0);
-    expect(session.rejectedSendCount, 0);
-    expect(session.uncertainSendCount, 1);
-    expect(session.messages, isEmpty);
-    expect(session.lastSendOutcome, contains('Uncertain'));
-    expect(session.status, contains('do not retry blindly'));
-    await Future<void>.delayed(const Duration(milliseconds: 35));
-    expect(device.writes.where((f) => f.first == 3).length, 1);
-  });
+  test(
+    'missing ACK remains uncertain and never causes an automatic resend',
+    () async {
+      await session.disconnect();
+      session = MeshCoreFieldSession(
+        scan: (_) async => [candidate],
+        transportFactory: (_) => device,
+        responseTimeout: const Duration(milliseconds: 100),
+      );
+      await session.connect(candidate);
+      device.channelSendReply = null;
+      await expectLater(
+        session.sendChannel(channel: 0, text: 'no ack', verified: true),
+        throwsA(isA<TimeoutException>()),
+      );
+      expect(session.sendRequestCount, 1);
+      expect(session.sendCount, 0);
+      expect(session.rejectedSendCount, 0);
+      expect(session.uncertainSendCount, 1);
+      expect(session.messages, isEmpty);
+      expect(session.lastSendOutcome, contains('Uncertain'));
+      expect(session.status, contains('do not retry blindly'));
+      await Future<void>.delayed(const Duration(milliseconds: 35));
+      expect(device.writes.where((f) => f.first == 3).length, 1);
+    },
+  );
 
   test(
     'direct send validates selected contact prefix and explicit confirmation',
@@ -500,34 +503,37 @@ void main() {
     ]);
   });
 
-  test('manual disconnect cancels reconnect timer and stale callback', () async {
-    await session.disconnect();
-    FieldFakeTimer? timer;
-    void Function()? callback;
-    session = MeshCoreFieldSession(
-      scan: (_) async => [candidate],
-      transportFactory: (_) => device,
-      scheduleRetry: (duration, retry) {
-        expect(duration, const Duration(seconds: 1));
-        callback = retry;
-        timer = FieldFakeTimer();
-        return timer!;
-      },
-    );
-    await session.connect(candidate);
-    final initialWrites = device.writes.length;
-    device.drop();
-    expect(session.connected, false);
-    expect(timer?.isActive, true);
-    await session.disconnect();
-    expect(timer?.isActive, false);
-    // Even an already-queued callback cannot reconnect after manual stop.
-    callback!();
-    await Future<void>.delayed(Duration.zero);
-    expect(session.reconnectAttempts, 0);
-    expect(session.connected, false);
-    expect(device.writes.length, initialWrites);
-  });
+  test(
+    'manual disconnect cancels reconnect timer and stale callback',
+    () async {
+      await session.disconnect();
+      FieldFakeTimer? timer;
+      void Function()? callback;
+      session = MeshCoreFieldSession(
+        scan: (_) async => [candidate],
+        transportFactory: (_) => device,
+        scheduleRetry: (duration, retry) {
+          expect(duration, const Duration(seconds: 1));
+          callback = retry;
+          timer = FieldFakeTimer();
+          return timer!;
+        },
+      );
+      await session.connect(candidate);
+      final initialWrites = device.writes.length;
+      device.drop();
+      expect(session.connected, false);
+      expect(timer?.isActive, true);
+      await session.disconnect();
+      expect(timer?.isActive, false);
+      // Even an already-queued callback cannot reconnect after manual stop.
+      callback!();
+      await Future<void>.delayed(Duration.zero);
+      expect(session.reconnectAttempts, 0);
+      expect(session.connected, false);
+      expect(device.writes.length, initialWrites);
+    },
+  );
 
   test(
     'a disconnect removes readiness without replaying a prepared send',
