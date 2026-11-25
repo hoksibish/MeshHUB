@@ -26,11 +26,29 @@ cd ~/MeshHUB
 
 The built binary is at `build/linux/x64/release/bundle/meshhub_flutter`. The `bundle/` directory (not only the executable) is required to run the release app. For a noninteractive shell on this Omarchy session, `WAYLAND_DISPLAY=wayland-1` and `DISPLAY=:0` were needed to launch a window; normal graphical terminals inherit those automatically.
 
-## Firmware Manager (Heltec V3 / MeshCore Companion)
+## Firmware Manager — MeshCore ⇄ Meshtastic, offline USB (Heltec V3)
 
-In **Radios → Firmware Manager → Open**, MeshHub can inspect a previously downloaded **Heltec V3 MeshCore Companion merged ESP32-S3 .bin** file, calculate SHA-256, compare an optional publisher checksum, copy it to a persistent offline library, and use `esptool` over a locally attached USB serial device. **No web browser or network connection is required for the flash step.** MeshHub does not automatically download firmware, manage online releases, or install `esptool`.
+Open **Radios → Firmware Manager → Open**. Choose **MeshCore** or **Meshtastic**, select an independently downloaded firmware image for the Heltec V3, inspect its detected **role and release version**, compare the SHA-256 with the official release value when available, save the image in the offline library, run a read-only USB chip preflight, and explicitly confirm a flash. No network connection is required once the firmware file and tools are available.
 
-Linux host prerequisites:
+The owner confirmed that the original Heltec V3 MeshCore Companion flash worked on real hardware. **The newly added Meshtastic and additional MeshCore-role paths have not been confirmed by a physical flash**; treat them as field-test features.
+
+### Supported target and image formats
+
+| Firmware ecosystem | Roles supported on Heltec V3 | File to extract/download | USB offset |
+| --- | --- | --- | --- |
+| MeshCore | Companion BLE / USB / Wi-Fi, Repeater, Room Server, Sensor | `Heltec_v3_<role>-v<version>-merged.bin` | `0x0` |
+| Meshtastic | Meshtastic node | `firmware-heltec-v3-<version>.factory.bin` | `0x0` |
+
+**Any release version** matching a recognized full-image filename pattern can be imported; the manager does not hardcode one version or automatically install the newest release. The board remains **Heltec WiFi LoRa 32 V3 (ESP32-S3)**. Other Heltec revisions, non-merged/app-only firmware, Meshtastic update-only images, ZIP archives, nRF52/UF2 devices and wireless OTA are intentionally not supported by this operation. For a Meshtastic ESP32-S3 release ZIP, extract the exact Heltec V3 `.factory.bin` before import.
+
+Official sources:
+- MeshCore flasher and firmware downloads: https://flasher.meshcore.io/
+- Meshtastic web flasher: https://flasher.meshtastic.org/
+- Meshtastic release assets: https://github.com/meshtastic/firmware/releases
+
+**A filename and ESP32 header are not proof of image authenticity or compatible pins/partitions.** Use a trustworthy publisher and verify a published checksum or signature out-of-band where available. A locally calculated SHA-256 only verifies byte consistency.
+
+### Linux prerequisites
 
 ```bash
 uv tool install esptool
@@ -38,19 +56,20 @@ esptool version
 ls /dev/ttyACM* /dev/ttyUSB* 2>/dev/null
 ```
 
-The executable `esptool` must be on MeshHub's PATH (such as `$HOME/.local/bin` from `uv tool install esptool`). Use a supported package manager; do not run MeshHub with `sudo`. The UI optionally opens `zenity` for file selection; otherwise paste the absolute file path. Do not add permissive udev rules or use `sudo` on the application as a shortcut to USB permissions. You may need the normal serial-port group/session permissions.
+Ensure `esptool` is on MeshHub's PATH (usually `$HOME/.local/bin`). An optional `zenity` file picker can help select a BIN; otherwise paste its absolute path. Use normal local USB serial permissions, not `sudo` on MeshHub. No firmware is downloaded automatically.
 
-Supported in this initial implementation:
+The offline library under `~/.local/share/meshhub/firmware` stores only firmware bytes and a SHA-256 metadata manifest. It rehashes cached files before showing them and supports previously saved MeshCore Companion images. It does not include message history, keys or device identities.
 
-- **Exact target:** Heltec WiFi LoRa 32 V3, ESP32-S3, **MeshCore Companion** role.
-- **Package:** matching filename containing `Heltec_v3`, `companion`, and `merged.bin`; an ESP32 image header at `0x0`, minimum/maximum size and local SHA-256 are checked. **Filename and file header are not cryptographic proof of target, role or publisher.** Independently compare the SHA-256 against a trusted release value when available.
-- **Offline library:** copies firmware bytes and nonsecret metadata to `~/.local/share/meshhub/firmware`. The copied bytes are rehashed before use; invalid cache files are not shown. Firmware data does not include chat history or radio identity.
-- **USB preflight:** requires a Linux serial device (`/dev/ttyACM*`, `/dev/ttyUSB*` or `/dev/serial/by-id/*`), uses read-only `esptool --chip esp32s3 --port PORT flash-id` and requires an ESP32-S3 response.
-- **Flashing:** only after selecting an image, a passed preflight, explicit acknowledgment of verified backups and target, and typing **FLASH** in the confirmation dialog. The app rechecks the file digest and USB chip and invokes `esptool --chip esp32s3 --port PORT --baud 115200 write-flash 0x0 IMAGE` once. It deliberately does **not** invoke `erase-flash`, automatically back up identity, or retry uncertain writes.
+### Flash workflow and destructive erase
 
-**Important:** Writing a merged image at `0x0` can still rewrite bootloader/partitions and overwrite device identity, Bluetooth pairing information, RF settings or other data. The lack of a separate `erase-flash` command does **not** guarantee configuration preservation. Back up first using a supported trusted method and verify after flashing. Disconnect the MeshHub BLE session before using USB. A successful esptool exit means a local USB operation completed; it is not proof that the node firmware or saved identity works. Do not flash an existing operational node without accepting these risks.
+1. Back up the device's **network identity, channels/keys, settings and any other important data** using supported external tools, and verify the backup. Ensure the antenna is attached, USB power is stable and you selected the correct Heltec V3 hardware.
+2. Disconnect MeshHub's Bluetooth session and any other program holding the serial port. Verify the selected firmware **protocol, role and version**.
+3. Press **Check device (read-only)**. MeshHub invokes `esptool --chip esp32s3 --port PORT flash-id` to confirm the ESP32-S3.
+4. For a normal full-image install, leave **Erase all flash** unchecked. The manager repeats the image hash/chip preflight, checks Bluetooth state, and invokes `esptool --chip esp32s3 --port PORT --baud 115200 write-flash 0x0 IMAGE` **once** after the backup/target checkboxes and typed `FLASH` confirmation.
+5. **Optional, destructive:** Switching between MeshCore and Meshtastic can require clearing incompatible prior settings/partitions. Only if necessary and after independently backed-up data, opt into **Erase all flash** and type `ERASE` in the separate confirmation dialog. This runs a single `erase-flash` before writing the new factory/merged image. It irreversibly deletes the prior device's identity, keys, channels, settings, pairing, and other storage. This is never enabled automatically.
+6. After a successful USB write, power-cycle/reconnect using the **correct protocol's app** and verify firmware, identity, configuration, and RF preset before transmitting. Switching protocols does not automatically migrate keys, contacts, or channels.
 
-Meshtastic, non-merged application-only images, other Heltec revisions, nRF52/UF2 devices, wireless OTA and automatic firmware updates are **not supported yet**. No real Heltec USB flash has been performed or verified from this feature branch. The `Firmware Manager` UI and service have automated tests, but on-device acceptance remains pending.
+There is **no automatic erase, retry, backup, firmware download, or recovery**. An interrupted or failed erase/flash must be treated as uncertain and may require manual recovery. The "esptool completed" status only confirms a local USB operation, not successful boot, radio connectivity, or over-the-air message delivery. In particular, MeshHub's **Meshtastic messaging transport is not implemented yet**; the new firmware manager can install Meshtastic without implying that MeshHub can connect to a Meshtastic node afterward.
 
 ## Architecture
 
