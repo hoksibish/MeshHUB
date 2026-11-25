@@ -25,13 +25,13 @@ class MeshHubApp extends StatefulWidget {
 
 class _MeshHubAppState extends State<MeshHubApp> {
   MeshHubTheme theme = MeshHubTheme.dark;
-  static const _canvas = Color(0xff0e131a);
-  static const _surface = Color(0xff19222c);
+  static const _canvas = Color(0xff101923);
+  static const _surface = Color(0xff1b2834);
   static const _meshCoreAccent = Color(0xff55d6cb);
   static const _meshtasticAccent = Color(0xffb6df62);
   static const _tacticalAccent = TacticalHudColors.cyan;
   Color get _pageBackground => switch (theme) {
-    MeshHubTheme.light => const Color(0xfff6f9fc),
+    MeshHubTheme.light => const Color(0xfff3f7f9),
     MeshHubTheme.dark => _canvas,
     MeshHubTheme.tactical => TacticalHudColors.background,
   };
@@ -93,7 +93,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
   @override
   Widget build(BuildContext context) {
     final color = switch (theme) {
-      MeshHubTheme.light => const Color(0xff146c61),
+      MeshHubTheme.light => const Color(0xff087e83),
       MeshHubTheme.dark => _meshCoreAccent,
       MeshHubTheme.tactical => _tacticalAccent,
     };
@@ -101,19 +101,37 @@ class _MeshHubAppState extends State<MeshHubApp> {
         ? Brightness.light
         : Brightness.dark;
     final scheme = ColorScheme.fromSeed(seedColor: color, brightness: mode);
-    final themedScheme = theme == MeshHubTheme.tactical
-        ? scheme.copyWith(
-            primary: TacticalHudColors.cyan,
-            onPrimary: TacticalHudColors.background,
-            secondary: TacticalHudColors.orange,
-            onSecondary: TacticalHudColors.background,
-            surface: TacticalHudColors.panel,
-            onSurface: TacticalHudColors.text,
-            onSurfaceVariant: TacticalHudColors.muted,
-            outline: TacticalHudColors.cyan.withValues(alpha: 0.5),
-            outlineVariant: TacticalHudColors.cyan.withValues(alpha: 0.25),
-          )
-        : scheme;
+    final themedScheme = switch (theme) {
+      MeshHubTheme.tactical => scheme.copyWith(
+          primary: TacticalHudColors.cyan,
+          onPrimary: TacticalHudColors.background,
+          secondary: TacticalHudColors.orange,
+          onSecondary: TacticalHudColors.background,
+          surface: TacticalHudColors.panel,
+          onSurface: TacticalHudColors.text,
+          onSurfaceVariant: TacticalHudColors.muted,
+          outline: TacticalHudColors.cyan.withValues(alpha: 0.5),
+          outlineVariant: TacticalHudColors.cyan.withValues(alpha: 0.25),
+        ),
+      MeshHubTheme.dark => scheme.copyWith(
+          primary: _meshCoreAccent,
+          onPrimary: _canvas,
+          surface: _surface,
+          onSurface: const Color(0xffedf4f6),
+          onSurfaceVariant: const Color(0xffa8bdc6),
+          outline: const Color(0xff4a606b),
+          outlineVariant: const Color(0xff344752),
+        ),
+      MeshHubTheme.light => scheme.copyWith(
+          primary: const Color(0xff087e83),
+          onPrimary: const Color(0xffffffff),
+          surface: const Color(0xffffffff),
+          onSurface: const Color(0xff172d36),
+          onSurfaceVariant: const Color(0xff566d78),
+          outline: const Color(0xffa6bac3),
+          outlineVariant: const Color(0xffd5e2e7),
+        ),
+    };
     final panel = _panelBackground;
     return MaterialApp(
       title: 'MeshHub',
@@ -611,7 +629,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
               child: Text(
                 title,
                 style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w750,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -1698,7 +1716,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   child: _sectionPanel(
                     context,
                     title: 'RF configuration',
-                    icon: Icons.settings_input_antenna_outlined,
+                    icon: Icons.settings_input_antenna,
                     subtitle: 'Read-only preset · regulatory region not verified',
                     child: rf == null
                         ? const Text('No RF preset available until a radio is connected.')
