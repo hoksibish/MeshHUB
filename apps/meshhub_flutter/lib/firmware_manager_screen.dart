@@ -171,27 +171,46 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   }
 
   Future<bool> _confirmFlash() async {
+    final image = selectedImage;
+    if (image == null) return false;
     final typed = TextEditingController();
     bool backup = false;
     bool device = false;
+    final phrase = eraseFirst ? 'ERASE' : 'FLASH';
     try {
       return await showDialog<bool>(
             context: context,
             barrierDismissible: false,
             builder: (dialogContext) => StatefulBuilder(
               builder: (dialogContext, changeDialog) => AlertDialog(
-                title: const Text('Confirm irreversible flash operation'),
+                title: Text(
+                  eraseFirst
+                      ? 'Confirm FULL ERASE and firmware installation'
+                      : 'Confirm firmware installation',
+                ),
                 content: SizedBox(
                   width: 460,
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'A merged image writes from 0x0 and may overwrite '
-                          'bootloader, partitions, stored identity, pairing '
-                          'and settings. No backup is made by MeshHub. '
-                          'Incorrect firmware can make the node unbootable.',
+                        Text(
+                          'Target: Heltec V3 / ESP32-S3\n'
+                          'Firmware: ${image.package.displayName}\n'
+                          'Image: ${image.package.format} @ ${image.package.flashOffset}',
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          eraseFirst
+                              ? 'A FULL CHIP ERASE permanently deletes '
+                                  'identity, keys, Bluetooth pairing, channels '
+                                  'and settings before the new firmware is written. '
+                                  'MeshHub does not create a backup.'
+                              : 'Writing a full factory/merged image can overwrite '
+                                  'the bootloader and partitions, affect '
+                                  'Bluetooth pairing and settings, or leave a '
+                                  'node unbootable. No backup is made by MeshHub.',
                         ),
                         const SizedBox(height: 10),
                         CheckboxListTile(
@@ -207,16 +226,16 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                           contentPadding: EdgeInsets.zero,
                           value: device,
                           title: const Text(
-                            'I verified this is my Heltec V3, the firmware source '
-                            'and role, and stable USB power.',
+                            'I verified this is my Heltec V3, the firmware '
+                            'family, version, role and source, and stable USB power.',
                           ),
                           onChanged: (v) =>
                               changeDialog(() => device = v ?? false),
                         ),
                         TextField(
                           controller: typed,
-                          decoration: const InputDecoration(
-                            labelText: 'Type FLASH to confirm',
+                          decoration: InputDecoration(
+                            labelText: 'Type $phrase to confirm',
                           ),
                           onChanged: (_) => changeDialog(() {}),
                         ),
@@ -230,10 +249,12 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
                     child: const Text('Cancel'),
                   ),
                   FilledButton(
-                    onPressed: backup && device && typed.text == 'FLASH'
+                    onPressed: backup && device && typed.text == phrase
                         ? () => Navigator.pop(dialogContext, true)
                         : null,
-                    child: const Text('Flash connected device'),
+                    child: Text(
+                      eraseFirst ? 'Erase and flash device' : 'Flash device',
+                    ),
                   ),
                 ],
               ),
@@ -241,7 +262,6 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
           ) ??
           false;
     } finally {
-      // The dialog owns the controller only while it is visible.
       typed.dispose();
     }
   }
