@@ -35,6 +35,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   bool busy = false;
   String status = 'Choose a supported firmware image to begin.';
   bool success = false;
+  FirmwareFamily selectedFamily = FirmwareFamily.meshCore;
+  bool eraseFirst = false;
 
   @override
   void initState() {
@@ -112,12 +114,17 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
   }
 
   Future<void> _inspect() async {
+    setState(() {
+      selectedImage = null;
+      checkedPort = null;
+    });
     await _run(
       'Inspecting firmware file and computing SHA-256...',
       () async {
         final image = await service.inspectFile(
           filePath.text,
           expectedSha256: publishedDigest.text,
+          expectedFamily: selectedFamily,
         );
         if (!mounted) return;
         setState(() {
@@ -256,6 +263,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
           image: image,
           port: portPath.text.trim(),
           userConfirmed: true,
+          eraseFirst: eraseFirst,
+          eraseConfirmed: eraseFirst,
           mayWrite: () => !widget.radioConnected(),
         );
         if (mounted) setState(() => checkedPort = null);
@@ -317,7 +326,11 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          '${(image.bytes / (1024 * 1024)).toStringAsFixed(2)} MiB · ESP32-S3 merged BIN',
+          '${(image.bytes / (1024 * 1024)).toStringAsFixed(2)} MiB · ${image.package.format}',
+      ),
+      const SizedBox(height: 3),
+      Text(
+        image.package.displayName,
         ),
         const SizedBox(height: 5),
         SelectableText(
