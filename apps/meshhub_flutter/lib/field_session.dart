@@ -29,16 +29,15 @@ class FieldSessionNotifier {
 class MeshCoreFieldSession extends FieldSessionNotifier {
   MeshCoreFieldSession({
     FieldScan? scan,
-    MeshCoreBleTransport Function(String)? transportFactory,
+    this.transportFactory,
     FieldRetryScheduler? scheduleRetry,
     this.responseTimeout = const Duration(seconds: 8),
     this.receiveMessages = true,
+    this.allowPairing = false,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now,
        _scan = scan ?? MeshCoreBleScanner(scanBlueZ).scan,
-       _scheduleRetry = scheduleRetry ?? Timer.new,
-       _transportFactory =
-           transportFactory ?? ((id) => MeshCoreBleTransport(selectedId: id));
+       _scheduleRetry = scheduleRetry ?? Timer.new;
 
   static const _duplicateWindow = Duration(seconds: 3);
   static const _maximumRecentFrames = 256;
@@ -46,11 +45,44 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   final FieldScan _scan;
   final Duration responseTimeout;
   final bool receiveMessages;
+
+  /// Only an interactive UI should opt in; read-only CLI probes stay paired-only.
+  final bool allowPairing;
   final FieldRetryScheduler _scheduleRetry;
   Timer? _retry;
   int _retryFailures = 0;
   int reconnectAttempts = 0;
-  final MeshCoreBleTransport Function(String) _transportFactory;
+  final MeshCoreBleTransport Function(String)? transportFactory;
+  Completer<String?>? _pairingPin;
+  bool get awaitingPairingPin => _pairingPin != null;
+
+  Future<String?> requestPairingPin() async {
+    if (!connecting) return null;
+    cancelPairingPin();
+    final request = Completer<String?>();
+    _pairingPin = request;
+    status = 'Enter your MeshCore Bluetooth PIN';
+    notifyListeners();
+    return request.future;
+  }
+
+  void submitPairingPin(String pin) {
+    if (!RegExp(r'^\d{6}$').hasMatch(pin) || _pairingPin == null) return;
+    final request = _pairingPin!;
+    _pairingPin = null;
+    request.complete(pin);
+    status = 'Authenticating MeshCore radio';
+    notifyListeners();
+  }
+
+  void cancelPairingPin() {
+    final request = _pairingPin;
+    _pairingPin = null;
+    if (request == null) return;
+    if (!request.isCompleted) request.complete(null);
+    notifyListeners();
+  }
+
   final List<RadioMessage> messages = [];
   // Only suppress repeated notifications briefly; bounded for long sessions.
   final Map<String, DateTime> _recentFrames = {};
@@ -74,6 +106,8 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   int waitingCount = 0;
   bool scanning = false;
   bool connecting = false;
+  bool _disconnecting = false;
+  bool get busy => connecting || _disconnecting;
   bool sending = false;
   bool _ready = false;
   bool _draining = false;
@@ -88,7 +122,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   bool get paired => connected; // Transport refuses unpaired devices.
 
   Future<void> discover() async {
-    if (scanning) return;
+    if (scanning || busy) return;
     scanning = true;
     error = null;
     notifyListeners();
@@ -111,7 +145,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     MeshCoreBleCandidate candidate, {
     bool retry = false,
   }) async {
-    if (connecting) return;
+    if (busy) return;
     if (candidate.id.isEmpty ||
         candidate.assessment == MeshCoreCandidateAssessment.unrelated) {
       throw ArgumentError('Select a MeshCore candidate');
@@ -129,8 +163,19 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     connecting = true;
     notifyListeners();
     try {
-      final transport = _transportFactory(candidate.id);
-      if (transport.selectedId != candidate.id || transport.allowPairing) {
+      final transport =
+          transportFactory?.call(candidate.id) ??
+          MeshCoreBleTransport(
+            selectedId: candidate.id,
+            allowPairing: allowPairing && !retry,
+            requestPin: () =>
+                epoch == _epoch ? requestPairingPin() : Future.value(null),
+            cancelPin: () {
+              if (epoch == _epoch) cancelPairingPin();
+            },
+          );
+      if (transport.selectedId != candidate.id ||
+          (transport.allowPairing && (!allowPairing || retry))) {
         throw StateError('Selected device mismatch or pairing not allowed');
       }
       _transport = transport;
@@ -149,6 +194,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       });
       _frames = transport.frames.listen((frame) => _onFrame(frame, epoch));
       await transport.open();
+      if (epoch != _epoch) return;
       final self = await _query(
         transport,
         MeshCoreCompanionCodec.appStart('MeshHub'),
@@ -171,8 +217,11 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       await refreshChannels();
       if (_waiting && receiveMessages) unawaited(_drain(epoch));
     } catch (e) {
+      if (epoch != _epoch) return;
       error =
-          'Connection failed (${e.runtimeType}). Pair locally in the OS, then retry.';
+          'Connection failed (${e.runtimeType}). Check the Bluetooth PIN and '
+          'disconnect other clients, then try Pair & connect again. If the '
+          'radio was reflashed, its old pairing may need removing in Bluetooth settings.';
       status = 'Connection failed';
       await disconnect();
       status = 'Connection failed';
@@ -182,7 +231,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       }
       notifyListeners();
     } finally {
-      connecting = false;
+      if (epoch == _epoch) connecting = false;
       notifyListeners();
     }
   }
@@ -515,9 +564,13 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   }
 
   Future<void> disconnect() async {
+    if (_disconnecting) return;
+    _disconnecting = true;
     _retry?.cancel();
     _retry = null;
     _epoch++;
+    connecting = false;
+    cancelPairingPin();
     _abortExchange();
     _ready = false;
     _recentFrames.clear();
@@ -527,15 +580,19 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     _clearChannels();
     final transport = _transport;
     _transport = null;
-    await _states?.cancel();
-    _states = null;
-    await _frames?.cancel();
-    _frames = null;
-    await transport?.close();
-    identity = null;
-    deviceInfo = null;
-    selected = null;
-    status = 'No radio selected';
-    notifyListeners();
+    try {
+      await _states?.cancel();
+      _states = null;
+      await _frames?.cancel();
+      _frames = null;
+      await transport?.close();
+    } finally {
+      identity = null;
+      deviceInfo = null;
+      selected = null;
+      status = 'No radio selected';
+      _disconnecting = false;
+      notifyListeners();
+    }
   }
 }

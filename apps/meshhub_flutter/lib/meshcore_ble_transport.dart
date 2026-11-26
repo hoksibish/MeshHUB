@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:bluez/bluez.dart';
 import 'package:meshhub_domain/meshhub_domain.dart';
 
+import 'ble_pairing.dart';
+
 /// Low-level boundary: all IDs are BlueZ object paths, never name heuristics.
 abstract interface class MeshCoreBleDevice {
   String get id;
@@ -41,8 +43,16 @@ class MeshCoreBleTransport implements RadioTransport {
     required this.selectedId,
     MeshCoreBleDeviceFactory? deviceFactory,
     this.allowPairing = false,
+    BlePinRequest? requestPin,
+    void Function()? cancelPin,
     this.servicesTimeout = const Duration(seconds: 15),
-  }) : _deviceFactory = deviceFactory ?? openSelectedBlueZDevice {
+  }) : _deviceFactory =
+           deviceFactory ??
+           ((id) => openSelectedBlueZDevice(
+             id,
+             requestPin: allowPairing ? requestPin : null,
+             cancelPin: cancelPin,
+           )) {
     if (selectedId.isEmpty) throw ArgumentError.value(selectedId, 'selectedId');
   }
 
@@ -113,8 +123,9 @@ class MeshCoreBleTransport implements RadioTransport {
       );
       if (!device.paired) {
         if (!allowPairing) throw StateError('Selected device is not paired');
-        // BlueZ/OS agent owns the user interaction; never collect or log a PIN.
-        await device.pair();
+        // The selected-device session registers its own agent before Pair.
+        _ownsConnection = !device.connected;
+        await device.pair().timeout(const Duration(seconds: 90));
         checkOpen();
         if (!device.paired) throw StateError('Pairing not confirmed');
       }
@@ -263,7 +274,11 @@ class MeshCoreBleTransport implements RadioTransport {
 }
 
 /// Opens only the exact OS object selected by the caller; no scanning or fallback.
-Future<MeshCoreBleDevice> openSelectedBlueZDevice(String id) async {
+Future<MeshCoreBleDevice> openSelectedBlueZDevice(
+  String id, {
+  BlePinRequest? requestPin,
+  void Function()? cancelPin,
+}) async {
   final client = BlueZClient();
   try {
     await client.connect();
@@ -271,7 +286,7 @@ Future<MeshCoreBleDevice> openSelectedBlueZDevice(String id) async {
     if (matches.length != 1) {
       throw StateError('Selected BlueZ device not found');
     }
-    return _BlueZDeviceSession(client, matches.single);
+    return _BlueZDeviceSession(client, matches.single, requestPin, cancelPin);
   } catch (_) {
     await client.close();
     rethrow;
@@ -279,9 +294,18 @@ Future<MeshCoreBleDevice> openSelectedBlueZDevice(String id) async {
 }
 
 class _BlueZDeviceSession implements MeshCoreBleDevice {
-  _BlueZDeviceSession(this.client, this.device);
+  _BlueZDeviceSession(
+    this.client,
+    this.device,
+    this.requestPin,
+    this.cancelPin,
+  );
   final BlueZClient client;
   final BlueZDevice device;
+  final BlePinRequest? requestPin;
+  final void Function()? cancelPin;
+  BlePinAgent? _agent;
+  bool _pairing = false, _disposed = false;
   @override
   String get id => device.path.value;
   @override
@@ -296,13 +320,53 @@ class _BlueZDeviceSession implements MeshCoreBleDevice {
   List<MeshCoreGattService> get gattServices =>
       device.gattServices.map(_BlueZService.new).toList();
   @override
-  Future<void> pair() => device.pair();
+  Future<void> pair() async {
+    if (_disposed || requestPin == null) {
+      throw StateError('MeshCore PIN entry is unavailable');
+    }
+    if (!device.uuids.any(
+      (u) => u.toString().toLowerCase() == MeshCoreBleTransport.serviceUuid,
+    )) {
+      throw StateError('No MeshCore service found; discover the radio again');
+    }
+    final agent = BlePinAgent(id, requestPin!, cancelPin ?? () {});
+    _agent = agent;
+    await client.registerAgent(
+      agent,
+      capability: BlueZAgentCapability.keyboardOnly,
+    );
+    if (_disposed) throw StateError('Pairing cancelled');
+    _pairing = true;
+    try {
+      await device.pair().timeout(const Duration(seconds: 90));
+    } finally {
+      _pairing = false;
+      cancelPin?.call();
+    }
+    if (_disposed) throw StateError('Pairing cancelled');
+  }
+
   @override
-  Future<void> connect() => device.connect();
+  Future<void> connect() =>
+      device.connect().timeout(const Duration(seconds: 20));
   @override
-  Future<void> disconnect() => device.disconnect();
+  Future<void> disconnect() =>
+      device.disconnect().timeout(const Duration(seconds: 5));
   @override
-  Future<void> dispose() => client.close();
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    Future<void> attempt(Future<void> Function() operation) async {
+      try {
+        await operation().timeout(const Duration(seconds: 3));
+      } catch (_) {}
+    }
+
+    await _agent?.release();
+    if (_pairing) await attempt(device.cancelPairing);
+    if (_agent != null) await attempt(client.unregisterAgent);
+    await client.close();
+  }
 }
 
 class _BlueZService implements MeshCoreGattService {

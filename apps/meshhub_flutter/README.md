@@ -1,6 +1,6 @@
 # MeshHub Linux M1 field-test build
 
-The **Radios** panel can discover/select a paired MeshCore device, perform an authenticated GATT/Companion handshake, display read-only device metadata, receive messages into volatile memory, and prepare guarded channel/direct test sends. The **Inbox** has a simulation toggle and labels live versus sample data. No real history is written to disk; MeshCore RF receipt/delivery still needs a second endpoint. See `../../FIELD-TEST.md` before field use.
+The **Radios** panel can discover/select and, when needed, pair a MeshCore device, perform an authenticated GATT/Companion handshake, display read-only device metadata, receive messages into volatile memory, and prepare guarded channel/direct test sends. The **Inbox** has a simulation toggle and labels live versus sample data. No real history is written to disk; MeshCore RF receipt/delivery still needs a second endpoint. See `../../FIELD-TEST.md` before field use.
 
 ## Omarchy setup
 
@@ -79,6 +79,14 @@ Offline operation requires the firmware image and relevant local tools to have b
 ### Appearance
 
 The palette menu and Settings → Appearance now offer **Firesky, Cyberpunk, Retro 82 and Bliss**. These replace Light, Dark and Tactical. Firesky is the launch default; theme selection remains session-only. See `../../docs/THEMES.md` for the requested Omarchy references, design treatments and responsive/contrast verification.
+
+### MeshCore Bluetooth pairing inside MeshHub
+
+Open **Radios → Discover MeshCore radios → Pair & connect**. Disconnect the phone app first. An unpaired radio can request its six-digit Bluetooth PIN in a masked field inside MeshHub; enter the configured/displayed node PIN and select **Submit MeshCore PIN**. No terminal or prior desktop pairing is required. A valid OS bond skips the prompt. Use **Cancel pairing** / **Cancel connection** to stop, and retry manually after a wrong PIN or timeout.
+
+Both protocols share a device-scoped BlueZ PIN agent (`ble_pairing.dart`), not a transport or message codec. Agent registration completes before the Pair request, and it never becomes the system default agent. The handler rejects unrelated devices and does not automatically approve confirmations. PIN input times out after 60 seconds, overall pairing after 90 seconds. No PIN, bond secret or plaintext message is logged or persisted by MeshHub; BlueZ keeps the normal OS bond. Manual MeshCore connection may pair; automatic reconnect only reuses an existing bond and never prompts for a PIN. No radio settings, channel keys or RF messages are changed by pairing.
+
+Software tests cover the new flow. The owner's previous terminal pairing succeeded; a first-time hardware PIN exchange through this new MeshCore UI remains to be accepted independently. Existing bonds are not automatically removed to force a test.
 
 ### Meshtastic Bluetooth connection (Linux preview)
 

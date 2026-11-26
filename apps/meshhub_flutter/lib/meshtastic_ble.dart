@@ -2,63 +2,14 @@ import 'dart:async';
 
 import 'package:bluez/bluez.dart';
 
+import 'ble_pairing.dart';
+
 const meshtasticServiceUuid = '6ba1b218-15a8-461f-9fa8-5dcae273eafd';
 const meshtasticToRadioUuid = 'f75c76d2-129e-4dad-a1dd-7866124401e7';
 const meshtasticFromRadioUuid = '2c55e69e-4993-11ed-b878-0242ac120002';
 const meshtasticFromNumUuid = 'ed9da18c-a800-4f66-a670-aa7547e34453';
 
-typedef MeshtasticPinRequest = Future<String?> Function();
-
-/// Scoped to one explicitly selected device. Never becomes the default agent.
-class MeshtasticPairingAgent extends BlueZAgent {
-  MeshtasticPairingAgent(this.deviceId, this.requestPin, this.cancelPrompt);
-  final String deviceId;
-  final MeshtasticPinRequest requestPin;
-  final void Function() cancelPrompt;
-  bool active = true;
-
-  Future<String?> _pin(BlueZDevice device) async {
-    if (!active || device.path.value != deviceId) return null;
-    try {
-      final pin = await requestPin().timeout(const Duration(seconds: 60));
-      return active && pin != null && RegExp(r'^\d{6}$').hasMatch(pin)
-          ? pin
-          : null;
-    } on TimeoutException {
-      return null;
-    } finally {
-      cancelPrompt();
-    }
-  }
-
-  @override
-  Future<BlueZAgentPasskeyResponse> requestPasskey(BlueZDevice device) async {
-    final pin = await _pin(device);
-    return pin == null
-        ? BlueZAgentPasskeyResponse.canceled()
-        : BlueZAgentPasskeyResponse.success(int.parse(pin));
-  }
-
-  @override
-  Future<BlueZAgentPinCodeResponse> requestPinCode(BlueZDevice device) async {
-    final pin = await _pin(device);
-    return pin == null
-        ? BlueZAgentPinCodeResponse.canceled()
-        : BlueZAgentPinCodeResponse.success(pin);
-  }
-
-  @override
-  Future<void> cancel() async {
-    active = false;
-    cancelPrompt();
-  }
-
-  @override
-  Future<void> release() async {
-    active = false;
-    cancelPrompt();
-  }
-}
+typedef MeshtasticPinRequest = BlePinRequest;
 
 abstract interface class MeshtasticBleLink {
   Stream<void> get dataAvailable;
@@ -78,7 +29,7 @@ abstract interface class MeshtasticBleLink {
 class BlueZMeshtasticLink implements MeshtasticBleLink {
   BlueZClient? _client;
   BlueZDevice? _device;
-  MeshtasticPairingAgent? _agent;
+  BlePinAgent? _agent;
   BlueZGattCharacteristic? _toRadio, _fromRadio, _fromNum;
   StreamSubscription<List<String>>? _stateSubscription, _valueSubscription;
   final _data = StreamController<void>.broadcast();
@@ -116,7 +67,7 @@ class BlueZMeshtasticLink implements MeshtasticBleLink {
       throw StateError('Selected device has no Meshtastic service');
     }
     if (!device.paired) {
-      final agent = MeshtasticPairingAgent(deviceId, requestPin, cancelPrompt);
+      final agent = BlePinAgent(deviceId, requestPin, cancelPrompt);
       _agent = agent;
       await client.registerAgent(
         agent,
