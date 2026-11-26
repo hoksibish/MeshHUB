@@ -8,7 +8,7 @@ Development repository for a unified **Meshtastic + MeshCore** messaging, radio 
 - Multiple connected radios per network with smart Bluetooth/Wi-Fi reconnection, preferred sending radios and manual override.
 - Advanced radio configuration, encrypted backups, guided onboarding, node diagnostics.
 - Offline maps with terrain-aware coverage estimation and repeater planning.
-- Three themes: light, dark, tactical.
+- Four themes inspired by Omarchy: Firesky, Cyberpunk, Retro 82 and Bliss. See [theme references and behavior](docs/THEMES.md).
 - Native installation packages with versioned manual updates.
 - Public repository during development as explicitly approved by the owner for M0; revisit open-source licensing and release readiness before publishing software releases.
 

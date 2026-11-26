@@ -381,6 +381,57 @@ void main() {
     },
   );
 
+  test('preflight accepts legacy and current esptool chip reports', () async {
+    const chips = {
+      'esp32': 'ESP32',
+      'esp32s2': 'ESP32-S2',
+      'esp32s3': 'ESP32-S3',
+      'esp32c3': 'ESP32-C3',
+      'esp32c6': 'ESP32-C6',
+    };
+    for (final entry in chips.entries) {
+      for (final report in [
+        'Chip is ${entry.value} (revision v0.2)',
+        'Chip type:          ${entry.value} (QFN56) (revision v0.2)',
+      ]) {
+        final probe = FirmwareManagerService(
+          runTool: (args, limit) async {
+            expect(args.last, 'flash-id');
+            return FirmwareToolResult(0, 'esptool\n$report\n');
+          },
+        );
+        await probe.checkUsb('/dev/ttyUSB0', chip: entry.key);
+      }
+    }
+  });
+
+  test('preflight rejects wrong chips and unsuccessful chip reports', () async {
+    for (final report in [
+      'Chip type: ESP32-S2',
+      'Chip type: ESP32-S30',
+      'Expected Chip is ESP32-S3 but connection failed',
+      'Connected to ESP32-S3 on /dev/ttyUSB0:',
+    ]) {
+      final probe = FirmwareManagerService(
+        runTool: (args, limit) async => FirmwareToolResult(0, report),
+      );
+      await expectLater(probe.checkUsb('/dev/ttyUSB0'), throwsStateError);
+    }
+    for (final report in ['Chip is ESP32-S3', 'Chip type: ESP32-S3']) {
+      final probe = FirmwareManagerService(
+        runTool: (args, limit) async => FirmwareToolResult(0, report),
+      );
+      await expectLater(
+        probe.checkUsb('/dev/ttyUSB0', chip: 'esp32'),
+        throwsStateError,
+      );
+      final failedProbe = FirmwareManagerService(
+        runTool: (args, limit) async => FirmwareToolResult(1, report),
+      );
+      await expectLater(failedProbe.checkUsb('/dev/ttyUSB0'), throwsStateError);
+    }
+  });
+
   test(
     'explicit flash verifies image/chip and runs one guarded write',
     () async {

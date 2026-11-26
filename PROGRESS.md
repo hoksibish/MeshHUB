@@ -59,3 +59,31 @@ No real radio message was sent or received. No device settings, keys, channels o
 - Owner has since moved out of repeater range and cannot repeat the peer-confirmation test right now. **Do not mark the new inline channel composer end-to-end verified or approve/merge M1 on the strength of the older transmission.**
 - A follow-up UI change adds connection/send status in the open channel feed, explicitly explaining that MeshHub does not establish repeater coverage or recipient delivery. This change does not modify the transmit path or resolve the regression.
 - Pending next opportunity in range: compare pre-UI and inline channel send path; record exact channel slot, connected/Companion state, local send result and recipient confirmation without publishing any message content, secrets, identities or BLE identifiers. Inspect the receive path independently. No automatic replay of uncertain sends.
+
+
+## Meshtastic BLE connection and pairing preview — 2026-11-24
+
+- Owner authorized Meshtastic Bluetooth connection/pairing for the Heltec V3 now flashed with Meshtastic. Implemented locally on `feature/meshtastic-ble-pairing`, preserving the previous esptool detection fix. No merge or push performed.
+- Added separate Meshtastic service discovery, selected-device BlueZ KeyboardOnly pairing agent, six-digit PIN entry inside MeshHub, read-only config nonce handshake, device identity/firmware/hardware readback and manual disconnect. Config completion and node identity are required before readiness. No MeshCore frames, RF messages, settings writes, automatic retries or plaintext persistence are added.
+- Firmware Manager now blocks USB operations while either protocol is connecting or connected. Pairing cancellation/disposal closes the owned BLE resources; existing bonds are reused rather than silently deleted.
+- Verified commands in `apps/meshhub_flutter`: `flutter pub get --offline`; Dart formatting; `flutter analyze --no-pub` (no issues); `flutter test --no-pub --reporter expanded` (**100 passed**); `flutter build linux --release --no-pub` (passed). Updated scrolling in existing UI tests to wait for layout before tapping controls, including the previously failing erase-option test.
+- Hardware evidence: BlueZ sees the Meshtastic service on the flashed Heltec V3; it was unpaired and disconnected at inspection. On 2026-11-25 the owner reported **"Connected and shows firmware"** after following the new in-app discovery/pairing flow, confirming a physical Meshtastic connection and firmware readback. Reconnect, cancellation, wrong-PIN recovery and power-loss cases still need individual physical acceptance. No firmware, RF preset, channel key or radio setting changed during this implementation.
+- Protocol references, limitations and physical acceptance steps: `docs/MESHTASTIC-BLE.md`. Meshtastic chat/settings remain outside this connection milestone.
+
+
+## Four replacement themes — 2026-11-25
+
+- Owner requested removal of all existing themes and four replacements inspired by the named Omarchy Themes references. Implemented locally on `feature/four-new-themes`, preserving the Meshtastic connection/pairing and esptool fixes. No merge or push performed.
+- Removed Light, Dark, Tactical and `tactical_hud.dart`. Added central Firesky, Cyberpunk, Retro 82 and Bliss palettes, component styling, palette-menu labels/swatches and Settings choices. Firesky is the default. Retro 82 instrumentation now uses palette-driven square panels and link readouts; the retired fixed-color HUD/grid/reticle painters are removed.
+- Referenced all four previews on omarchythemes.com. Styling includes distinct backgrounds, typography, radii, button shapes, forms and navigation. Sources/credits and session-only preference behavior: `docs/THEMES.md`. No upstream wallpapers or theme code bundled, and no desktop configuration changed.
+- Verification: formatter clean, `flutter analyze --no-pub` clean, full app suite **103 passed**, and `flutter build linux --release --no-pub` passed. Added 4.5:1 contrast checks and theme switching/render checks at 1200×900 and 390×844; reviewed offline preview captures. Fixed a Material ancestor issue in the new instrument panel caught by the existing erase-option widget test.
+- Radio/firmware command behavior was not changed by this appearance work. Physical radio acceptance evidence remains as previously recorded.
+
+
+## Modern shared app layout — 2026-11-25
+
+- Owner approved the four theme palettes and requested a more modern app. Implemented locally on `feature/modern-app-layout`, retaining all four palettes and the existing connection/firmware work. No merge or push performed.
+- Added a floating rounded sidebar with persistent text labels at laptop widths, an updated brand header, a gradient welcome panel, primary connection/channel actions, three responsive session summaries and a calmer activity empty state. Phones use a floating rounded bottom navigation bar and compact side-by-side summaries. Centered large-window content and increased card/form radii across themes.
+- Removed the separate console-style Retro 82 dashboard, uppercase headings and instrument sections from the app's primary screens. All four palettes share the modern layout and readable app typography. The brand artwork is decorative, not measured radio topology.
+- Header connection status now observes both protocol sessions. Full-suite scrolling uncovered synchronous status notification during pairing-panel disposal; status refresh is scheduled after the frame and cancelling an absent PIN no longer emits an unnecessary change event.
+- Verification: formatter and `git diff --check` clean; `flutter analyze --no-pub` clean; full app suite **103 passed**; existing contrast and four-theme switch/render checks pass at 1200×900 and 390×844. Reviewed offline preview renders. `flutter build linux --release --no-pub` passed. No RF send, settings change or physical radio acceptance test performed as part of this appearance update.

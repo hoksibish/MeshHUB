@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:meshhub_flutter/main.dart';
-import 'package:meshhub_flutter/tactical_hud.dart';
+import 'package:meshhub_flutter/modern_shell.dart';
 
 /// Tap the Channels destination, not the identically named page heading.
 Future<void> openChannels(WidgetTester tester) async {
@@ -82,7 +82,44 @@ void main() {
     expect(find.text('MeshCore example'), findsOneWidget);
     expect(find.text('Meshtastic example'), findsNothing);
   });
-  testWidgets('all three themes use distinct scaffold and rail surfaces', (
+  testWidgets(
+    'four replacement themes use distinct scaffold and rail surfaces',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(const MeshHubApp());
+      await tester.pumpAndSettle();
+
+      Color background() {
+        final context = tester.element(find.byType(Scaffold).first);
+        return Theme.of(context).scaffoldBackgroundColor;
+      }
+
+      final dark = background();
+      await tester.tap(find.byTooltip('Theme'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bliss').last);
+      await tester.pumpAndSettle();
+      final light = background();
+      expect(light, isNot(dark));
+      expect(
+        Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
+        Brightness.light,
+      );
+
+      await tester.tap(find.byTooltip('Theme'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Retro 82').last);
+      await tester.pumpAndSettle();
+      final retro = background();
+      expect(retro, isNot(dark));
+      expect(retro, isNot(light));
+    },
+  );
+
+  testWidgets('Retro 82 shares the modern overview and channel layout', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1200, 900);
@@ -90,59 +127,22 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const MeshHubApp());
-    await tester.pumpAndSettle();
-
-    Color background() {
-      final context = tester.element(find.byType(Scaffold).first);
-      return Theme.of(context).scaffoldBackgroundColor;
-    }
-
-    final dark = background();
     await tester.tap(find.byTooltip('Theme'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('light').last);
-    await tester.pumpAndSettle();
-    final light = background();
-    expect(light, isNot(dark));
-    expect(
-      Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
-      Brightness.light,
-    );
-
-    await tester.tap(find.byTooltip('Theme'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('tactical').last);
-    await tester.pumpAndSettle();
-    final tactical = background();
-    expect(tactical, isNot(dark));
-    expect(tactical, isNot(light));
-  });
-
-  testWidgets('tactical HUD renders command panels and channel modules', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1200, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(const MeshHubApp());
-    await tester.tap(find.byTooltip('Theme'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('tactical').last);
+    await tester.tap(find.text('Retro 82').last);
     await tester.pumpAndSettle();
 
-    expect(find.byType(TacticalHudBackdrop), findsOneWidget);
-    expect(find.byType(TacticalHudMetric), findsNWidgets(3));
-    expect(find.byType(TacticalHudLinkScope), findsOneWidget);
-    expect(find.text('OPERATIONS // OVERVIEW'), findsOneWidget);
-    expect(find.text('MESHHUB / MESSAGES'), findsOneWidget);
+    expect(find.byType(MeshWelcomeCard), findsOneWidget);
+    expect(find.byType(MeshSummaryCard), findsNWidgets(3));
+    expect(find.byType(MeshActivityEmpty), findsOneWidget);
+    expect(find.text('YOUR OFF-GRID WORKSPACE'), findsOneWidget);
 
     await openChannels(tester);
-    expect(find.text('CHANNEL ARRAY'), findsOneWidget);
-    expect(find.byType(TacticalHudBackdrop), findsOneWidget);
+    expect(find.text('Channels'), findsWidgets);
+    expect(find.byType(MeshWelcomeCard), findsNothing);
   });
 
-  testWidgets('tactical status strip fits a narrow phone', (tester) async {
+  testWidgets('Retro 82 modern overview fits a narrow phone', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -150,14 +150,14 @@ void main() {
     await tester.pumpWidget(const MeshHubApp());
     await tester.tap(find.byTooltip('Theme'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('tactical').last);
+    await tester.tap(find.text('Retro 82').last);
     await tester.pumpAndSettle();
 
-    expect(find.byType(TacticalHudBackdrop), findsOneWidget);
-    expect(find.text('MESSAGES'), findsOneWidget);
+    expect(find.byType(MeshWelcomeCard), findsOneWidget);
+    expect(find.text('YOUR OFF-GRID WORKSPACE'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await openChannels(tester);
-    expect(find.text('CHANNEL ARRAY'), findsOneWidget);
+    expect(find.text('Channels'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -189,7 +189,7 @@ void main() {
     },
   );
 
-  testWidgets('tactical Nodes and Radios retain compact console navigation', (
+  testWidgets('Retro 82 Nodes and Radios retain accessible navigation', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1200, 900);
@@ -199,7 +199,7 @@ void main() {
     await tester.pumpWidget(const MeshHubApp());
     await tester.tap(find.byTooltip('Theme'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('tactical').last);
+    await tester.tap(find.text('Retro 82').last);
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(
@@ -208,8 +208,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('NODE MONITOR'), findsOneWidget);
-    expect(find.byType(TacticalHudPanel), findsWidgets);
+    expect(find.text('Node inventory'), findsOneWidget);
+    expect(find.byType(Card), findsWidgets);
     await tester.tap(
       find.descendant(
         of: find.byType(NavigationRail),
@@ -217,13 +217,15 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('COMMUNICATIONS CONSOLE'), findsOneWidget);
+    expect(find.text('Radios & Bluetooth'), findsOneWidget);
     expect(find.text('Discover MeshCore radios'), findsOneWidget);
-    expect(find.text('CONNECTION'), findsWidgets);
+    expect(find.text('MeshCore connection'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('light and dark maintain readable radio chrome', (tester) async {
+  testWidgets('Bliss and Firesky maintain readable radio chrome', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1200, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -246,7 +248,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Theme'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('light').last);
+    await tester.tap(find.text('Bliss').last);
     await tester.pumpAndSettle();
     final lightTheme = Theme.of(tester.element(find.byType(Scaffold).first));
     expect(lightTheme.brightness, Brightness.light);
@@ -273,6 +275,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Firmware Manager'), findsOneWidget);
+    await tester.ensureVisible(find.text('Open').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Open').last);
     await tester.pumpAndSettle();
     expect(find.text('Firmware Manager'), findsWidgets);

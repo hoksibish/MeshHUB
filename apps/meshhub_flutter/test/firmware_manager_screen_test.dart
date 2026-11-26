@@ -61,7 +61,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: FirmwareManagerScreen(
-          tactical: false,
+          instrument: false,
           radioConnected: () => false,
           service: service,
           boardCatalog: catalog,
@@ -102,7 +102,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: FirmwareManagerScreen(
-          tactical: true,
+          instrument: true,
           radioConnected: () => false,
           service: FirmwareManagerService(libraryPath: scratch.path),
           boardCatalog: catalog,
@@ -117,7 +117,13 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     expect(tester.widget<CheckboxListTile>(erase).value, false);
-    await tester.tap(erase);
+    final checkbox = find.descendant(
+      of: erase,
+      matching: find.byType(Checkbox),
+    );
+    await tester.ensureVisible(checkbox);
+    await tester.pumpAndSettle();
+    await tester.tap(checkbox);
     await tester.pumpAndSettle();
     expect(tester.widget<CheckboxListTile>(erase).value, true);
     expect(

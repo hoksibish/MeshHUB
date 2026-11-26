@@ -15,6 +15,7 @@ dependencies:
     path: ../../packages/meshhub_domain
 
 dev_dependencies:
+  dbus: 0.8.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

@@ -60,6 +60,8 @@ ls /dev/ttyACM* /dev/ttyUSB* 2>/dev/null
 
 The executable `esptool` must be on MeshHub's PATH (often `$HOME/.local/bin`). The optional `zenity` picker can select `.bin`, `.uf2` and `.zip` files; otherwise paste an absolute path. Use normal USB serial permissions rather than running MeshHub with `sudo`.
 
+USB preflight accepts both legacy esptool `Chip is` reports and current esptool `Chip type:` reports. It requires a successful command and an exact chip-family match; for example, an ESP32-S3 report cannot satisfy an ESP32 target.
+
 The offline library is `~/.local/share/meshhub/firmware`. It retains content-addressed images, SHA-256 and nonsecret board metadata, and verifies the bytes before displaying them. Previous Heltec V3 cache manifests are still supported. It does not store device identities, channel keys or chat history.
 
 For a supported **ESP32 direct-write target**, select the exact device and firmware file, verify the release and a trusted checksum if available, disconnect MeshHub's Bluetooth radio session, run **Check device (read-only)**, and review the matched chip model. The manager then rechecks the image and USB chip and invokes `esptool --chip CHIP --port PORT --baud 115200 write-flash 0x0 IMAGE` **once**, only after the explicit backup/target checkboxes and typed `FLASH` confirmation.
@@ -73,6 +75,20 @@ For UF2 devices, use the official device-specific bootloader instructions to mou
 Offline operation requires the firmware image and relevant local tools to have been acquired ahead of time. The bundled catalog is a reproducible snapshot, not an always-up-to-date online release browser.
 
 ## Architecture
+
+### Appearance
+
+The palette menu and Settings → Appearance now offer **Firesky, Cyberpunk, Retro 82 and Bliss**. These replace Light, Dark and Tactical. Firesky is the launch default; theme selection remains session-only. See `../../docs/THEMES.md` for the requested Omarchy references, design treatments and responsive/contrast verification.
+
+### Meshtastic Bluetooth connection (Linux preview)
+
+In **Radios → Meshtastic connection**, select **Discover Meshtastic radios**, then **Pair & connect** for the intended node. Disconnect the phone app first. If BlueZ requests authentication, MeshHub displays its own six-digit PIN field; enter the PIN shown on the node and select **Submit pairing PIN**. Prior pairing through desktop Bluetooth settings is not required. Existing bonds are reused; MeshHub does not automatically remove bonds or change the node's Bluetooth security mode. After reflashing a node, a stale bond may need to be removed manually in desktop Bluetooth settings before pairing again.
+
+The session verifies the Meshtastic GATT service and read/write/notify characteristics, sends one local `ToRadio.want_config_id`, and drains `FromRadio` until it receives `MyNodeInfo` and a matching `config_complete_id`. Only then does it display Connected, with the device-reported node number, firmware and hardware model when available. PINs, config secrets and raw packets are not logged or persisted. BlueZ manages the OS Bluetooth bond.
+
+This addition implements **connection and device readback**, not Meshtastic chat, channel management, settings writes or automatic reconnection. Message/config payloads outside the small readback subset are discarded. A local Bluetooth handshake does not demonstrate RF delivery. Disconnect or Cancel stops the connection attempt; errors require a manual retry. Firmware Manager blocks USB operations while either protocol is connecting or connected.
+
+See `../../docs/MESHTASTIC-BLE.md` for protocol sources and the physical acceptance checklist.
 
 - `packages/meshhub_domain`: protocol identifiers, radio and message models, adapter/transport/repository ports.
 - `packages/meshhub_domain/lib/testing.dart`: explicitly simulated adapters, fake byte transport and in-memory sample data.
