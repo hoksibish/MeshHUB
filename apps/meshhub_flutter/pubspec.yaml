@@ -7,7 +7,9 @@ environment:
   sdk: ^3.14.0
 
 dependencies:
+  dbus: 0.8.1
   bluez: 0.9.0
+  cryptography: 2.9.0
   flutter:
     sdk: flutter
   material_ui: ^1.11.1
@@ -15,7 +17,6 @@ dependencies:
     path: ../../packages/meshhub_domain
 
 dev_dependencies:
-  dbus: 0.8.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
