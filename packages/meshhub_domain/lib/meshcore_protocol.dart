@@ -302,7 +302,7 @@ final class MeshCoreRadioPreset {
   final int codingRate;
 }
 
-/// Parsed full public key identity, never printed by default or persisted.
+/// Parsed public identity, never logged; only encrypted history may retain it.
 final class MeshCoreSelfIdentity {
   MeshCoreSelfIdentity(List<int> key, this.radioPreset)
     : publicKey = List<int>.unmodifiable(key);

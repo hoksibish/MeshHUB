@@ -1,6 +1,6 @@
 # MeshHub Linux M1 field-test build
 
-The **Radios** panel can discover/select and, when needed, pair a MeshCore device, perform an authenticated GATT/Companion handshake, display read-only device metadata, receive messages into volatile memory, and prepare guarded channel/direct test sends. The **Inbox** has a simulation toggle and labels live versus sample data. No real history is written to disk; MeshCore RF receipt/delivery still needs a second endpoint. See `../../FIELD-TEST.md` before field use.
+The **Radios** panel can discover/select and, when needed, pair a MeshCore device, perform an authenticated GATT/Companion handshake, display read-only device metadata, receive messages into volatile memory, and prepare guarded channel/direct test sends. The **Inbox** has a simulation toggle and labels live versus sample data. MeshCore receive and locally accepted outgoing messages can now be saved to authenticated encrypted local history; RF receipt/delivery still needs a second endpoint. See `../../FIELD-TEST.md` before field use.
 
 ## Omarchy setup
 
@@ -104,4 +104,15 @@ See `../../docs/MESHTASTIC-BLE.md` for protocol sources and the physical accepta
 - `apps/meshhub_flutter/lib/field_session.dart`: selected-device Companion handshake, in-memory receive/diagnostics, bounded reconnect, no outbound replay. `meshcore_ble_transport.dart` owns BlueZ GATT, while the domain codec owns Companion frames.
 - `docs/BLE-FEASIBILITY.md` and `docs/M1-HARDWARE-RESULTS.md`: Bluetooth baseline and actual hardware evidence.
 
-The mock inbox remains clearly marked. Local radio acceptance is not recipient delivery. Do not store real history until encrypted persistence exists; this build intentionally loses its live inbox on exit.
+The mock inbox remains clearly marked. Local radio acceptance is not recipient delivery. The live channel view remains a session view; use the History icon or Settings → Privacy → View encrypted history for the durable, read-only archive. If the keyring or vault is unavailable, messages remain in RAM and the app reports the unsaved state. See `../../docs/ENCRYPTED-HISTORY.md`.
+
+
+## Encrypted message history (Linux)
+
+The desktop build opens an AES-256-GCM vault at `~/.local/share/meshhub/history/messages.mhh` (or beneath `XDG_DATA_HOME`). Its random 256-bit key stays in the persistent default Linux Secret Service keyring; `secret-tool` and that keyring must be available. The app never stores the key alongside history, falls back to plaintext or replaces a missing key for existing ciphertext. A locked keyring may ask for an OS unlock; enter credentials only in the OS prompt.
+
+Open the clock/history icon at the top right, or **Settings → Privacy → View encrypted history**. Search and protocol filtering work offline. The archive is read-only: it cannot send messages or select a live channel. History preserves the radio identity, channel key fingerprint, local observation timestamp and original delivery evidence. It excludes simulated data, raw channel keys, PINs and message drafts. Meshtastic live chat is still unfinished, so live capture currently covers MeshCore.
+
+If saving fails, the app shows an error and retains the affected messages in memory. **Unlock / retry history** retries storage without retransmitting anything over RF. Keep the app open until unsaved messages are stored. Limits are 10,000 records / 16 MiB; reaching either limit reports failure rather than silently deleting older history. The keyring and encrypted file must both survive to recover history; key backup/export, application PIN locking and cross-device sync are not implemented.
+
+See `../../docs/ENCRYPTED-HISTORY.md` for design, threat model, tests and recovery limitations. `dart run tool/history_keyring_probe.dart` exercises the real keyring with disposable synthetic ciphertext; it creates/reuses only MeshHub's dedicated key and never prints it.

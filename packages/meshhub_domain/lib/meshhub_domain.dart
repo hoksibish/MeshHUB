@@ -46,9 +46,33 @@ class RadioMessage {
   final MessageDeliveryState deliveryState;
 }
 
-/// Storage boundary; encrypted on-disk implementation is a later milestone.
+/// Protocol-neutral storage boundary; implementations own encryption and IO.
 abstract interface class MessageRepository {
   Future<List<RadioMessage>> forProtocol(MeshProtocol protocol);
+}
+
+/// Source scopes and observer timestamp remain separate from delivery evidence.
+class MessageHistoryEntry {
+  const MessageHistoryEntry({
+    required this.recordId,
+    required this.message,
+    required this.radioIdentity,
+    required this.conversationIdentity,
+    required this.conversationName,
+    required this.recordedAt,
+  });
+  final String recordId;
+  final RadioMessage message;
+  final String radioIdentity, conversationIdentity, conversationName;
+  final DateTime recordedAt;
+}
+
+/// Only authenticated encrypted implementations may retain real messages.
+abstract interface class MessageHistoryRepository implements MessageRepository {
+  Stream<void> get changes;
+  Future<List<MessageHistoryEntry>> entries();
+  Future<void> append(MessageHistoryEntry entry);
+  Future<void> flush();
 }
 
 /// A mock result must not be presented as radio delivery.

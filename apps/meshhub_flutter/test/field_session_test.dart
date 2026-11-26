@@ -27,6 +27,7 @@ class FieldTransport extends MeshCoreBleTransport {
   Completer<void>? holdSend;
   Completer<void>? holdChannel;
   int maxChannels = 2;
+  int identityByte = 1;
   final channelNames = <int, String>{};
   List<int>? Function(int)? channelReply;
   @override
@@ -57,7 +58,7 @@ class FieldTransport extends MeshCoreBleTransport {
     if (frame.first == 2 || frame.first == 3) await holdSend?.future;
     if (frame[0] == 1) {
       final info = List<int>.filled(58, 0)..[0] = 5;
-      info[4] = 1;
+      info[4] = identityByte;
       info.setRange(48, 52, [189, 228, 13, 0]);
       info.setRange(52, 56, [36, 244, 0, 0]);
       info[56] = 7;

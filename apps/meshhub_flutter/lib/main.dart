@@ -13,14 +13,18 @@ import 'meshtastic_connection_panel.dart';
 import 'meshtastic_session.dart';
 import 'mesh_theme.dart';
 import 'modern_shell.dart';
+import 'encrypted_message_repository.dart';
+import 'message_history_screen.dart';
 
-void main() => runApp(const MeshHubApp());
+void main() =>
+    runApp(MeshHubApp(history: EncryptedMessageRepository.production()));
 
 class MeshHubApp extends StatefulWidget {
-  const MeshHubApp({super.key, this.fieldSession});
+  const MeshHubApp({super.key, this.fieldSession, this.history});
 
   /// Allows a synthetic field session in widget tests; production uses BlueZ.
   final MeshCoreFieldSession? fieldSession;
+  final EncryptedMessageRepository? history;
 
   @override
   State<MeshHubApp> createState() => _MeshHubAppState();
@@ -44,13 +48,45 @@ class _MeshHubAppState extends State<MeshHubApp> {
   String? _selectedChannelName;
   bool showExamples = false;
   bool verifiedDestination = false;
+  StreamSubscription<void>? _historyChanges;
+
+  Future<void> _openHistory() async {
+    await widget.history?.open();
+    if (widget.history?.ready == true) await field.retryHistory();
+    _refreshConnection();
+  }
+
+  void _showHistory(BuildContext context) {
+    final history = widget.history;
+    if (history == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MessageHistoryScreen(repository: history),
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
-    field = widget.fieldSession ?? MeshCoreFieldSession(allowPairing: true);
+    field =
+        widget.fieldSession ??
+        MeshCoreFieldSession(
+          allowPairing: true,
+          messageHistory: widget.history,
+        );
     field.addListener(_refresh);
     meshtastic.addListener(_refreshConnection);
+    if (widget.history != null) {
+      _historyChanges = widget.history!.changes.listen(
+        (_) => _refreshConnection(),
+      );
+      if (widget.history!.ready) {
+        unawaited(field.retryHistory());
+      } else if (widget.history!.error == null) {
+        unawaited(_openHistory());
+      }
+    }
   }
 
   void _refreshConnection() {
@@ -81,8 +117,14 @@ class _MeshHubAppState extends State<MeshHubApp> {
     meshtastic.removeListener(_refreshConnection);
     meshtastic.dispose();
     field.removeListener(_refresh);
+    unawaited(_historyChanges?.cancel());
     if (widget.fieldSession == null) {
-      unawaited(field.disconnect().whenComplete(field.dispose));
+      unawaited(() async {
+        await field.disconnect();
+        await field.flushHistory();
+        field.dispose();
+        await widget.history?.close();
+      }());
     }
     messageInput.dispose();
     channelMessageInput.dispose();
@@ -106,6 +148,48 @@ class _MeshHubAppState extends State<MeshHubApp> {
           foregroundColor: themedScheme.onSurface,
           elevation: 0,
           scrolledUnderElevation: 0,
+          bottom:
+              widget.history != null &&
+                  (widget.history!.error != null || field.historyError != null)
+              ? PreferredSize(
+                  preferredSize: const Size.fromHeight(52),
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: scheme.errorContainer,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 18,
+                          color: scheme.onErrorContainer,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'History needs attention. New messages may be unsaved.',
+                            maxLines: 2,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onErrorContainer,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => setState(() => destination = 5),
+                          child: Text(
+                            'Review',
+                            style: TextStyle(color: scheme.onErrorContainer),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : null,
           titleSpacing: 24,
           title: Row(
             children: [
@@ -136,6 +220,14 @@ class _MeshHubAppState extends State<MeshHubApp> {
             ],
           ),
           actions: [
+            if (widget.history != null)
+              Builder(
+                builder: (context) => IconButton(
+                  tooltip: 'Message history',
+                  onPressed: () => _showHistory(context),
+                  icon: const Icon(Icons.history),
+                ),
+              ),
             if (MediaQuery.sizeOf(context).width >= 500)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
@@ -219,61 +311,68 @@ class _MeshHubAppState extends State<MeshHubApp> {
                       color: scheme.outlineVariant.withValues(alpha: 0.35),
                     ),
                   ),
-                  child: NavigationRail(
-                    minWidth: 84,
-                    minExtendedWidth: 204,
-                    backgroundColor: Colors.transparent,
-                    leading: Padding(
-                      padding: const EdgeInsets.only(bottom: 24, top: 8),
-                      child: Text(
-                        constraints.maxWidth >= 1040 ? 'WORKSPACE' : 'MESH',
-                        style: TextStyle(
-                          color: scheme.onSurfaceVariant,
-                          fontSize: 10,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.w700,
+                  child: SingleChildScrollView(
+                    child: SizedBox(
+                      height: constraints.maxHeight > 552
+                          ? constraints.maxHeight - 32
+                          : 520,
+                      child: NavigationRail(
+                        minWidth: 84,
+                        minExtendedWidth: 204,
+                        backgroundColor: Colors.transparent,
+                        leading: Padding(
+                          padding: const EdgeInsets.only(bottom: 24, top: 8),
+                          child: Text(
+                            constraints.maxWidth >= 1040 ? 'WORKSPACE' : 'MESH',
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontSize: 10,
+                              letterSpacing: 2,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
+                        selectedIndex: destination,
+                        extended: constraints.maxWidth >= 1040,
+                        labelType: constraints.maxWidth >= 1040
+                            ? NavigationRailLabelType.none
+                            : NavigationRailLabelType.all,
+                        onDestinationSelected: (index) =>
+                            setState(() => destination = index),
+                        destinations: const [
+                          NavigationRailDestination(
+                            icon: Icon(Icons.chat_bubble_outline),
+                            selectedIcon: Icon(Icons.chat_bubble),
+                            label: Text('Messages'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.tag_outlined),
+                            selectedIcon: Icon(Icons.tag),
+                            label: Text('Channels'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.hub_outlined),
+                            selectedIcon: Icon(Icons.hub),
+                            label: Text('Nodes'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.map_outlined),
+                            selectedIcon: Icon(Icons.map),
+                            label: Text('Map'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.router_outlined),
+                            selectedIcon: Icon(Icons.router),
+                            label: Text('Radios'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(Icons.settings_outlined),
+                            selectedIcon: Icon(Icons.settings),
+                            label: Text('Settings'),
+                          ),
+                        ],
                       ),
                     ),
-                    selectedIndex: destination,
-                    extended: constraints.maxWidth >= 1040,
-                    labelType: constraints.maxWidth >= 1040
-                        ? NavigationRailLabelType.none
-                        : NavigationRailLabelType.all,
-                    onDestinationSelected: (index) =>
-                        setState(() => destination = index),
-                    destinations: const [
-                      NavigationRailDestination(
-                        icon: Icon(Icons.chat_bubble_outline),
-                        selectedIcon: Icon(Icons.chat_bubble),
-                        label: Text('Messages'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.tag_outlined),
-                        selectedIcon: Icon(Icons.tag),
-                        label: Text('Channels'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.hub_outlined),
-                        selectedIcon: Icon(Icons.hub),
-                        label: Text('Nodes'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.map_outlined),
-                        selectedIcon: Icon(Icons.map),
-                        label: Text('Map'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.router_outlined),
-                        selectedIcon: Icon(Icons.router),
-                        label: Text('Radios'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.settings_outlined),
-                        selectedIcon: Icon(Icons.settings),
-                        label: Text('Settings'),
-                      ),
-                    ],
                   ),
                 ),
               Expanded(
@@ -850,9 +949,52 @@ class _MeshHubAppState extends State<MeshHubApp> {
         context,
         title: 'Privacy',
         icon: Icons.shield_outlined,
-        child: const Text(
-          'Message history is session-only. Encrypted on-disk persistence '
-          'is not yet implemented.',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.history?.ready == true
+                  ? 'Encrypted history active · ${widget.history!.count} saved messages'
+                  : widget.history == null
+                  ? 'History is not enabled in this session.'
+                  : 'Encrypted history unavailable · new messages remain in memory',
+            ),
+            if (field.historyPending > 0)
+              Text('Saving ${field.historyPending} message(s)…'),
+            const SizedBox(height: 8),
+            const Text(
+              'History uses AES-256-GCM encryption. Its key stays in the Linux keyring. '
+              'It is local to this laptop, with no cloud sync. Losing that key makes history unreadable.',
+            ),
+            if (widget.history?.error != null) ...[
+              const SizedBox(height: 8),
+              Text(widget.history!.error!),
+            ],
+            if (field.historyError != null) ...[
+              const SizedBox(height: 8),
+              Text(field.historyError!),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: widget.history == null
+                      ? null
+                      : () => _showHistory(context),
+                  icon: const Icon(Icons.history),
+                  label: const Text('View encrypted history'),
+                ),
+                if (widget.history != null &&
+                    (!widget.history!.ready || field.unsavedHistoryCount > 0))
+                  OutlinedButton(
+                    onPressed: () => unawaited(_openHistory()),
+                    child: const Text('Unlock / retry history'),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
     ],

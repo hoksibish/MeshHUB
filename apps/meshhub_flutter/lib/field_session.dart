@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
+import 'package:cryptography/cryptography.dart';
 import 'package:meshhub_domain/meshhub_domain.dart';
 import 'package:meshhub_domain/meshcore_protocol.dart';
 
@@ -34,6 +37,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     this.responseTimeout = const Duration(seconds: 8),
     this.receiveMessages = true,
     this.allowPairing = false,
+    this.messageHistory,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now,
        _scan = scan ?? MeshCoreBleScanner(scanBlueZ).scan,
@@ -48,6 +52,131 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
 
   /// Only an interactive UI should opt in; read-only CLI probes stay paired-only.
   final bool allowPairing;
+  final MessageHistoryRepository? messageHistory;
+  final String _messageIdPrefix = _newMessageIdPrefix();
+  static String _newMessageIdPrefix() {
+    final random = Random.secure();
+    return base64UrlEncode(List.generate(16, (_) => random.nextInt(256)));
+  }
+
+  final Map<int, String> _channelFingerprints = {};
+  final List<_HistoryObservation> _unscopedHistory = [];
+  final Map<String, MessageHistoryEntry> _failedHistory = {};
+  Future<void> _historyWrites = Future.value();
+  String? historyError;
+  int historyPending = 0;
+  int get unsavedHistoryCount =>
+      _failedHistory.length + _unscopedHistory.length;
+
+  Future<void> flushHistory() => _historyWrites;
+
+  Future<void> retryHistory() {
+    final repository = messageHistory;
+    if (repository == null || _failedHistory.isEmpty) return Future.value();
+    final previous = _historyWrites;
+    _historyWrites = () async {
+      await previous;
+      for (final entry in List<MessageHistoryEntry>.of(_failedHistory.values)) {
+        await _appendHistoryEntry(repository, entry);
+      }
+      notifyListeners();
+    }();
+    return _historyWrites;
+  }
+
+  Future<void> _appendHistoryEntry(
+    MessageHistoryRepository repository,
+    MessageHistoryEntry entry,
+  ) async {
+    try {
+      await repository.append(entry);
+      _failedHistory.remove(entry.recordId);
+    } catch (_) {
+      _failedHistory[entry.recordId] = entry;
+    }
+    historyError = _failedHistory.isEmpty ? null : 'Some messages could not be saved to encrypted history. They remain in memory; unlock/retry in Settings.';
+  }
+
+  String? get _historyRadioIdentity => identity == null
+      ? null
+      : 'meshcore:${identity!.publicKey.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}';
+
+  void _captureHistory(
+    RadioMessage message,
+    List<int> frame, {
+    int? channel,
+    String? directPeer,
+  }) {
+    if (messageHistory == null || message.isSimulated) return;
+    final radio = _historyRadioIdentity;
+    if (radio == null) {
+      historyError =
+          'A message could not be saved before radio identity was verified.';
+      return;
+    }
+    final observation = _HistoryObservation(
+      message,
+      List.of(frame),
+      radio,
+      channel,
+      directPeer,
+      _clock().toUtc(),
+    );
+    if (channel != null && !_channelFingerprints.containsKey(channel)) {
+      if (_unscopedHistory.length < 256) {
+        _unscopedHistory.add(observation);
+      } else {
+        historyError = 'Some messages remain in memory because channel identity is unavailable.';
+      }
+      return;
+    }
+    _saveObservation(observation);
+  }
+
+  void _saveObservation(_HistoryObservation observation) {
+    final channel = observation.channel;
+    final scope = channel == null
+        ? 'direct:${observation.directPeer ?? 'unverified'}'
+        : 'channel:$channel:${_channelFingerprints[channel]!}';
+    final matching = _channels.where((c) => c.index == channel);
+    final name = channel == null
+        ? 'Direct message · unverified contact'
+        : matching.isEmpty
+        ? 'Channel $channel'
+        : matching.first.name;
+    final repository = messageHistory!;
+    final previous = _historyWrites;
+    historyPending++;
+    _historyWrites = () async {
+      await previous;
+      try {
+        final random = Random.secure();
+        final recordId = observation.message.isOutgoing
+            ? base64UrlEncode(List.generate(24, (_) => random.nextInt(256)))
+            : (await Sha256().hash([
+                ...utf8.encode('${observation.radio}|$scope|'),
+                ...observation.frame,
+              ])).bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+        await _appendHistoryEntry(
+          repository,
+          MessageHistoryEntry(
+            recordId: recordId,
+            message: observation.message,
+            radioIdentity: observation.radio,
+            conversationIdentity: scope,
+            conversationName: name,
+            recordedAt: observation.recordedAt,
+          ),
+        );
+      } catch (_) {
+        historyError = 'A message could not be saved to encrypted history. It remains in memory.';
+      } finally {
+        historyPending--;
+        notifyListeners();
+      }
+    }();
+  }
+
   final FieldRetryScheduler _scheduleRetry;
   Timer? _retry;
   int _retryFailures = 0;
@@ -313,6 +442,7 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
   }
 
   void _clearChannels() {
+    _channelFingerprints.clear();
     _channels = const [];
     channelsLoading = false;
     channelsError = null;
@@ -332,9 +462,11 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     channelsLoading = true;
     channelsError = null;
     _channels = const [];
+    _channelFingerprints.clear();
     notifyListeners();
     try {
       final found = <MeshCoreChannel>[];
+      final fingerprints = <int, String>{};
       for (var index = 0; index < count; index++) {
         if (epoch != _epoch || !connected) return;
         final response = await _exchange(
@@ -346,9 +478,30 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
           response,
           requestedIndex: index,
         );
+        if (messageHistory != null) {
+          // CHANNEL_INFO bytes 34..49 are used only to derive a non-secret
+          // identity fingerprint. Raw channel keys are never persisted.
+          final digest = await Sha256().hash(response.sublist(34, 50));
+          fingerprints[index] = digest.bytes
+              .map((b) => b.toRadixString(16).padLeft(2, '0'))
+              .join();
+        }
         if (channel.name.isNotEmpty) found.add(channel);
       }
-      if (epoch == _epoch && connected) _channels = List.unmodifiable(found);
+      if (epoch == _epoch && connected) {
+        _channels = List.unmodifiable(found);
+        _channelFingerprints.addAll(fingerprints);
+        final pending = List<_HistoryObservation>.of(_unscopedHistory);
+        _unscopedHistory.clear();
+        for (final observation in pending) {
+          if (observation.radio == _historyRadioIdentity &&
+              _channelFingerprints.containsKey(observation.channel)) {
+            _saveObservation(observation);
+          } else {
+            historyError = 'Some messages remain in memory because channel identity could not be verified.';
+          }
+        }
+      }
     } catch (_) {
       if (epoch == _epoch) {
         channelsError = 'Channel discovery failed; retry refresh';
@@ -387,19 +540,24 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       }
       _recentFrames[key] = now;
       receiveCount++;
-      messages.add(
-        RadioMessage(
-          id: 'live-$receiveCount',
-          conversationId: decoded.origin == MeshCoreTextOrigin.channel
-              ? 'meshcore-channel-${decoded.channelIndex}'
-              : 'meshcore-direct',
-          protocol: MeshProtocol.meshCore,
-          sender: decoded.origin == MeshCoreTextOrigin.channel
-              ? 'Channel ${decoded.channelIndex} · sender unverified'
-              : 'Contact prefix ${decoded.senderKeyPrefix} · unverified',
-          text: decoded.text,
-          isSimulated: false,
-        ),
+      final message = RadioMessage(
+        id: 'live-$_messageIdPrefix-$receiveCount',
+        conversationId: decoded.origin == MeshCoreTextOrigin.channel
+            ? 'meshcore-channel-${decoded.channelIndex}'
+            : 'meshcore-direct',
+        protocol: MeshProtocol.meshCore,
+        sender: decoded.origin == MeshCoreTextOrigin.channel
+            ? 'Channel ${decoded.channelIndex} · sender unverified'
+            : 'Contact prefix ${decoded.senderKeyPrefix} · unverified',
+        text: decoded.text,
+        isSimulated: false,
+      );
+      messages.add(message);
+      _captureHistory(
+        message,
+        frame,
+        channel: decoded.channelIndex,
+        directPeer: decoded.senderKeyPrefix,
       );
       notifyListeners();
     } catch (_) {
@@ -448,18 +606,18 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     );
     final result = await _sendFrame(frame, channel: true);
     if (result == MeshCoreLocalSendResult.acceptedByRadio) {
-      messages.add(
-        RadioMessage(
-          id: 'outgoing-$sendCount',
-          conversationId: 'meshcore-channel-$channel',
-          protocol: MeshProtocol.meshCore,
-          sender: 'You · local radio',
-          text: text,
-          isSimulated: false,
-          isOutgoing: true,
-          deliveryState: MessageDeliveryState.acceptedByLocalRadio,
-        ),
+      final message = RadioMessage(
+        id: 'outgoing-$_messageIdPrefix-$sendCount',
+        conversationId: 'meshcore-channel-$channel',
+        protocol: MeshProtocol.meshCore,
+        sender: 'You · local radio',
+        text: text,
+        isSimulated: false,
+        isOutgoing: true,
+        deliveryState: MessageDeliveryState.acceptedByLocalRadio,
       );
+      messages.add(message);
+      _captureHistory(message, frame, channel: channel);
       notifyListeners();
     }
     return result;
@@ -479,7 +637,23 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       timestampSeconds: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000,
       text: text,
     );
-    return _sendFrame(frame, channel: false);
+    final result = await _sendFrame(frame, channel: false);
+    if (result == MeshCoreLocalSendResult.acceptedByRadio) {
+      final message = RadioMessage(
+        id: 'outgoing-direct-$_messageIdPrefix-$sendCount',
+        conversationId: 'meshcore-direct',
+        protocol: MeshProtocol.meshCore,
+        sender: 'You · local radio',
+        text: text,
+        isSimulated: false,
+        isOutgoing: true,
+        deliveryState: MessageDeliveryState.acceptedByLocalRadio,
+      );
+      messages.add(message);
+      _captureHistory(message, frame, directPeer: keyPrefix);
+      notifyListeners();
+    }
+    return result;
   }
 
   void _requireVerified(bool verified) {
@@ -569,6 +743,10 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
     _retry?.cancel();
     _retry = null;
     _epoch++;
+    if (_unscopedHistory.isNotEmpty) {
+      historyError = 'Some messages remain in memory because channel identity was not verified before disconnection.';
+      _unscopedHistory.clear();
+    }
     connecting = false;
     cancelPairingPin();
     _abortExchange();
@@ -595,4 +773,21 @@ class MeshCoreFieldSession extends FieldSessionNotifier {
       notifyListeners();
     }
   }
+}
+
+class _HistoryObservation {
+  const _HistoryObservation(
+    this.message,
+    this.frame,
+    this.radio,
+    this.channel,
+    this.directPeer,
+    this.recordedAt,
+  );
+  final RadioMessage message;
+  final List<int> frame;
+  final String radio;
+  final int? channel;
+  final String? directPeer;
+  final DateTime recordedAt;
 }
