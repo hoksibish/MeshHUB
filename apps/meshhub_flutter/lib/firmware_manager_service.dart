@@ -473,10 +473,16 @@ class FirmwareManagerService {
       port,
       'flash-id',
     ], const Duration(seconds: 40));
-    final response = result.output.toUpperCase();
-    final matches =
-        response.contains('CHIP IS $label') &&
-        (chip != 'esp32' || !response.contains('CHIP IS ESP32-'));
+    // esptool 4 reports "Chip is", while esptool 5 reports "Chip type:".
+    // Match the complete reported chip token so ESP32 cannot match ESP32-S3.
+    final reportedChips = RegExp(
+      r'^\s*Chip(?:\s+is\s+|\s+type:\s*)(ESP32[A-Z0-9-]*)(?=\s|\(|$)',
+      caseSensitive: false,
+      multiLine: true,
+    ).allMatches(result.output);
+    final matches = reportedChips.any(
+      (match) => match.group(1)!.toUpperCase() == label,
+    );
     if (result.exitCode != 0 || !matches) {
       throw StateError('USB preflight did not confirm $label.');
     }

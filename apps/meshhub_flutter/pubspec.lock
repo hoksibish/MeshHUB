@@ -66,7 +66,7 @@ packages:
     source: hosted
     version: "1.1.7"
   dbus:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: dbus
       sha256: fe6b46eae35441227e9e750656d06a4f40c230fe96e4390da7d7ebc69a60f0b3

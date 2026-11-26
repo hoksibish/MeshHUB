@@ -8,11 +8,12 @@ import 'package:meshhub_domain/testing.dart';
 import 'field_session.dart';
 import 'firmware_manager_screen.dart';
 import 'linux_meshcore_ble.dart';
-import 'tactical_hud.dart';
+import 'meshtastic_connection_panel.dart';
+import 'meshtastic_session.dart';
+import 'mesh_theme.dart';
+import 'modern_shell.dart';
 
 void main() => runApp(const MeshHubApp());
-
-enum MeshHubTheme { light, dark, tactical }
 
 class MeshHubApp extends StatefulWidget {
   const MeshHubApp({super.key, this.fieldSession});
@@ -25,30 +26,16 @@ class MeshHubApp extends StatefulWidget {
 }
 
 class _MeshHubAppState extends State<MeshHubApp> {
-  MeshHubTheme theme = MeshHubTheme.dark;
-  static const _canvas = Color(0xff101923);
-  static const _surface = Color(0xff1b2834);
-  static const _meshCoreAccent = Color(0xff55d6cb);
-  static const _meshtasticAccent = Color(0xffb6df62);
-  static const _tacticalAccent = TacticalHudColors.cyan;
-  Color get _pageBackground => switch (theme) {
-    MeshHubTheme.light => const Color(0xfff3f7f9),
-    MeshHubTheme.dark => _canvas,
-    MeshHubTheme.tactical => TacticalHudColors.background,
-  };
-  Color get _panelBackground => switch (theme) {
-    MeshHubTheme.light => const Color(0xffffffff),
-    MeshHubTheme.dark => _surface,
-    MeshHubTheme.tactical => TacticalHudColors.panel,
-  };
-  Color get _accent => switch (theme) {
-    MeshHubTheme.light => const Color(0xff087e83),
-    MeshHubTheme.dark => _meshCoreAccent,
-    MeshHubTheme.tactical => TacticalHudColors.cyan,
-  };
+  MeshHubTheme theme = MeshHubTheme.firesky;
+  MeshPalette get _palette => theme.palette;
+  Color get _panelBackground => _palette.panel;
+  Color get _accent => _palette.primary;
+  Color get _meshCoreAccent => _palette.primary;
+  Color get _meshtasticAccent => _palette.secondary;
   MeshProtocol? filter;
   int destination = 0;
   late final MeshCoreFieldSession field;
+  final meshtastic = MeshtasticSession();
   final messageInput = TextEditingController();
   final channelMessageInput = TextEditingController();
   final keyPrefixInput = TextEditingController();
@@ -62,6 +49,15 @@ class _MeshHubAppState extends State<MeshHubApp> {
     super.initState();
     field = widget.fieldSession ?? MeshCoreFieldSession();
     field.addListener(_refresh);
+    meshtastic.addListener(_refreshConnection);
+  }
+
+  void _refreshConnection() {
+    // A pairing panel can be removed while a scrolling frame is finalizing.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   void _refresh() {
@@ -81,6 +77,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
 
   @override
   void dispose() {
+    meshtastic.removeListener(_refreshConnection);
+    meshtastic.dispose();
     field.removeListener(_refresh);
     if (widget.fieldSession == null) {
       unawaited(field.disconnect().whenComplete(field.dispose));
@@ -93,203 +91,49 @@ class _MeshHubAppState extends State<MeshHubApp> {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (theme) {
-      MeshHubTheme.light => const Color(0xff087e83),
-      MeshHubTheme.dark => _meshCoreAccent,
-      MeshHubTheme.tactical => _tacticalAccent,
-    };
-    final mode = theme == MeshHubTheme.light
-        ? Brightness.light
-        : Brightness.dark;
-    final scheme = ColorScheme.fromSeed(seedColor: color, brightness: mode);
-    final themedScheme = switch (theme) {
-      MeshHubTheme.tactical => scheme.copyWith(
-        primary: TacticalHudColors.cyan,
-        onPrimary: TacticalHudColors.background,
-        secondary: TacticalHudColors.orange,
-        onSecondary: TacticalHudColors.background,
-        surface: TacticalHudColors.panel,
-        onSurface: TacticalHudColors.text,
-        onSurfaceVariant: TacticalHudColors.muted,
-        outline: TacticalHudColors.cyan.withValues(alpha: 0.5),
-        outlineVariant: TacticalHudColors.cyan.withValues(alpha: 0.25),
-      ),
-      MeshHubTheme.dark => scheme.copyWith(
-        primary: _meshCoreAccent,
-        onPrimary: _canvas,
-        surface: _surface,
-        onSurface: const Color(0xffedf4f6),
-        onSurfaceVariant: const Color(0xffa8bdc6),
-        outline: const Color(0xff4a606b),
-        outlineVariant: const Color(0xff344752),
-      ),
-      MeshHubTheme.light => scheme.copyWith(
-        primary: const Color(0xff087e83),
-        onPrimary: const Color(0xffffffff),
-        surface: const Color(0xffffffff),
-        onSurface: const Color(0xff172d36),
-        onSurfaceVariant: const Color(0xff566d78),
-        outline: const Color(0xffa6bac3),
-        outlineVariant: const Color(0xffd5e2e7),
-      ),
-    };
+    final scheme = _palette.buildTheme().colorScheme;
+    final themedScheme = scheme;
     final panel = _panelBackground;
     return MaterialApp(
       title: 'MeshHub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: themedScheme,
-        useMaterial3: true,
-        navigationRailTheme: theme == MeshHubTheme.tactical
-            ? NavigationRailThemeData(
-                backgroundColor: TacticalHudColors.panel,
-                indicatorColor: TacticalHudColors.cyan.withValues(alpha: 0.14),
-                selectedIconTheme: const IconThemeData(
-                  size: 20,
-                  color: TacticalHudColors.orange,
-                ),
-                unselectedIconTheme: const IconThemeData(
-                  size: 20,
-                  color: TacticalHudColors.muted,
-                ),
-                selectedLabelTextStyle: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11,
-                  color: TacticalHudColors.orange,
-                ),
-                unselectedLabelTextStyle: const TextStyle(
-                  fontSize: 11,
-                  color: TacticalHudColors.muted,
-                ),
-              )
-            : NavigationRailThemeData(
-                backgroundColor: panel,
-                indicatorColor: _accent.withValues(alpha: 0.15),
-                selectedIconTheme: IconThemeData(size: 22, color: _accent),
-                unselectedIconTheme: IconThemeData(
-                  size: 22,
-                  color: themedScheme.onSurfaceVariant,
-                ),
-                selectedLabelTextStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: _accent,
-                ),
-                unselectedLabelTextStyle: TextStyle(
-                  fontSize: 12,
-                  color: themedScheme.onSurfaceVariant,
-                ),
-              ),
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: panel,
-          indicatorColor: _accent.withValues(alpha: 0.15),
-          height: theme == MeshHubTheme.tactical ? 62 : 68,
-        ),
-        filledButtonTheme: theme == MeshHubTheme.tactical
-            ? FilledButtonThemeData(
-                style: FilledButton.styleFrom(
-                  backgroundColor: TacticalHudColors.orange,
-                  foregroundColor: TacticalHudColors.background,
-                  shape: BeveledRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              )
-            : FilledButtonThemeData(
-                style: FilledButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: theme == MeshHubTheme.light
-                      ? const Color(0xffffffff)
-                      : _canvas,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 11,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-        scaffoldBackgroundColor: _pageBackground,
-        dividerColor: themedScheme.outlineVariant,
-        listTileTheme: theme == MeshHubTheme.tactical
-            ? const ListTileThemeData(
-                dense: true,
-                horizontalTitleGap: 10,
-                minVerticalPadding: 4,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              )
-            : null,
-        cardTheme: CardThemeData(
-          color: panel,
-          elevation: 0,
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          shape: theme == MeshHubTheme.tactical
-              ? BeveledRectangleBorder(
-                  borderRadius: BorderRadius.circular(9),
-                  side: BorderSide(
-                    color: TacticalHudColors.cyan.withValues(alpha: 0.4),
-                  ),
-                )
-              : RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  side: BorderSide(color: themedScheme.outlineVariant),
-                ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: theme == MeshHubTheme.light
-              ? const Color(0xffedf3f6)
-              : theme == MeshHubTheme.dark
-              ? const Color(0xff243440)
-              : panel,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(
-              theme == MeshHubTheme.tactical ? 4 : 12,
-            ),
-            borderSide: BorderSide(color: themedScheme.outlineVariant),
-          ),
-        ),
-      ),
+      theme: _palette.buildTheme(),
       home: Scaffold(
         appBar: AppBar(
-          toolbarHeight: theme == MeshHubTheme.tactical ? 48 : 52,
-          backgroundColor: panel,
+          toolbarHeight: 76,
+          backgroundColor: _palette.background,
           foregroundColor: themedScheme.onSurface,
           elevation: 0,
           scrolledUnderElevation: 0,
-          title: Text(
-            theme == MeshHubTheme.tactical ? 'MESHHUB // HUD' : 'MeshHub',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: theme == MeshHubTheme.tactical ? 'monospace' : null,
-              fontSize: theme == MeshHubTheme.tactical ? 18 : 20,
-              letterSpacing: theme == MeshHubTheme.tactical ? 1.0 : 0,
-              color: theme == MeshHubTheme.tactical
-                  ? TacticalHudColors.cyan
-                  : themedScheme.onSurface,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          bottom: theme == MeshHubTheme.tactical
-              ? PreferredSize(
-                  preferredSize: const Size.fromHeight(1),
-                  child: Container(
-                    height: 1,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          TacticalHudColors.orange,
-                          TacticalHudColors.cyan,
-                          TacticalHudColors.background,
-                        ],
-                      ),
-                    ),
+          titleSpacing: 24,
+          title: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_accent, _palette.secondary],
                   ),
-                )
-              : null,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.hub_outlined,
+                  color: scheme.onPrimary,
+                  size: 23,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'MeshHub',
+                style: TextStyle(
+                  fontSize: 22,
+                  letterSpacing: -0.8,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
           actions: [
             if (MediaQuery.sizeOf(context).width >= 500)
               Padding(
@@ -297,7 +141,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: field.connected
+                    color: (field.connected || meshtastic.connected)
                         ? _accent.withValues(alpha: 0.12)
                         : scheme.onSurface.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(30),
@@ -305,19 +149,25 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   child: Row(
                     children: [
                       Icon(
-                        field.connected
+                        (field.connected || meshtastic.connected)
                             ? Icons.bluetooth_connected
                             : Icons.bluetooth_disabled,
-                        color: field.connected
+                        color: (field.connected || meshtastic.connected)
                             ? _accent
                             : scheme.onSurfaceVariant,
-                        size: theme == MeshHubTheme.tactical ? 16 : 18,
+                        size: theme == MeshHubTheme.retro82 ? 16 : 18,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        field.connected ? 'Radio online' : 'Offline',
+                        field.connected && meshtastic.connected
+                            ? 'Radios online'
+                            : field.connected
+                            ? 'MeshCore online'
+                            : meshtastic.connected
+                            ? 'Meshtastic online'
+                            : 'Offline',
                         style: TextStyle(
-                          fontSize: theme == MeshHubTheme.tactical ? 11 : 12,
+                          fontSize: theme == MeshHubTheme.retro82 ? 11 : 12,
                         ),
                       ),
                     ],
@@ -330,8 +180,25 @@ class _MeshHubAppState extends State<MeshHubApp> {
               onSelected: (choice) => setState(() => theme = choice),
               itemBuilder: (_) => MeshHubTheme.values
                   .map(
-                    (value) =>
-                        PopupMenuItem(value: value, child: Text(value.name)),
+                    (value) => PopupMenuItem(
+                      value: value,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: value.palette.primary,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(value.label),
+                          const Spacer(),
+                          if (value == theme) const Icon(Icons.check, size: 16),
+                        ],
+                      ),
+                    ),
                   )
                   .toList(),
             ),
@@ -341,91 +208,131 @@ class _MeshHubAppState extends State<MeshHubApp> {
           builder: (context, constraints) => Row(
             children: [
               if (constraints.maxWidth >= 760)
-                NavigationRail(
-                  minWidth: theme == MeshHubTheme.tactical ? 68 : 72,
-                  backgroundColor: panel,
-                  selectedIndex: destination,
-                  extended: constraints.maxWidth >= 1220,
-                  labelType: constraints.maxWidth >= 1220
-                      ? NavigationRailLabelType.none
-                      : NavigationRailLabelType.all,
-                  onDestinationSelected: (index) =>
-                      setState(() => destination = index),
-                  destinations: const [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.chat_bubble_outline),
-                      selectedIcon: Icon(Icons.chat_bubble),
-                      label: Text('Messages'),
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 0, 8, 16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: panel,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: scheme.outlineVariant.withValues(alpha: 0.35),
                     ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.tag_outlined),
-                      selectedIcon: Icon(Icons.tag),
-                      label: Text('Channels'),
+                  ),
+                  child: NavigationRail(
+                    minWidth: 84,
+                    minExtendedWidth: 204,
+                    backgroundColor: Colors.transparent,
+                    leading: Padding(
+                      padding: const EdgeInsets.only(bottom: 24, top: 8),
+                      child: Text(
+                        constraints.maxWidth >= 1040 ? 'WORKSPACE' : 'MESH',
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
+                          fontSize: 10,
+                          letterSpacing: 2,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.hub_outlined),
-                      selectedIcon: Icon(Icons.hub),
-                      label: Text('Nodes'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.map_outlined),
-                      selectedIcon: Icon(Icons.map),
-                      label: Text('Map'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.router_outlined),
-                      selectedIcon: Icon(Icons.router),
-                      label: Text('Radios'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.settings_outlined),
-                      selectedIcon: Icon(Icons.settings),
-                      label: Text('Settings'),
-                    ),
-                  ],
+                    selectedIndex: destination,
+                    extended: constraints.maxWidth >= 1040,
+                    labelType: constraints.maxWidth >= 1040
+                        ? NavigationRailLabelType.none
+                        : NavigationRailLabelType.all,
+                    onDestinationSelected: (index) =>
+                        setState(() => destination = index),
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.chat_bubble_outline),
+                        selectedIcon: Icon(Icons.chat_bubble),
+                        label: Text('Messages'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.tag_outlined),
+                        selectedIcon: Icon(Icons.tag),
+                        label: Text('Channels'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.hub_outlined),
+                        selectedIcon: Icon(Icons.hub),
+                        label: Text('Nodes'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.map_outlined),
+                        selectedIcon: Icon(Icons.map),
+                        label: Text('Map'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.router_outlined),
+                        selectedIcon: Icon(Icons.router),
+                        label: Text('Radios'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.settings_outlined),
+                        selectedIcon: Icon(Icons.settings),
+                        label: Text('Settings'),
+                      ),
+                    ],
+                  ),
                 ),
-              Expanded(child: _workspace(context)),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    0,
+                    0,
+                    constraints.maxWidth >= 760 ? 16 : 0,
+                    0,
+                  ),
+                  child: _workspace(context),
+                ),
+              ),
             ],
           ),
         ),
         bottomNavigationBar: MediaQuery.sizeOf(context).width < 760
-            ? NavigationBar(
-                height: 68,
-                selectedIndex: destination == 4
-                    ? 4
-                    : destination == 5
-                    ? 4
-                    : destination,
-                onDestinationSelected: (index) => setState(() {
-                  destination = index == 4 ? 5 : index;
-                }),
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.chat_bubble_outline),
-                    selectedIcon: Icon(Icons.chat_bubble),
-                    label: 'Messages',
+            ? Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: NavigationBar(
+                    height: 68,
+                    selectedIndex: destination == 4
+                        ? 4
+                        : destination == 5
+                        ? 4
+                        : destination,
+                    onDestinationSelected: (index) => setState(() {
+                      destination = index == 4 ? 5 : index;
+                    }),
+                    destinations: const [
+                      NavigationDestination(
+                        icon: Icon(Icons.chat_bubble_outline),
+                        selectedIcon: Icon(Icons.chat_bubble),
+                        label: 'Messages',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.tag_outlined),
+                        selectedIcon: Icon(Icons.tag),
+                        label: 'Channels',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.hub_outlined),
+                        selectedIcon: Icon(Icons.hub),
+                        label: 'Nodes',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.map_outlined),
+                        selectedIcon: Icon(Icons.map),
+                        label: 'Map',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.settings_outlined),
+                        selectedIcon: Icon(Icons.settings),
+                        label: 'More',
+                      ),
+                    ],
                   ),
-                  NavigationDestination(
-                    icon: Icon(Icons.tag_outlined),
-                    selectedIcon: Icon(Icons.tag),
-                    label: 'Channels',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.hub_outlined),
-                    selectedIcon: Icon(Icons.hub),
-                    label: 'Nodes',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.map_outlined),
-                    selectedIcon: Icon(Icons.map),
-                    label: 'Map',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.settings_outlined),
-                    selectedIcon: Icon(Icons.settings),
-                    label: 'More',
-                  ),
-                ],
+                ),
               )
             : null,
       ),
@@ -441,28 +348,11 @@ class _MeshHubAppState extends State<MeshHubApp> {
       4 => _radios(context),
       _ => _settingsView(context),
     };
-    if (theme != MeshHubTheme.tactical) return content;
-    final section = switch (destination) {
-      0 => 'Messages',
-      1 => 'Channels',
-      2 => 'Nodes',
-      3 => 'Map',
-      4 => 'Radios',
-      _ => 'Settings',
-    };
-    final rf = field.identity?.radioPreset;
-    return TacticalHudBackdrop(
-      child: Column(
-        children: [
-          TacticalHudStatusStrip(
-            section: section,
-            connected: field.connected,
-            preset: rf == null
-                ? null
-                : '${rf.frequencyKHz} kHz / SF${rf.spreadingFactor}',
-          ),
-          Expanded(child: content),
-        ],
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1320),
+        child: content,
       ),
     );
   }
@@ -470,57 +360,48 @@ class _MeshHubAppState extends State<MeshHubApp> {
   Widget _messagesHome(BuildContext context) {
     final recent = field.messages.reversed.toList();
     return ListView(
-      padding: EdgeInsets.all(theme == MeshHubTheme.tactical ? 14 : 20),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
       children: [
-        if (theme == MeshHubTheme.tactical)
-          const TacticalHudHeading(
-            'Operations // Overview',
-            subtitle: 'LIVE TELEMETRY / CURRENT LOCAL SESSION',
-          )
-        else ...[
-          Text(
-            'Your mesh, one place.',
-            style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'MeshCore and Meshtastic messaging, without mixing networks.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-        SizedBox(height: theme == MeshHubTheme.tactical ? 12 : 18),
-        Wrap(
-          spacing: theme == MeshHubTheme.tactical ? 8 : 12,
-          runSpacing: theme == MeshHubTheme.tactical ? 8 : 12,
-          children: [
-            _metricCard(
-              Icons.bluetooth,
-              field.connected ? 'Connected' : 'Offline',
-              'MeshCore radio',
-              _meshCoreAccent,
-            ),
-            _metricCard(
-              Icons.tag,
-              '${field.channels.length}',
-              'Configured channels',
-              _meshCoreAccent,
-            ),
-            _metricCard(
-              Icons.forum_outlined,
-              '${field.messages.length}',
-              'Messages this session',
-              _meshtasticAccent,
-            ),
-            if (theme == MeshHubTheme.tactical)
-              TacticalHudLinkScope(
-                connected: field.connected,
-                channelCount: field.channels.length,
-                onOpenRadios: () => setState(() => destination = 4),
-              ),
-          ],
+        MeshWelcomeCard(
+          connected: field.connected,
+          onConnect: () => setState(() => destination = 4),
+          onChannels: () => setState(() => destination = 1),
         ),
-        SizedBox(height: theme == MeshHubTheme.tactical ? 18 : 26),
+        const SizedBox(height: 20),
+        LayoutBuilder(
+          builder: (context, bounds) {
+            final width = (bounds.maxWidth - 24) / 3;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _metricCard(
+                  Icons.bluetooth,
+                  field.connected ? 'Connected' : 'Offline',
+                  'MeshCore radio',
+                  _meshCoreAccent,
+                  width: width,
+                ),
+                const SizedBox(width: 12),
+                _metricCard(
+                  Icons.tag,
+                  '${field.channels.length}',
+                  'Configured channels',
+                  _meshCoreAccent,
+                  width: width,
+                ),
+                const SizedBox(width: 12),
+                _metricCard(
+                  Icons.forum_outlined,
+                  '${field.messages.length}',
+                  'Messages this session',
+                  _meshtasticAccent,
+                  width: width,
+                ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 28),
         Row(
           children: [
             Expanded(
@@ -539,33 +420,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
         ),
         const SizedBox(height: 8),
         if (recent.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  const Icon(Icons.mark_chat_unread_outlined, size: 42),
-                  const SizedBox(height: 12),
-                  const Text('No messages in this session yet'),
-                  const SizedBox(height: 8),
-                  Text(
-                    field.connected
-                        ? 'Open Channels to follow live conversations.'
-                        : 'Connect a radio to discover channels and receive messages.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.tonalIcon(
-                    onPressed: () =>
-                        setState(() => destination = field.connected ? 1 : 4),
-                    icon: Icon(field.connected ? Icons.tag : Icons.bluetooth),
-                    label: Text(
-                      field.connected ? 'Browse channels' : 'Connect a radio',
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          MeshActivityEmpty(
+            connected: field.connected,
+            onAction: () =>
+                setState(() => destination = field.connected ? 1 : 4),
           ),
         for (final message in recent.take(20))
           Card(
@@ -615,51 +473,27 @@ class _MeshHubAppState extends State<MeshHubApp> {
     );
   }
 
-  Widget _metricCard(IconData icon, String value, String label, Color accent) {
-    final effectiveAccent = theme == MeshHubTheme.light ? _accent : accent;
-    if (theme == MeshHubTheme.tactical) {
-      return TacticalHudMetric(
-        icon: icon,
-        label: label,
-        value: value,
-        highlight: accent == _meshtasticAccent,
-      );
-    }
-    return Container(
-      width: 190,
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: _panelBackground,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: effectiveAccent.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: effectiveAccent, size: 23),
-          const SizedBox(height: 11),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
-          ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 11)),
-        ],
-      ),
-    );
-  }
+  Widget _metricCard(
+    IconData icon,
+    String value,
+    String label,
+    Color accent, {
+    double width = 190,
+  }) => MeshSummaryCard(
+    icon: icon,
+    value: value,
+    label: label,
+    accent: accent,
+    width: width,
+  );
 
-  /// Shared screen typography and panels. Tactical has its own HUD chrome;
-  /// Light and Dark use the same compact, accessible information hierarchy.
+  /// Shared screen hierarchy with palette-specific radio instrumentation.
   Widget _screenHeading(
     BuildContext context,
     String title,
     String subtitle,
     IconData icon,
   ) {
-    if (theme == MeshHubTheme.tactical) {
-      return TacticalHudHeading(title, subtitle: subtitle);
-    }
     final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -691,28 +525,23 @@ class _MeshHubAppState extends State<MeshHubApp> {
     required Widget child,
     String? subtitle,
   }) {
-    final tactical = theme == MeshHubTheme.tactical;
     final colors = Theme.of(context).colorScheme;
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(
-              icon,
-              size: tactical ? 17 : 19,
-              color: tactical ? TacticalHudColors.orange : _accent,
-            ),
+            Icon(icon, size: 19, color: _accent),
             const SizedBox(width: 9),
             Expanded(
               child: Text(
-                tactical ? title.toUpperCase() : title,
+                title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontFamily: tactical ? 'monospace' : null,
-                  letterSpacing: tactical ? 0.7 : 0,
-                  fontSize: tactical ? 13 : 15,
+                  fontFamily: null,
+                  letterSpacing: 0,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: tactical ? TacticalHudColors.cyan : colors.onSurface,
+                  color: colors.onSurface,
                 ),
               ),
             ),
@@ -726,19 +555,15 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 ?.copyWith(color: colors.onSurfaceVariant),
           ),
         ],
-        const SizedBox(height: 10),
-        Divider(height: 1, color: colors.outlineVariant),
-        const SizedBox(height: 12),
+        const SizedBox(height: 22),
         child,
       ],
     );
     return SizedBox(
       width: double.infinity,
-      child: tactical
-          ? TacticalHudPanel(padding: const EdgeInsets.all(14), child: content)
-          : Card(
-              child: Padding(padding: const EdgeInsets.all(16), child: content),
-            ),
+      child: Card(
+        child: Padding(padding: const EdgeInsets.all(22), child: content),
+      ),
     );
   }
 
@@ -748,7 +573,6 @@ class _MeshHubAppState extends State<MeshHubApp> {
     String value, {
     bool emphasize = false,
   }) {
-    final tactical = theme == MeshHubTheme.tactical;
     final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -756,12 +580,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: tactical ? 110 : 128,
+            width: 128,
             child: Text(
-              tactical ? label.toUpperCase() : label,
+              label,
               style: TextStyle(
-                fontSize: tactical ? 10 : 12,
-                fontFamily: tactical ? 'monospace' : null,
+                fontSize: 12,
+                fontFamily: null,
                 color: colors.onSurfaceVariant,
               ),
             ),
@@ -771,7 +595,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
             child: Text(
               value,
               style: TextStyle(
-                fontSize: tactical ? 12 : 13,
+                fontSize: 13,
                 color: emphasize ? _accent : colors.onSurface,
                 fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -783,7 +607,6 @@ class _MeshHubAppState extends State<MeshHubApp> {
   }
 
   Widget _diagnosticMetric(BuildContext context, String label, int value) {
-    final tactical = theme == MeshHubTheme.tactical;
     final content = Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
       child: Column(
@@ -794,34 +617,25 @@ class _MeshHubAppState extends State<MeshHubApp> {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              fontFamily: tactical ? 'monospace' : null,
-              color: tactical ? TacticalHudColors.teal : _accent,
+              fontFamily: null,
+              color: _accent,
             ),
           ),
           const SizedBox(height: 3),
-          Text(
-            tactical ? label.toUpperCase() : label,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
+          Text(label, style: Theme.of(context).textTheme.labelSmall),
         ],
       ),
     );
-    return SizedBox(
-      width: 150,
-      child: tactical
-          ? TacticalHudPanel(padding: EdgeInsets.zero, child: content)
-          : Card(child: content),
-    );
+    return SizedBox(width: 150, child: Card(child: content));
   }
 
   Widget _nodesView(BuildContext context) {
-    final tactical = theme == MeshHubTheme.tactical;
     return ListView(
-      padding: EdgeInsets.all(tactical ? 14 : 20),
+      padding: EdgeInsets.all(20),
       children: [
         _screenHeading(
           context,
-          tactical ? 'Node Monitor' : 'Nodes',
+          'Nodes',
           'MeshCore and Meshtastic · verified network information only',
           Icons.hub_outlined,
         ),
@@ -980,7 +794,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
   }
 
   Widget _settingsView(BuildContext context) => ListView(
-    padding: EdgeInsets.all(theme == MeshHubTheme.tactical ? 14 : 20),
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
     children: [
       _screenHeading(
         context,
@@ -1005,9 +819,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                       : Icons.radio_button_unchecked,
                   color: choice == theme ? _accent : null,
                 ),
-                title: Text(
-                  choice.name[0].toUpperCase() + choice.name.substring(1),
-                ),
+                title: Text(choice.label),
                 selected: choice == theme,
                 onTap: () => setState(() => theme = choice),
               ),
@@ -1086,23 +898,15 @@ class _MeshHubAppState extends State<MeshHubApp> {
       if (showExamples) ...MockRadioAdapter.sampleInbox(),
     ].where((m) => filter == null || m.protocol == filter).toList();
     return ListView(
-      padding: EdgeInsets.all(theme == MeshHubTheme.tactical ? 12 : 16),
+      padding: EdgeInsets.all(theme == MeshHubTheme.retro82 ? 12 : 16),
       children: [
-        if (theme == MeshHubTheme.tactical)
-          const TacticalHudHeading(
-            'Channel Array',
-            subtitle: 'RADIO CHANNELS / SESSION ONLY',
-          )
-        else ...[
-          Text(
-            'Channels',
-            style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-          ),
-          const SizedBox(height: 4),
-          const Text('Your radio channels · session-only conversations'),
-        ],
-        SizedBox(height: theme == MeshHubTheme.tactical ? 6 : 8),
+        _screenHeading(
+          context,
+          'Channels',
+          'Your radio channels · session-only conversations',
+          Icons.tag_rounded,
+        ),
+        const SizedBox(height: 20),
         Wrap(
           spacing: 8,
           children: [
@@ -1143,7 +947,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
           ),
         if (filter != MeshProtocol.meshtastic)
           for (final channel in field.channels) _channelTile(channel),
-        Divider(height: theme == MeshHubTheme.tactical ? 20 : 32),
+        Divider(height: theme == MeshHubTheme.retro82 ? 20 : 32),
         Text(
           'Other messages',
           style: Theme.of(context).textTheme.titleLarge
@@ -1161,7 +965,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
               ),
             ),
           ),
-        Divider(height: theme == MeshHubTheme.tactical ? 20 : 32),
+        Divider(height: theme == MeshHubTheme.retro82 ? 20 : 32),
         SwitchListTile(
           title: const Text('Show simulated examples'),
           subtitle: const Text('Off = live in-memory messages only'),
@@ -1183,19 +987,19 @@ class _MeshHubAppState extends State<MeshHubApp> {
         )
         .length;
     final item = ListTile(
-      dense: theme == MeshHubTheme.tactical,
-      horizontalTitleGap: theme == MeshHubTheme.tactical ? 10 : null,
+      dense: theme == MeshHubTheme.retro82,
+      horizontalTitleGap: theme == MeshHubTheme.retro82 ? 10 : null,
       contentPadding: EdgeInsets.symmetric(
-        horizontal: theme == MeshHubTheme.tactical ? 10 : 12,
-        vertical: theme == MeshHubTheme.tactical ? 0 : 6,
+        horizontal: theme == MeshHubTheme.retro82 ? 10 : 12,
+        vertical: theme == MeshHubTheme.retro82 ? 0 : 6,
       ),
       leading: CircleAvatar(
-        radius: theme == MeshHubTheme.tactical ? 17 : 23,
+        radius: theme == MeshHubTheme.retro82 ? 17 : 23,
         backgroundColor: _accent.withValues(alpha: 0.18),
         child: Icon(
           Icons.tag,
           color: _accent,
-          size: theme == MeshHubTheme.tactical ? 19 : 24,
+          size: theme == MeshHubTheme.retro82 ? 19 : 24,
         ),
       ),
       title: Text(
@@ -1204,27 +1008,27 @@ class _MeshHubAppState extends State<MeshHubApp> {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontWeight: FontWeight.w700,
-          fontSize: theme == MeshHubTheme.tactical ? 15 : null,
+          fontSize: theme == MeshHubTheme.retro82 ? 15 : null,
         ),
       ),
       subtitle: Text(
-        theme == MeshHubTheme.tactical
+        theme == MeshHubTheme.retro82
             ? 'MeshCore · $count msgs · slot ${channel.index}'
             : 'MeshCore · $count messages · slot ${channel.index}',
-        maxLines: theme == MeshHubTheme.tactical ? 1 : 2,
+        maxLines: theme == MeshHubTheme.retro82 ? 1 : 2,
         overflow: TextOverflow.ellipsis,
-        style: theme == MeshHubTheme.tactical
+        style: theme == MeshHubTheme.retro82
             ? const TextStyle(fontSize: 11)
             : null,
       ),
       trailing: Icon(
-        selected && theme == MeshHubTheme.tactical
+        selected && theme == MeshHubTheme.retro82
             ? Icons.radio_button_checked
             : Icons.chevron_right,
-        color: selected && theme == MeshHubTheme.tactical
-            ? TacticalHudColors.orange
+        color: selected && theme == MeshHubTheme.retro82
+            ? _palette.primary
             : null,
-        size: theme == MeshHubTheme.tactical ? 19 : 24,
+        size: theme == MeshHubTheme.retro82 ? 19 : 24,
       ),
       selected: selected,
       selectedTileColor: _accent.withValues(alpha: 0.10),
@@ -1234,29 +1038,19 @@ class _MeshHubAppState extends State<MeshHubApp> {
         channelMessageInput.clear();
       }),
     );
-    if (theme == MeshHubTheme.tactical) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: TacticalHudPanel(
-          active: selected,
-          padding: EdgeInsets.zero,
-          child: item,
-        ),
-      );
-    }
     return Card(clipBehavior: Clip.antiAlias, child: item);
   }
 
   Widget _channelThread(BuildContext context, {bool narrow = false}) {
     final matching = field.channels.where((c) => c.index == selectedChannel);
     if (selectedChannel == null || matching.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.forum_outlined, size: 54, color: _meshCoreAccent),
-            SizedBox(height: 16),
-            Text('Choose a channel to view its conversation'),
+            const SizedBox(height: 16),
+            const Text('Choose a channel to view its conversation'),
           ],
         ),
       );
@@ -1275,21 +1069,21 @@ class _MeshHubAppState extends State<MeshHubApp> {
         Container(
           width: double.infinity,
           padding: EdgeInsets.fromLTRB(
-            theme == MeshHubTheme.tactical ? 12 : 16,
-            theme == MeshHubTheme.tactical ? 8 : 12,
-            theme == MeshHubTheme.tactical ? 12 : 16,
-            theme == MeshHubTheme.tactical ? 8 : 12,
+            theme == MeshHubTheme.retro82 ? 12 : 16,
+            theme == MeshHubTheme.retro82 ? 8 : 12,
+            theme == MeshHubTheme.retro82 ? 12 : 16,
+            theme == MeshHubTheme.retro82 ? 8 : 12,
           ),
           decoration: BoxDecoration(
-            color: theme == MeshHubTheme.tactical
-                ? TacticalHudColors.panel.withValues(alpha: 0.93)
+            color: theme == MeshHubTheme.retro82
+                ? _palette.panel.withValues(alpha: 0.93)
                 : null,
             border: Border(
               bottom: BorderSide(
-                color: theme == MeshHubTheme.tactical
-                    ? TacticalHudColors.orange
+                color: theme == MeshHubTheme.retro82
+                    ? _palette.primary
                     : colors.outlineVariant,
-                width: theme == MeshHubTheme.tactical ? 2 : 1,
+                width: theme == MeshHubTheme.retro82 ? 2 : 1,
               ),
             ),
           ),
@@ -1304,11 +1098,11 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   icon: const Icon(Icons.arrow_back),
                 ),
               CircleAvatar(
-                radius: theme == MeshHubTheme.tactical ? 17 : 22,
+                radius: theme == MeshHubTheme.retro82 ? 17 : 22,
                 backgroundColor: _meshCoreAccent.withValues(alpha: 0.17),
                 child: Icon(
                   Icons.tag,
-                  size: theme == MeshHubTheme.tactical ? 19 : 24,
+                  size: theme == MeshHubTheme.retro82 ? 19 : 24,
                   color: _meshCoreAccent,
                 ),
               ),
@@ -1323,13 +1117,13 @@ class _MeshHubAppState extends State<MeshHubApp> {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
-                        fontSize: theme == MeshHubTheme.tactical ? 17 : null,
-                        fontFamily: theme == MeshHubTheme.tactical
+                        fontSize: theme == MeshHubTheme.retro82 ? 17 : null,
+                        fontFamily: theme == MeshHubTheme.retro82
                             ? 'monospace'
                             : null,
-                        letterSpacing: theme == MeshHubTheme.tactical ? 1.1 : 0,
-                        color: theme == MeshHubTheme.tactical
-                            ? TacticalHudColors.cyan
+                        letterSpacing: theme == MeshHubTheme.retro82 ? 1.1 : 0,
+                        color: theme == MeshHubTheme.retro82
+                            ? _palette.primary
                             : colors.onSurface,
                       ),
                     ),
@@ -1354,10 +1148,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
         Expanded(
           child: ListView(
             padding: EdgeInsets.fromLTRB(
-              theme == MeshHubTheme.tactical ? 12 : 16,
-              theme == MeshHubTheme.tactical ? 10 : 16,
-              theme == MeshHubTheme.tactical ? 12 : 16,
-              theme == MeshHubTheme.tactical ? 14 : 24,
+              theme == MeshHubTheme.retro82 ? 12 : 16,
+              theme == MeshHubTheme.retro82 ? 10 : 16,
+              theme == MeshHubTheme.retro82 ? 12 : 16,
+              theme == MeshHubTheme.retro82 ? 14 : 24,
             ),
             children: [
               Card(
@@ -1371,12 +1165,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
                   ),
                   title: Text(
                     field.connected ? 'Radio connected' : 'Radio disconnected',
-                    style: theme == MeshHubTheme.tactical
+                    style: theme == MeshHubTheme.retro82
                         ? const TextStyle(fontSize: 12)
                         : null,
                   ),
                   subtitle: Text(
-                    theme == MeshHubTheme.tactical
+                    theme == MeshHubTheme.retro82
                         ? '${field.status} · Coverage unverified'
                         : '${field.status} · MeshHub cannot verify repeater coverage or recipient delivery.',
                   ),
@@ -1405,7 +1199,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                           : null,
                       child: Padding(
                         padding: EdgeInsets.all(
-                          theme == MeshHubTheme.tactical ? 10 : 14,
+                          theme == MeshHubTheme.retro82 ? 10 : 14,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1414,7 +1208,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 CircleAvatar(
-                                  radius: theme == MeshHubTheme.tactical
+                                  radius: theme == MeshHubTheme.retro82
                                       ? 12
                                       : 14,
                                   backgroundColor: post.isOutgoing
@@ -1424,7 +1218,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                                     post.isOutgoing ? 'Y' : '#',
                                     style: TextStyle(
                                       color: post.isOutgoing
-                                          ? _canvas
+                                          ? _palette.background
                                           : colors.onSecondaryContainer,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -1469,19 +1263,19 @@ class _MeshHubAppState extends State<MeshHubApp> {
           top: false,
           child: Container(
             padding: EdgeInsets.fromLTRB(
-              theme == MeshHubTheme.tactical ? 12 : 16,
-              theme == MeshHubTheme.tactical ? 6 : 8,
-              theme == MeshHubTheme.tactical ? 12 : 16,
-              theme == MeshHubTheme.tactical ? 6 : 12,
+              theme == MeshHubTheme.retro82 ? 12 : 16,
+              theme == MeshHubTheme.retro82 ? 6 : 8,
+              theme == MeshHubTheme.retro82 ? 12 : 16,
+              theme == MeshHubTheme.retro82 ? 6 : 12,
             ),
             decoration: BoxDecoration(
-              color: theme == MeshHubTheme.tactical
-                  ? TacticalHudColors.panel.withValues(alpha: 0.98)
+              color: theme == MeshHubTheme.retro82
+                  ? _palette.panel.withValues(alpha: 0.98)
                   : null,
               border: Border(
                 top: BorderSide(
-                  color: theme == MeshHubTheme.tactical
-                      ? TacticalHudColors.cyan
+                  color: theme == MeshHubTheme.retro82
+                      ? _palette.primary
                       : colors.outlineVariant,
                 ),
               ),
@@ -1507,8 +1301,8 @@ class _MeshHubAppState extends State<MeshHubApp> {
                         maxLines: 3,
                         maxLength: 133,
                         decoration: InputDecoration(
-                          isDense: theme == MeshHubTheme.tactical,
-                          counterStyle: theme == MeshHubTheme.tactical
+                          isDense: theme == MeshHubTheme.retro82,
+                          counterStyle: theme == MeshHubTheme.retro82
                               ? const TextStyle(fontSize: 10)
                               : null,
                           hintText: 'Message ${channel.name}',
@@ -1519,10 +1313,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     const SizedBox(width: 10),
                     Padding(
                       padding: EdgeInsets.only(
-                        top: theme == MeshHubTheme.tactical ? 2 : 4,
+                        top: theme == MeshHubTheme.retro82 ? 2 : 4,
                       ),
                       child: FilledButton.icon(
-                        style: theme == MeshHubTheme.tactical
+                        style: theme == MeshHubTheme.retro82
                             ? FilledButton.styleFrom(
                                 textStyle: const TextStyle(fontSize: 13),
                                 padding: const EdgeInsets.symmetric(
@@ -1584,17 +1378,16 @@ class _MeshHubAppState extends State<MeshHubApp> {
   }
 
   Widget _radios(BuildContext context) {
-    final tactical = theme == MeshHubTheme.tactical;
     final colors = Theme.of(context).colorScheme;
     final info = field.deviceInfo;
     final rf = field.identity?.radioPreset;
     return ListView(
-      padding: EdgeInsets.all(tactical ? 14 : 20),
+      padding: EdgeInsets.all(20),
       children: [
         _screenHeading(
           context,
-          tactical ? 'Communications Console' : 'Radios & Bluetooth',
-          'Companion connection, verified readback and session diagnostics',
+          'Radios & Bluetooth',
+          'MeshCore and Meshtastic connections, readback and session diagnostics',
           Icons.router_outlined,
         ),
         const SizedBox(height: 14),
@@ -1625,7 +1418,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
         const SizedBox(height: 12),
         _sectionPanel(
           context,
-          title: 'Connection',
+          title: 'MeshCore connection',
           subtitle: 'Bluetooth LE companion · local radio only',
           icon: field.connected
               ? Icons.bluetooth_connected
@@ -1714,6 +1507,14 @@ class _MeshHubAppState extends State<MeshHubApp> {
         const SizedBox(height: 12),
         _sectionPanel(
           context,
+          title: 'Meshtastic connection',
+          subtitle: 'Bluetooth LE · in-app PIN pairing · device readback',
+          icon: Icons.bluetooth,
+          child: MeshtasticConnectionPanel(session: meshtastic),
+        ),
+        const SizedBox(height: 12),
+        _sectionPanel(
+          context,
           title: 'Firmware Manager',
           subtitle: 'Offline firmware library · guarded Heltec V3 USB flashing',
           icon: Icons.system_update_alt,
@@ -1730,8 +1531,11 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => FirmwareManagerScreen(
-                      tactical: theme == MeshHubTheme.tactical,
-                      radioConnected: () => field.connected,
+                      instrument: false,
+                      radioConnected: () =>
+                          field.connected ||
+                          field.connecting ||
+                          meshtastic.active,
                     ),
                   ),
                 ),

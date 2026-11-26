@@ -5,20 +5,20 @@ import 'package:material_ui/material_ui.dart';
 
 import 'firmware_manager_service.dart';
 import 'firmware_hardware_catalog.dart';
-import 'tactical_hud.dart';
+import 'theme_widgets.dart';
 
 /// Offline-first, Linux-only firmware manager. No firmware is downloaded, and
 /// no USB write is triggered by opening this screen, selecting, or inspecting.
 class FirmwareManagerScreen extends StatefulWidget {
   const FirmwareManagerScreen({
-    required this.tactical,
+    required this.instrument,
     required this.radioConnected,
     this.service,
     this.boardCatalog,
     super.key,
   });
 
-  final bool tactical;
+  final bool instrument;
   final bool Function() radioConnected;
   final FirmwareManagerService? service;
   final FirmwareBoardCatalog? boardCatalog;
@@ -374,11 +374,11 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
-                  widget.tactical ? title.toUpperCase() : title,
+                  widget.instrument ? title.toUpperCase() : title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: widget.tactical ? 13 : 16,
-                    letterSpacing: widget.tactical ? 0.7 : 0,
-                    fontFamily: widget.tactical ? 'monospace' : null,
+                    fontSize: widget.instrument ? 13 : 16,
+                    letterSpacing: widget.instrument ? 0.7 : 0,
+                    fontFamily: widget.instrument ? 'monospace' : null,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -390,8 +390,8 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
         ],
       ),
     );
-    if (widget.tactical) {
-      return TacticalHudPanel(padding: EdgeInsets.zero, child: content);
+    if (widget.instrument) {
+      return MeshThemePanel(padding: EdgeInsets.zero, child: content);
     }
     return Card(child: content);
   }
@@ -433,10 +433,12 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         Text(
-          widget.tactical ? 'FIRMWARE / OFFLINE USB' : 'Firmware Manager',
+          widget.instrument ? 'FIRMWARE / OFFLINE USB' : 'Firmware Manager',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w800,
-            color: widget.tactical ? TacticalHudColors.cyan : null,
+            color: widget.instrument
+                ? Theme.of(context).colorScheme.primary
+                : null,
           ),
         ),
         const SizedBox(height: 5),
@@ -769,7 +771,7 @@ class _FirmwareManagerScreenState extends State<FirmwareManagerScreen> {
       canPop: !busy,
       child: Scaffold(
         appBar: AppBar(title: const Text('Firmware Manager')),
-        body: widget.tactical ? TacticalHudBackdrop(child: page) : page,
+        body: widget.instrument ? MeshThemeBackdrop(child: page) : page,
       ),
     );
   }
