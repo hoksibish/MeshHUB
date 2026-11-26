@@ -6,6 +6,7 @@ import 'package:meshhub_domain/meshcore_protocol.dart';
 import 'package:meshhub_domain/testing.dart';
 
 import 'field_session.dart';
+import 'meshcore_pairing_prompt.dart';
 import 'firmware_manager_screen.dart';
 import 'linux_meshcore_ble.dart';
 import 'meshtastic_connection_panel.dart';
@@ -47,7 +48,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
   @override
   void initState() {
     super.initState();
-    field = widget.fieldSession ?? MeshCoreFieldSession();
+    field = widget.fieldSession ?? MeshCoreFieldSession(allowPairing: true);
     field.addListener(_refresh);
     meshtastic.addListener(_refreshConnection);
   }
@@ -1419,7 +1420,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
         _sectionPanel(
           context,
           title: 'MeshCore connection',
-          subtitle: 'Bluetooth LE companion · local radio only',
+          subtitle: 'Bluetooth LE companion · pair and connect here',
           icon: field.connected
               ? Icons.bluetooth_connected
               : Icons.bluetooth_disabled,
@@ -1448,21 +1449,25 @@ class _MeshHubAppState extends State<MeshHubApp> {
                 runSpacing: 8,
                 children: [
                   FilledButton.icon(
-                    onPressed: field.scanning
+                    onPressed: field.scanning || field.busy
                         ? null
                         : () => unawaited(field.discover()),
                     icon: const Icon(Icons.bluetooth_searching, size: 18),
                     label: const Text('Discover MeshCore radios'),
                   ),
-                  if (field.connected)
+                  if (field.connected || field.connecting)
                     OutlinedButton.icon(
                       onPressed: () => unawaited(field.disconnect()),
                       icon: const Icon(Icons.bluetooth_disabled, size: 18),
-                      label: const Text('Disconnect'),
+                      label: Text(
+                        field.connecting ? 'Cancel connection' : 'Disconnect',
+                      ),
                     ),
                 ],
               ),
-              if (field.scanning) ...[
+              if (field.awaitingPairingPin)
+                MeshCorePairingPrompt(session: field),
+              if (field.scanning || field.connecting) ...[
                 const SizedBox(height: 10),
                 const LinearProgressIndicator(),
               ],
@@ -1494,10 +1499,10 @@ class _MeshHubAppState extends State<MeshHubApp> {
                         : 'Name hint only · service verification required',
                   ),
                   trailing: TextButton(
-                    onPressed: field.connecting
+                    onPressed: field.busy
                         ? null
                         : () => unawaited(field.connect(candidate)),
-                    child: const Text('Connect'),
+                    child: const Text('Pair & connect'),
                   ),
                 ),
               ],
@@ -1533,9 +1538,7 @@ class _MeshHubAppState extends State<MeshHubApp> {
                     builder: (_) => FirmwareManagerScreen(
                       instrument: false,
                       radioConnected: () =>
-                          field.connected ||
-                          field.connecting ||
-                          meshtastic.active,
+                          field.connected || field.busy || meshtastic.active,
                     ),
                   ),
                 ),

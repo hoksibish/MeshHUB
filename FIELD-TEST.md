@@ -4,7 +4,7 @@
 
 ## Build and launch
 
-From `/home/jbarr/MeshHUB`:
+From the root of the checkout containing the current build:
 
 ```bash
 cd apps/meshhub_flutter
@@ -19,8 +19,8 @@ The script launches `apps/meshhub_flutter/build/linux/x64/release/bundle/meshhub
 
 ## Before going into the field
 
-1. Power the Heltec and ensure Bluetooth is on. Pair it through the local OS Bluetooth dialog if needed; **never type a PIN into MeshHub, a chat, or a log**.
-2. Open **Radios** → **Discover MeshCore radios**. Select the owner-confirmed Heltec by name; name and cached service UUID are hints, while the authenticated GATT/Companion handshake and device-reported model/firmware are the actual verification. Tap **Connect**. The app does not pair on your behalf.
+1. Power the Heltec, ensure Bluetooth is on, and disconnect the phone companion app. MeshHub now supports MeshCore PIN entry inside its Radios screen. Enter the node’s configured/displayed PIN only in the dedicated masked Bluetooth PIN field; never put it in a chat, issue, log, message composer or firmware checksum field.
+2. Open **Radios** → **Discover MeshCore radios**. Select the owner-confirmed Heltec by name; name and cached service UUID are hints, while the authenticated GATT/Companion handshake and device-reported model/firmware are the actual verification. Tap **Pair & connect**. For an unpaired device, MeshHub registers a device-scoped BlueZ KeyboardOnly agent and presents the six-digit PIN field; choose **Submit MeshCore PIN**. A valid existing OS bond skips that prompt. **Cancel pairing** or **Cancel connection** closes the attempt. Pairing alone does not establish Companion readiness; the protocol handshake must still complete.
 3. Confirm the panel says **Companion ready**, Bluetooth **connected, paired**, model **Heltec V3**, firmware **`v1.18.0-81dbae5`** (or record any actual difference), protocol, and RF settings. Previously observed: **910,525 kHz**, **62,500 Hz bandwidth**, **SF7**, **CR5**. The displayed values are read-only; MeshHub does not adjust them.
 4. Open **Channels** after Companion ready. The app reads every channel slot from the selected radio using read-only `GET_CHANNEL` and shows only configured names, with slot numbers. Tap a channel to open its session-only feed; on a narrow window use **All channels** to go back. The radio returns channel secrets in the protocol response, but MeshHub discards them and exposes only names/slots. **Refresh channels** rereads without changing channel settings. If the read is incomplete, the UI says so rather than inventing channels.
 5. **Show simulated examples** is off by default; keep it off for live-only field testing. Simulated data stays visibly separate from real channel feeds. Real messages, channel names and local-post markers are **RAM only**, lost when the process exits. When the radio signals queued messages, the app drains up to 32 responses per event into this volatile inbox. Do not rely on this build as your only archive of a radio's queued messages.
@@ -40,7 +40,7 @@ The script launches `apps/meshhub_flutter/build/linux/x64/release/bundle/meshhub
 
 - After a normal connection, the app retries an unexpected BLE disconnect on the **same selected paired device** after bounded delays (1, 2, 4…32 seconds). It repeats only read-only startup/device queries; it does not replay messages. Manual **Disconnect** cancels retry. The diagnostic shows retry attempts. A local OS-level disconnect was tested once with the physical Heltec; out-of-range, reboot, Bluetooth off/on, and BlueZ restart are **not** proven.
 - If discovery shows nothing: power/advertise the Heltec nearby, check OS Bluetooth power, retry scanning. BlueZ can return cached candidates; a name/service hit alone is not proof.
-- If connect fails: check local pairing and Bluetooth authorization; use the OS's interactive pairing flow. No default PIN is assumed. Restart discovery if BlueZ lost the device. Do not reset/flash/change radio settings as a troubleshooting shortcut.
+- If connect fails: retry **Pair & connect** with the radio’s configured/displayed PIN. No default PIN is assumed. MeshHub waits for its PIN agent to register before requesting pairing; manual OS pairing is a fallback, not a prerequisite. A node reflashed since the previous bond may require manually forgetting that stale bond in Bluetooth settings. Restart discovery if BlueZ lost the device. Do not reset/flash/change radio settings as a troubleshooting shortcut. Automatic reconnect never initiates new pairing or requests a PIN.
 - If Companion ready but no message: confirm a second endpoint, compatible preset, correct configured channel/key or contact, and whether the peer actually transmitted. An `83` push is only a queue notification, not content. The app's count-only diagnostics do not log payloads, keys, BLE addresses, or PINs.
 - If a receive drain is interrupted: note the status; keep the app open and coordinate another small peer message. No real-message history is persisted; a cold restart clears the inbox. Preserve an external peer-side record if you need proof.
 

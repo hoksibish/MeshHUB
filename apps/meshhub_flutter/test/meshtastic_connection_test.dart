@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:meshhub_flutter/linux_meshcore_ble.dart';
 import 'package:meshhub_flutter/meshtastic_ble.dart';
+import 'package:meshhub_flutter/ble_pairing.dart';
 import 'package:meshhub_flutter/meshtastic_connection_panel.dart';
 import 'package:meshhub_flutter/meshtastic_connection_protocol.dart';
 import 'package:meshhub_flutter/meshtastic_session.dart';
@@ -128,7 +129,7 @@ Future<void> flush() => Future<void>.delayed(Duration.zero);
 void main() {
   test('pairing agent only requests a PIN for the selected device', () async {
     var prompts = 0, cancellations = 0;
-    final agent = MeshtasticPairingAgent(
+    final agent = BlePinAgent(
       radio.id,
       () async {
         prompts++;
@@ -163,7 +164,7 @@ void main() {
 
   test('pairing agent rejects cancelled and malformed PINs', () async {
     for (final value in <String?>[null, '', '123', '12345x', '1234567']) {
-      final agent = MeshtasticPairingAgent(radio.id, () async => value, () {});
+      final agent = BlePinAgent(radio.id, () async => value, () {});
       expect(
         (await agent.requestPasskey(PairingDevice(radio.id))).response,
         isA<DBusMethodErrorResponse>(),
