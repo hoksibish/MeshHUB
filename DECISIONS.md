@@ -21,3 +21,9 @@
 - This increment uses a bounded authenticated encrypted snapshot (10,000 records / 16 MiB), not SQLCipher. The proposed SQLite/indexed-history architecture remains future work. The snapshot avoids unencrypted SQL journals/indexes and native database packaging while delivering verified encrypted restart recovery. No claim of completing all M3 search/contact/backup requirements is made.
 - The encryption key is generated randomly and kept in the persistent default OS keyring, never beside ciphertext. Missing/locked keys, failed authentication, unsupported files and writer contention fail closed without plaintext fallback or destructive reset. The keyring's security and the OS session remain trust boundaries; application PIN locking and key backup/recovery are separate scope.
 - History is a read-only archive separate from the live channel composer. Source radio/protocol/channel-key fingerprints stay in encrypted records; a historical channel slot never becomes a live send target. Local acceptance continues to mean peer delivery unverified. Simulated messages and drafts are excluded; saving/retrying storage never transmits RF.
+
+## MeshCore send investigation — 2026-11-27
+
+- Owner authorized investigating the reported inline-composer regression and strengthening composer-to-history testing. Keep RF hardware acceptance separate from synthetic path coverage; no radio operation is needed for this code investigation.
+- Preserve the existing channel encoder: historical and pinned upstream 1.18.0 comparisons found no demonstrated layout regression. Fix only the independently reproduced completion-handler draft loss. Do not claim this fixes the reported peer nonreceipt.
+- Add combined widget/session/encryption/reopen coverage with a fake BLE boundary rather than overriding `sendChannel`. Existing unit/UI tests remain, but do not independently prove the combined path or recipient delivery. See `docs/MESHCORE-SEND-INVESTIGATION.md`.

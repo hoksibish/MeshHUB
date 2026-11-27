@@ -1,6 +1,6 @@
 # MeshHub M1 Field Test — current UI branch (Omarchy Linux)
 
-**Checkpoint:** Current review uses `feature/responsive-hybrid-ui` (PR #4), based on `feature/m1-meshcore-ble` (PR #3); neither is ready to merge. This is a field-test build, not a validated over-the-air release. The real Heltec was read back as Heltec V3, MeshCore Companion `v1.18.0-81dbae5`, protocol 14. A local BLE disconnect/reconnect completed a fresh Companion handshake on 2026-11-24 UTC; radio power-cycle, range, BlueZ restart, and real RF messaging remain unverified.
+**Checkpoint:** The latest preview stacks modern UI (PR #5), MeshCore in-app pairing (PR #6), and encrypted history (PR #7) on the UI/field branches (PR #4 / #3). The composer investigation builds on PR #7; see `docs/MESHCORE-SEND-INVESTIGATION.md`. These remain review branches, not an accepted M1 release. This is a field-test build, not a validated over-the-air release. The real Heltec was read back as Heltec V3, MeshCore Companion `v1.18.0-81dbae5`, protocol 14. A local BLE disconnect/reconnect completed a fresh Companion handshake on 2026-11-24 UTC; radio power-cycle, range, BlueZ restart, and real RF messaging remain unverified.
 
 ## Build and launch
 
