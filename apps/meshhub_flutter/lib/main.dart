@@ -1505,7 +1505,12 @@ class _MeshHubAppState extends State<MeshHubApp> {
         verified: true,
       );
       if (!mounted) return;
-      if (result == MeshCoreLocalSendResult.acceptedByRadio) {
+      // A radio response can arrive after navigation or another edit. Only
+      // clear the submitted draft; never erase text composed in the meantime.
+      if (result == MeshCoreLocalSendResult.acceptedByRadio &&
+          selectedChannel == channel &&
+          _selectedChannelName == name &&
+          channelMessageInput.text == text) {
         channelMessageInput.clear();
       }
     } catch (e) {
